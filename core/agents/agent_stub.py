@@ -4,10 +4,10 @@ from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
-from typing import Anotated, TypedDict
+from typing import Annotated, TypedDict
 
 
-MODEL = "mistral:instruct"
+MODEL = "mistral-nemo"
 TEMPERATURE = 0
 load_dotenv('.env', override=True)
 
@@ -65,5 +65,6 @@ builder.add_node("tools", ToolNode(tools_in_use))
 builder.add_conditional_edges("node_a", tools_condition)
 builder.add_edge(START, "node_a")
 builder.add_edge("tools", END)
+graph = builder.compile()
 
 
