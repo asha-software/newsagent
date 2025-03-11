@@ -1,0 +1,11 @@
+{
+  "dockerfile_lines": [],
+  "graphs": {
+    "claims_decomposer": "./claims_decomposer.py:graph",
+    "research_agent": "./research_agent.py:graph",
+    "reasoning_agent": "./reasoning_agent.py:graph",
+    "verdict_agent": "./verdict_agent.py:graph"
+  },
+  "python_version": "3.11",
+  "dependencies": ["."]
+}
