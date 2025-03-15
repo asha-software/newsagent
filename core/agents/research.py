@@ -1,4 +1,4 @@
-
+# %%
 from pprint import pprint
 from IPython.display import Image, display
 from dotenv import load_dotenv
@@ -16,7 +16,7 @@ MODEL = "mistral-nemo"
 TEMPERATURE = 0
 load_dotenv('../.env', override=True)
 
-
+# %%
 TOOL_REGISTRY = {
     'tools.calculator': ['multiply', 'add', 'divide'],
     'tools.wikipedia': ['query']
@@ -47,6 +47,37 @@ tools = [import_function(module, function) for module,
          functions in TOOL_REGISTRY.items() for function in functions]
 print(f"Tools: {[tool.__name__ for tool in tools]}")
 
+# %%
+# def multiply(a: int, b: int) -> int:
+#     """Multiply a and b.
+
+#     Args:
+#         a: first int
+#         b: second int
+#     """
+#     return a * b
+
+# # This will be a tool
+# def add(a: int, b: int) -> int:
+#     """Adds a and b.
+
+#     Args:
+#         a: first int
+#         b: second int
+#     """
+#     return a + b
+
+# def divide(a: int, b: int) -> float:
+#     """Divide a and b.
+
+#     Args:
+#         a: first int
+#         b: second int
+#     """
+#     return a / b
+
+# tools += [add, multiply, divide]
+
 
 llm = ChatOllama(
     model=MODEL,
@@ -60,6 +91,9 @@ class State(TypedDict):
     claim: str
     # {'name': tool name, 'args': {kwargs}, 'result': str}
     evidence: list[dict]
+
+
+# %%
 
 
 with open('prompts/research_agent_system_prompt.txt', 'r') as f:
@@ -126,4 +160,31 @@ builder.add_conditional_edges(
 builder.add_edge("tools", "assistant")
 builder.add_edge("postprocessing", END)
 
-graph = builder.compile()
+react_graph = builder.compile()
+
+# Show
+# display(Image(react_graph.get_graph(xray=False).draw_mermaid_png()))
+
+# %%
+# from langchain_core.messages import HumanMessage, SystemMessage
+claim = "1/3 is bigger than 1/4."
+# initial_state = {"claim": claim}
+# final_state = graph.invoke(initial_state)
+
+messages = [sys_msg]
+messages = react_graph.invoke({"messages": messages, "claim": claim})
+
+# %%
+for m in messages['messages']:
+    m.pretty_print()
+
+# %%
+pprint(messages)
+
+# %%
+messages['messages'][3]
+
+# %%
+print(messages['messages'][3].tool_call_id)
+
+# %%
