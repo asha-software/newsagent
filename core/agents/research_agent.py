@@ -15,6 +15,7 @@ from typing import Annotated, TypedDict
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 load_dotenv('../.env', override=True)
+PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
@@ -37,9 +38,12 @@ def import_function(module_name, function_name):
         module = importlib.import_module(module_name)
         function = getattr(module, function_name)
         return function
-    except (ImportError, AttributeError):
+    except (ImportError, AttributeError) as e:
+        print(f"I'm in cwd: {os.getcwd()}")
+        print(f"Available modules: {os.listdir(os.getcwd())}")
         print(
             f"Error: Could not import function '{function_name}' from module '{module_name}'.")
+        print(f"Exception: {e}")
         return None
 
 
@@ -72,7 +76,8 @@ def preprocessing(state: State):
     Currently, this just extracts the claim from the state and sets it as a HumanMessage
     following the SystemMessage
     """
-    return {"messages": HumanMessage(content=state['claim'])}
+    state['messages'] = [sys_msg, HumanMessage(content=state['claim'])]
+    return state
 
 
 def assistant(state: State) -> State:
@@ -126,4 +131,4 @@ builder.add_conditional_edges(
 builder.add_edge("tools", "assistant")
 builder.add_edge("postprocessing", END)
 
-graph = builder.compile()
+agent = builder.compile()
