@@ -1,70 +1,94 @@
 from dotenv import load_dotenv
+import json
 import os
+from langchain_core.messages import SystemMessage, BaseMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-from langgraph.prebuilt import ToolNode, tools_condition
-from typing import Annotated, TypedDict
+from typing import TypedDict
 
-
-MODEL = "mistral-nemo"
-TEMPERATURE = 0
+# Load environment variables
 load_dotenv('.env', override=True)
 
-"""
-1. Define your State object
-"""
-class State(TypedDict):
-    messages: Annotated[list[str], add_messages]
-    # additional keys and their value types...
+# Define the LLM model to use
+MODEL = "mistral-nemo"
+TEMPERATURE = 0
 
-"""
-2. Define your Tools: fully annotated functions of any kind
-"""
-def multiply(a: int, b: int) -> int:
-    """Multiply `a` and `b`
-
-    Args:
-        a: First number
-        b: Second number
-    """
-    return a * b
-
-tools_in_use = [multiply]
-
-""" 
-3. Instantiate your llm (Ollama or other) and bind the tools to it
-"""
 llm = ChatOllama(
-    model=MODEL, 
+    model=MODEL,
     temperature=TEMPERATURE,
-    base_url="http://host.docker.internal:11434", # if running in the studio
-    ).bind_tools(tools_in_use)
+)
 
-"""
-4. Define Nodes: functions taking state and returning state
-"""
-def node_a(state: State) -> State:
-    # do something with state
-    print("=== node_a ===")
-    response = llm.invoke(state["messages"])
+# Define the State Object
+class State(TypedDict):
+    messages: list[BaseMessage]
+    claims: list[str]
+    labels: list[str]
+    justifications: list[str]
+    final_label: str | None
+    final_justification: str | None
 
-    # Here we return an object following the State type;
-    # by annotating `add_message`, the new response will be appended
-    # to the messages list and assigned an id
-    return {"messages": [response]}
+# Nodes
 
+def prompt_prep_node(state: State) -> State:
+    with open("prompts/verdict_agent_system_prompt.txt", "r") as f:
+        prompt_text = f.read()
+
+    claim_analysis = "\n".join(
+        [f"Claim: {state['claims'][i]}\nVerdict: {state['labels'][i]}\nJustification: {state['justifications'][i]}\n"
+         for i in range(len(state["claims"]))]
+    )
+
+    formatted_prompt = prompt_text.format(
+        claim_analysis=claim_analysis
+    )
+
+    messages = [SystemMessage(content=formatted_prompt)] + state["messages"]
+
+    return {**state, "messages": messages}
+
+def verdict_node(state: State) -> State:
+    response = llm.invoke(state['messages'])
+    return {**state, "messages": state["messages"] + [response]}
+
+def postprocessing_node(state: State) -> State:
+    response_text = state["messages"][-1].content
+    prompt = """Format the response into a JSON object with the following keys:
+{
+  "final_label": "true" | "false" | "mixed" | "unknown",
+  "final_justification": "A summary of why this document is classified this way."
+}
+Respond ONLY with the JSON object. No additional text.
 """
-5. Build the graph
-"""
+
+    formatted_response = llm.invoke(response_text + '\n' + prompt)
+
+    try:
+        results = json.loads(formatted_response.content)
+    except json.JSONDecodeError:
+        results = {
+            "final_label": "unknown",
+            "final_justification": "LLM response could not be parsed as JSON."
+        }
+
+    return {
+        **state,
+        "messages": state["messages"] + [formatted_response],
+        "final_label": results["final_label"],
+        "final_justification": results["final_justification"]
+    }
+
+# Graph
 
 builder = StateGraph(State)
-builder.add_node("node_a", node_a)
-builder.add_node("tools", ToolNode(tools_in_use))
 
-builder.add_conditional_edges("node_a", tools_condition)
-builder.add_edge(START, "node_a")
-builder.add_edge("tools", END)
+builder.add_node("prompt_prep", prompt_prep_node)
+builder.add_node("verdict", verdict_node)
+builder.add_node("postprocessing", postprocessing_node)
+
+builder.add_edge(START, "prompt_prep")
+builder.add_edge("prompt_prep", "verdict")
+builder.add_edge("verdict", "postprocessing")
+builder.add_edge("postprocessing", END)
+
 graph = builder.compile()
-
 
