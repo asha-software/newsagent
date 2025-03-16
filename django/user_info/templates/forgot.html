@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asha Software | Forgot Password</title>
+    {% load static %}
+    <!-- Load CSS files -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fontawesome-all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/iofrm-style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/iofrm-theme28.css' %}">
+</head>
+<body>
+    <div class="form-body">
+        <div class="website-logo">
+            <a href="index.html">
+                <div class="logo">
+                    <img class="logo-size" src="{% static 'images/logo-light.svg' %}" alt="">
+                </div>
+            </a>
+        </div>
+        <div class="iofrm-layout">
+            <div class="img-holder">
+                <div class="bg"></div>
+                <div class="info-holder">
+
+                </div>
+            </div>
+            <div class="form-holder">
+                <div class="form-content">
+                    <div class="form-items">
+                        <h3>Password Reset</h3>
+                        <p>To reset your password, enter the username you use to sign in to AshaSoftware</p>
+                        <form>
+                            <input class="form-control" type="text" name="username" placeholder="Username" required>
+                            <div class="form-button full-width">
+                                <button id="submit" type="submit" class="ibtn btn-forget">Send Reset Link</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="form-sent">
+                        <div class="tick-holder">
+                            <div class="tick-icon"></div>
+                        </div>
+                        <h3>Password link sent</h3>
+                        <p>Please check your inbox <a href="https://brandio.io/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="3e5751584c537e5751584c534a5b534e525f4a5b105751">[email&#160;protected]</a></p>
+                        <div class="info-holder">
+                            <span>Unsure if that username was correct?</span> <a href="forget.html#">We can help</a>.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script data-cfasync="false" src="{% static 'js/email-decode.min.js' %}"></script>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
