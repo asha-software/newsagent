@@ -49,7 +49,6 @@ def import_function(module_name, function_name):
 
 tools = [import_function(module, function) for module,
          functions in TOOL_REGISTRY.items() for function in functions]
-print(f"Tools: {[tool.__name__ for tool in tools]}")
 
 
 llm = ChatOllama(
