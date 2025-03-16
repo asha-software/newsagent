@@ -1,0 +1,83 @@
+{% load static %}
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="colorlib.com">
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  </head>
+  <body>
+    <div class="s006">
+      <div class="website-logo">
+        <a href="{% url 'home' %}">
+          <div class="logo">
+            <img class="logo-size" src="{% static 'images/logo-light.svg' %}" alt="">
+          </div>
+        </a>
+      </div>
+      <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+      <div class="search-container">
+        <form action="{% url 'search' %}" method="POST">
+          {% csrf_token %}
+          <fieldset>
+            <div class="inner-form">
+              <div class="input-field">
+                <button class="btn-search" type="submit">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+                  </svg>
+                </button>
+                <input id="search" name="search" type="text" placeholder="" value="" />
+              </div>
+            </div>
+            <div class="suggestion-wrap">
+              <label class="suggestion-item">
+                <input type="checkbox" name="source" value="ap_news">
+                <span>AP News</span>
+              </label>
+              <label class="suggestion-item">
+                <input type="checkbox" name="source" value="cnn">
+                <span>CNN</span>
+              </label>
+              <label class="suggestion-item">
+                <input type="checkbox" name="source" value="bbc">
+                <span>BBC</span>
+              </label>
+              <label class="suggestion-item">
+                <input type="checkbox" name="source" value="wikipedia">
+                <span>Wikipedia</span>
+              </label>
+              <label class="suggestion-item">
+                <input type="checkbox" name="source" value="custom">
+                <span>Custom</span>
+              </label>
+            </div>
+          </fieldset>
+        </form>
+        
+        {% if show_results %}
+        <div class="search-results">
+          <div class="result-card">
+            <div class="result-header">
+              <h2>Gold Prices Surge Amid Economic Uncertainty</h2>
+              <img src="{% static 'images/yes.png' %}" alt="Yes" class="result-icon">
+            </div>
+            <div class="result-content">
+              <p>The going price for New York spot gold closed Thursday at record $2,988 per troy ounce — the standard for measuring precious metals, which is equivalent to 31 grams — per FactSet. That's over $825 higher than gold's spot price one year ago.
+                Gold futures surpassed the $3,000 mark Thursday. But as of Friday afternoon, fell to just over $2,994.</p>
+            </div>
+            <div class="result-source">Source: <a href="https://apnews.com/article/gold-price-record-high-economic-uncertainty-59ef0a740910042f488609ff471b4334" target="_blank">AP News</a></div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  <script>
+  document.getElementById('search').addEventListener('focus', function() {
+    this.value = '';
+  });
+</script>
+</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
+</html>
