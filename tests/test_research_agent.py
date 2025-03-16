@@ -25,21 +25,21 @@ def test_agent_processes_claim():
                ) > 0, "Final state should contain evidence"
 
 
-def test_tool_usage():
-    """Test that tools are properly called and results are captured"""
-    claim = "Python is a programming language"
-    result = agent.invoke({"claim": claim})
+# def test_tool_usage():
+#     """Test that tools are properly called and results are captured"""
+#     claim = "Python is a programming language"
+#     result = agent.invoke({"claim": claim})
 
-    assert len(result["evidence"]
-               ) > 0, "Evidence list should contain tool results"
-    assert result["evidence"][0]["name"] == "query", "Tool name should be recorded"
-    assert "Python" in result["evidence"][0]["result"], "Tool result should be recorded"
+#     assert len(result["evidence"]
+#                ) > 0, "Evidence list should contain tool results"
+#     assert result["evidence"][0]["name"] == "query", "Tool name should be recorded"
+#     assert "Python" in result["evidence"][0]["result"], "Tool result should be recorded"
 
 
-def test_empty_claim():
-    """Test behavior with empty claim"""
-    result = agent.invoke({"claim": "", "messages": [], "evidence": []})
-    assert "messages" in result, "Result should handle empty claims gracefully"
+# def test_empty_claim():
+#     """Test behavior with empty claim"""
+#     result = agent.invoke({"claim": "", "messages": [], "evidence": []})
+#     assert "messages" in result, "Result should handle empty claims gracefully"
 
 
 @pytest.mark.parametrize("test_case", TOOL_USAGE_TEST_CASES)

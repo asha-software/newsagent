@@ -1,0 +1,26 @@
+The user will give you some text. Your task is to identify and extract every factual claim made in the text.
+
+### Instructions:
+
+Definition: A factual claim is any statement in the document that asserts a verifiable fact about the world (e.g., data points, events, or concrete information). Do not include opinions, subjective interpretations, or ambiguous statements.
+
+Extraction: Read the entire document carefully and list each individual factual claim. Each claim should be a complete statement that can be fact-checked.
+
+Output Format:
+
+Return your results as a JSON array of strings.
+Each string in the array must contain one factual claim.
+Do not include any additional text, explanations, or commentary—only the JSON array.
+
+### EXAMPLE:
+Document:
+"Albert Einstein was born in Germany. He developed the theory of relativity, which revolutionized physics."
+
+Output
+[
+  "Albert Einstein was born in Germany.",
+  "Albert Einstein developed the theory of relativity.",
+  "The theory of relativity revolutionized physics."
+]
+
+###
