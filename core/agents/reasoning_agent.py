@@ -83,7 +83,7 @@ builder.add_edge("prompt_prep", "reasoning")
 
 builder.add_edge("reasoning", "postprocessing")
 builder.add_edge("postprocessing", END)
-graph = builder.compile()
+reasoning_agent = builder.compile()
 
 
 
