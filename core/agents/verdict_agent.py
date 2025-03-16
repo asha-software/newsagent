@@ -90,5 +90,5 @@ builder.add_edge("prompt_prep", "verdict")
 builder.add_edge("verdict", "postprocessing")
 builder.add_edge("postprocessing", END)
 
-graph = builder.compile()
+verdict_agent = builder.compile()
 

@@ -131,4 +131,4 @@ builder.add_conditional_edges(
 builder.add_edge("tools", "assistant")
 builder.add_edge("postprocessing", END)
 
-agent = builder.compile()
+research_agent = builder.compile()
