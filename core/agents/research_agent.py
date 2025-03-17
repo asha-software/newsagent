@@ -4,12 +4,23 @@ from IPython.display import Image, display
 from dotenv import load_dotenv
 import importlib
 import os
+import sys
+
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage, SystemMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict
+
+# Add project root to Python path
+project_root = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "../.."))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
+# TODO: implement specific functions, or better yet check which functions the user wants then dynamically import those
+import core.tools.registry
 
 
 MODEL = "mistral-nemo"
@@ -19,8 +30,8 @@ PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
-    'tools.calculator': ['multiply', 'add', 'divide'],
-    'tools.wikipedia': ['query']
+    'core.tools.builtins.calculator': ['multiply', 'add', 'divide'],
+    'core.tools.builtins.wikipedia': ['query']
 }
 
 
@@ -131,3 +142,11 @@ builder.add_edge("tools", "assistant")
 builder.add_edge("postprocessing", END)
 
 research_agent = builder.compile()
+
+
+def main():
+    print(f"I was able to import foo: {foo}")
+
+
+if __name__ == "__main__":
+    main()
