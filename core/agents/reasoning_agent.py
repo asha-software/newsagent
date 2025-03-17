@@ -17,7 +17,6 @@ load_dotenv('.env', override=True)
 
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
-    # messages: list[BaseMessage]
     claim: str
     evidence: list[str]
     label: Literal["true", "false", "unknown"] | None
