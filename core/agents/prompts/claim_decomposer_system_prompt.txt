@@ -13,6 +13,8 @@ Each string in the array must contain one factual claim.
 Do not include any additional text, explanations, or commentary—only the JSON array.
 
 ### EXAMPLE:
+
+### Example 1
 Document:
 "Albert Einstein was born in Germany. He developed the theory of relativity, which revolutionized physics."
 
@@ -21,6 +23,39 @@ Output
   "Albert Einstein was born in Germany.",
   "Albert Einstein developed the theory of relativity.",
   "The theory of relativity revolutionized physics."
+]
+
+### Example 2
+Document:
+"William Shakespeare was a famous writer from England, known for his plays and poems. He wrote 39 plays, including Romeo and Juliet, Hamlet, and Macbeth. His stories explore feelings like love, power, and betrayal. Even today, people around the world still perform his plays, and many of his phrases are part of everyday speech."
+
+Output
+[
+  "Shakespeare wrote 39 plays and many poems.",
+  "Shakespeare famous works include Romeo and Juliet, Hamlet, and Macbeth.",
+  "Shakespeare plays are still performed today, and his phrases are widely used."
+]
+
+### Example 3
+Document:
+"Virginia Woolf was a famous English writer known for her unique style and powerful ideas. She wrote novels like Mrs. Dalloway and To the Lighthouse, exploring people’s inner thoughts and emotions. Woolf was also a strong voice for women’s rights, believing that women should have the freedom to write and live independently. Her work still inspires readers and writers today."
+
+Output
+[
+  "Virginia Woolf was a well-known English writer.",
+  "Virginia Woolf wrote famous books like Mrs. Dalloway and To the Lighthouse.",
+  "Virginia Woolf supported women’s rights and believed in women’s freedom to create and live independently."
+]
+
+### Example 4
+Document:
+"A Room of One's Own is a famous book by Virginia Woolf, based on a series of lectures she gave in 1928. It argues that women need money and a private space to write and create freely. Woolf explores how women were historically denied education and opportunities, which held back their voices in literature. The book remains an important work about women’s rights and creative freedom."
+
+Output
+[
+  "A Room of One's Own is a book by Virginia Woolf about women’s freedom to create.",
+  "Virginia Woolf argues that women need money and a private space to write in her book A Room of One's Own.",
+  "A Room of One's Own highlights how women were held back by a lack of education and opportunity"
 ]
 
 ###
