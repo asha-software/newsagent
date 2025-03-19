@@ -4,53 +4,49 @@ import os
 from langchain_core.messages import SystemMessage, BaseMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
-from typing import TypedDict
+from langgraph.graph.message import add_messages
+from typing import Annotated, TypedDict
 
 # Load environment variables
 load_dotenv('.env', override=True)
 
-# Define the LLM model to use
+# LLM Model
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 
-llm = ChatOllama(
-    model=MODEL,
-    temperature=TEMPERATURE,
-)
+llm = ChatOllama(model=MODEL, temperature=TEMPERATURE)
 
-# Define the State Object
+# State Object with explicit reducer
 class State(TypedDict):
-    messages: list[BaseMessage]
+    messages: Annotated[list[BaseMessage], add_messages]
     claims: list[str]
     labels: list[str]
     justifications: list[str]
     final_label: str | None
     final_justification: str | None
 
-# Nodes
+# Nodes definitions
 
-def prompt_prep_node(state: State) -> State:
+def prompt_prep_node(state: State) -> dict:
     with open("prompts/verdict_agent_system_prompt.txt", "r") as f:
         prompt_text = f.read()
 
     claim_analysis = "\n".join(
-        [f"Claim: {state['claims'][i]}\nVerdict: {state['labels'][i]}\nJustification: {state['justifications'][i]}\n"
-         for i in range(len(state["claims"]))]
+        f"Claim: {state['claims'][i]}\nVerdict: {state['labels'][i]}\nJustification: {state['justifications'][i]}"
+        for i in range(len(state["claims"]))
     )
 
-    formatted_prompt = prompt_text.format(
-        claim_analysis=claim_analysis
-    )
+    formatted_prompt = prompt_text.format(claim_analysis=claim_analysis)
 
-    messages = [SystemMessage(content=formatted_prompt)] + state["messages"]
+    # Return ONLY new messages
+    return {"messages": [SystemMessage(content=formatted_prompt)]}
 
-    return {**state, "messages": messages}
-
-def verdict_node(state: State) -> State:
+def verdict_node(state: State) -> dict:
     response = llm.invoke(state['messages'])
-    return {**state, "messages": state["messages"] + [response]}
+    # Return only newly generated message
+    return {"messages": [response]}
 
-def postprocessing_node(state: State) -> State:
+def postprocessing_node(state: State) -> dict:
     response_text = state["messages"][-1].content
     prompt = """Format the response into a JSON object with the following keys:
 {
@@ -71,14 +67,12 @@ Respond ONLY with the JSON object. No additional text.
         }
 
     return {
-        **state,
-        "messages": state["messages"] + [formatted_response],
+        "messages": [formatted_response],  # Only new message
         "final_label": results["final_label"],
         "final_justification": results["final_justification"]
     }
 
 # Graph
-
 builder = StateGraph(State)
 
 builder.add_node("prompt_prep", prompt_prep_node)
