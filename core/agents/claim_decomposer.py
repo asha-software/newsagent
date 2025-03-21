@@ -99,49 +99,9 @@ builder.add_edge("postprocessing", END)
 claim_decomposer = builder.compile()
 
 if __name__ == "__main__":
-    text_space = """
-    The Apollo 11 mission landed humans on the Moon for the first time on July 20, 1969. 
-    Neil Armstrong was the first person to walk on the lunar surface.
-    The mission was launched by NASA using a Saturn V rocket.
-    """
-    
-    text_historical = """
-    The Treaty of Versailles was signed on June 28, 1919, formally ending World War I. 
-    Germany was forced to accept responsibility for the war and pay reparations.
-    The treaty redrew national boundaries in Europe, creating new countries like Poland and Czechoslovakia.
-    President Woodrow Wilson represented the United States at the Paris Peace Conference.
-    """
-    
-    text_scientific = """
-    The Human Genome Project was completed in April 2003, two years ahead of schedule.
-    Scientists successfully mapped all 3 billion base pairs in human DNA.
-    The project cost approximately $3 billion and involved researchers from 20 institutions across 6 countries.
-    This breakthrough has led to advances in understanding genetic diseases and developing personalized medicine.
-    """
-    
-    text_entertainment = """
-    The first Academy Awards ceremony was held on May 16, 1929, at the Hollywood Roosevelt Hotel.
-    Only 270 people attended the first ceremony, and tickets cost $5 each.
-    The ceremony lasted only 15 minutes, and the awards were announced three months earlier.
-    "Wings" won the first Academy Award for Best Picture, while Emil Jannings and Janet Gaynor won the first acting awards.
-    """
-    
-    print("\nExample 1: Space Exploration")
-    result_space = claim_decomposer.invoke({'text': text_space})
-    for claim in result_space['claims']:
-        print(f"- {claim}")
-    
-    print("\nExample 2: Historical/Political")
-    result_historical = claim_decomposer.invoke({'text': text_historical})
-    for claim in result_historical['claims']:
-        print(f"- {claim}")
-    
-    print("\nExample 3: Scientific/Technological")
-    result_scientific = claim_decomposer.invoke({'text': text_scientific})
-    for claim in result_scientific['claims']:
-        print(f"- {claim}")
-    
-    print("\nExample 4: Sports/Entertainment")
-    result_entertainment = claim_decomposer.invoke({'text': text_entertainment})
-    for claim in result_entertainment['claims']:
+    # Example usage
+    text = "The Apollo 11 mission landed humans on the Moon for the first time on July 20, 1969."
+    result = claim_decomposer.invoke({'text': text})
+    print("Claims:")
+    for claim in result['claims']:
         print(f"- {claim}")

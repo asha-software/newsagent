@@ -12,15 +12,74 @@ Return your results as a JSON array of strings.
 Each string in the array must contain one factual claim.
 Do not include any additional text, explanations, or commentary—only the JSON array.
 
-### EXAMPLE:
+### EXAMPLES:
+
+Example 1: Scientific Biography
 Document:
 "Albert Einstein was born in Germany. He developed the theory of relativity, which revolutionized physics."
 
-Output
+Output:
 [
   "Albert Einstein was born in Germany.",
   "Albert Einstein developed the theory of relativity.",
   "The theory of relativity revolutionized physics."
+]
+
+Example 2: Space Exploration
+Document:
+"The Apollo 11 mission landed humans on the Moon for the first time on July 20, 1969. Neil Armstrong was the first person to walk on the lunar surface. The mission was launched by NASA using a Saturn V rocket."
+
+Output:
+[
+  "The Apollo 11 mission landed humans on the Moon for the first time on July 20, 1969.",
+  "Neil Armstrong was the first person to walk on the lunar surface.",
+  "The Apollo 11 mission was launched by NASA.",
+  "The Apollo 11 mission used a Saturn V rocket."
+]
+
+Example 3: Historical/Political
+Document:
+"The Treaty of Versailles was signed on June 28, 1919, formally ending World War I. Germany was forced to accept responsibility for the war and pay reparations. The treaty redrew national boundaries in Europe, creating new countries like Poland and Czechoslovakia."
+
+Output:
+[
+  "The Treaty of Versailles was signed on June 28, 1919.",
+  "The Treaty of Versailles formally ended World War I.",
+  "Germany was forced to accept responsibility for the war.",
+  "Germany was forced to pay reparations.",
+  "The treaty redrew national boundaries in Europe.",
+  "The treaty created new countries like Poland and Czechoslovakia."
+]
+
+Example 4: Scientific/Technological
+Document:
+"The Human Genome Project was completed in April 2003, two years ahead of schedule. Scientists successfully mapped all 3 billion base pairs in human DNA. The project cost approximately $3 billion and involved researchers from 20 institutions across 6 countries."
+
+Output:
+[
+  "The Human Genome Project was completed in April 2003.",
+  "The Human Genome Project was completed two years ahead of schedule.",
+  "Scientists successfully mapped all 3 billion base pairs in human DNA.",
+  "The project cost approximately $3 billion.",
+  "The project involved researchers from 20 institutions.",
+  "The project involved researchers from 6 countries."
+]
+
+Example 5: Entertainment/Sports
+Document:
+"The first Academy Awards ceremony was held on May 16, 1929, at the Hollywood Roosevelt Hotel. Only 270 people attended the first ceremony, and tickets cost $5 each. The ceremony lasted only 15 minutes, and the awards were announced three months earlier. 'Wings' won the first Academy Award for Best Picture, while Emil Jannings and Janet Gaynor won the first acting awards."
+
+Output:
+[
+  "The first Academy Awards ceremony was held on May 16, 1929.",
+  "The first Academy Awards ceremony was held at the Hollywood Roosevelt Hotel.",
+  "Only 270 people attended the first Academy Awards ceremony.",
+  "Tickets cost $5 each for the first Academy Awards ceremony.",
+  "The first Academy Awards ceremony lasted only 15 minutes.",
+  "The awards were announced three months earlier than the first ceremony.",
+  "'Wings' won the first Academy Award for Best Picture.",
+  "Emil Jannings won one of the first acting awards.",
+  "Janet Gaynor won one of the first acting awards."
 ]
 
 ###
