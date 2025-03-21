@@ -92,3 +92,7 @@ logs/
 tmp/
 temp/
 Thumbs.db
+
+# API Keys
+LANG_API=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
+TVLY_API=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
