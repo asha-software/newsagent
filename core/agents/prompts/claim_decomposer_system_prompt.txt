@@ -58,4 +58,37 @@ Output
   "A Room of One's Own highlights how women were held back by a lack of education and opportunity"
 ]
 
-###
+### Example 5
+Document:
+"Mount Everest is the tallest mountain in the world, standing at 8,848 meters above sea level. It is located in the Himalayas on the border between Nepal and China. Every year, hundreds of climbers attempt to reach its summit, despite the extreme weather and physical challenges."
+
+Output
+[
+  "Mount Everest is the tallest mountain in the world at 8,848 meters.",
+  "Mount Everest is located in the Himalayas on the border between Nepal and China.",
+  "Hundreds of climbers attempt to reach Mount Everest’s summit every year."
+]
+
+### Example 6
+Document:
+"The Great Wall of China stretches over 13,000 miles and was built to protect ancient Chinese states from invasions. Construction began as early as the 7th century BC. It remains one of the most visited landmarks in the world today."
+
+Output
+[
+  "The Great Wall of China stretches over 13,000 miles.",
+  "The Great Wall of China was built to protect ancient Chinese states from invasions.",
+  "Construction of the Great Wall began as early as the 7th century BC.",
+  "The Great Wall of China is one of the most visited landmarks in the world today."
+]
+
+### Example 7
+Document:
+"Marie Curie was a pioneering scientist who won Nobel Prizes in both Physics and Chemistry. She was the first woman to win a Nobel Prize, and the only person to win in two different sciences. Her research on radioactivity laid the foundation for modern nuclear physics."
+
+Output
+[
+  "Marie Curie won Nobel Prizes in both Physics and Chemistry.",
+  "Marie Curie was the first woman to win a Nobel Prize.",
+  "Marie Curie is the only person to win Nobel Prizes in two different sciences.",
+  "Marie Curie’s research on radioactivity laid the foundation for modern nuclear physics."
+]
