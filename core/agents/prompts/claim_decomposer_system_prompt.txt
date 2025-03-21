@@ -92,3 +92,60 @@ Output
   "Marie Curie is the only person to win Nobel Prizes in two different sciences.",
   "Marie Curie’s research on radioactivity laid the foundation for modern nuclear physics."
 ]
+
+### Example 8
+Document: 
+"Bananas grow on trees and are native to Europe. The Eiffel Tower is located in Berlin and was built in the 1800s. The Amazon River is the longest river in the world. Mount Kilimanjaro is in South America. Humans have five senses and over 200 bones. The sun revolves around the Earth. Jupiter is the smallest planet in the solar system. Penguins live at the North Pole. The Great Wall of China is visible from space. Water boils at 100°C at sea level."
+
+Output
+[
+  "Bananas grow on trees.",
+  "Bananas are native to Europe.",
+  "The Eiffel Tower is located in Berlin.",
+  "The Eiffel Tower was built in the 1800s.",
+  "The Amazon River is the longest river in the world.",
+  "Mount Kilimanjaro is in South America.",
+  "Humans have five senses.",
+  "Humans have over 200 bones.",
+  "The sun revolves around the Earth.",
+  "Jupiter is the smallest planet in the solar system.",
+  "Penguins live at the North Pole.",
+  "The Great Wall of China is visible from space.",
+  "Water boils at 100°C at sea level."
+]
+### Example 9
+Document: 
+"Barack Obama was the 44th President of the United States. He was born in Canada and served two terms in office. The capital of Australia is Sydney. Lightning never strikes the same place twice. The Pacific Ocean is the largest ocean on Earth. The Great Pyramid of Giza is over 4,000 years old. Tomatoes are vegetables. The Earth’s atmosphere contains oxygen. Shakespeare wrote 39 plays. Whales are mammals, not fish."
+
+Output
+[
+  "Barack Obama was the 44th President of the United States.",
+  "Barack Obama was born in Canada.",
+  "Barack Obama served two terms in office.",
+  "The capital of Australia is Sydney.",
+  "Lightning never strikes the same place twice.",
+  "The Pacific Ocean is the largest ocean on Earth.",
+  "The Great Pyramid of Giza is over 4,000 years old.",
+  "Tomatoes are vegetables.",
+  "The Earth’s atmosphere contains oxygen.",
+  "Shakespeare wrote 39 plays.",
+  "Whales are mammals, not fish."
+]
+
+###Example 10
+Document: 
+"Napoleon Bonaparte was defeated at the Battle of Waterloo in 1815. Gold is heavier than water. Bats are blind. The human brain uses only 10% of its capacity. Everest is the second tallest mountain in the world. The Sahara is the coldest desert. Mercury is the closest planet to the sun. The internet was invented in the 1990s. The Statue of Liberty was a gift from France. Dinosaurs lived during the Ice Age."
+
+Output
+[
+  "Napoleon Bonaparte was defeated at the Battle of Waterloo in 1815.",
+  "Gold is heavier than water.",
+  "Bats are blind.",
+  "The human brain uses only 10% of its capacity.",
+  "Mount Everest is the second tallest mountain in the world.",
+  "The Sahara is the coldest desert.",
+  "Mercury is the closest planet to the sun.",
+  "The internet was invented in the 1990s.",
+  "The Statue of Liberty was a gift from France.",
+  "Dinosaurs lived during the Ice Age."
+]
