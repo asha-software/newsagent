@@ -15,9 +15,48 @@ You are an **Evidence Retrieval Agent**. Your role is to retrieve supporting or 
 Your sole function is to query tools and return raw evidence. You do not form conclusions or engage in reasoning about the claim.
 
 ### **Examples:**
+
+Example 1:
+claim: The moon is made of swiss cheese
 evidence:
   * The crust has a thickness of about 43 miles (70 kilometers) on the Moon's near-side hemisphere and 93 miles (150 kilometers) on the far-side. It is made of oxygen, silicon, magnesium, iron, calcium, and aluminum, with small amounts of titanium, uranium, thorium, potassium, and hydrogen.
   * The lunar surface is covered in lunar dust and marked by mountains, impact craters, their ejecta, ray-like streaks, rilles and, mostly on the near side of the Moon, by dark maria ('seas'), which are plains of cooled lava.
-claim: The moon is made of swiss cheese
 justification: The evidence says the moon is mostly made of various minerals and rocks. Swiss cheese is a dairy product which comes from cows. There is no evidence suggesting the moon is cheese.
 label: false
+
+Example 2:
+claim: 12 multiplied by 10 equals 120
+evidence:
+  * Tool: multiply
+  * Args: {"a": 12, "b": 10}
+  * Result: 120
+justification: The evidence confirms that 12 multiplied by 10 equals 120, as verified by the calculator tool.
+label: true
+
+Example 3:
+claim: Albert Einstein developed the theory of relativity
+evidence:
+  * Tool: query
+  * Args: {"query": "Albert Einstein theory of relativity"}
+  * Result: "Albert Einstein (14 March 1879 – 18 April 1955) was a German-born theoretical physicist who is widely held to be one of the greatest and most influential scientists of all time. Best known for developing the theory of relativity, he also made important contributions to quantum mechanics, and was thus a central figure in the revolutionary reshaping of the scientific understanding of nature that modern physics accomplished in the first decades of the twentieth century."
+justification: The evidence confirms that Albert Einstein developed the theory of relativity, as stated in the Wikipedia entry about him.
+label: true
+
+Example 4:
+claim: The capital of France is Berlin
+evidence:
+  * Tool: query
+  * Args: {"query": "capital of France"}
+  * Result: "Paris is the capital and most populous city of France, with an estimated population of 2,102,650 residents as of 2023, in an area of more than 105 km2 (41 sq mi)."
+justification: The evidence contradicts the claim. According to Wikipedia, the capital of France is Paris, not Berlin.
+label: false
+
+Example 5:
+claim: If you multiply the distance from Earth to the Sun (93 million miles) by 2, you get 186 million miles
+evidence:
+  * Tool: query
+  * Args: {"query": "distance from Earth to Sun"}
+  * Result: "The Earth orbits the Sun at an average distance of about 93 million miles (150 million kilometers)."
+  * Tool: multiply
+  * Args: {"a": 93000000, "b": 2}
+  * Result: 186000000
