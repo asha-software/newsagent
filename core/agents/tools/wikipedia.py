@@ -6,7 +6,7 @@ LANGUAGE = 'en'
 USER_AGENT = user_agent = 'newsagent/1.0 (https://ashasoftware.com/newsagent; info@ashasoftware.com)'
 
 
-def query(query: str) -> str:
+def wikipedia(query: str) -> str:
     """
     This function queries Wikipedia. Use it to retrieve information about historical events or common knowledge.
 
@@ -28,5 +28,5 @@ def query(query: str) -> str:
 
 
 if __name__ == "__main__":
-    result = query_wikipedia("Python (programming language)")
+    result = wikipedia("Python (programming language)")
     print(result)

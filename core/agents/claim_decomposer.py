@@ -97,3 +97,11 @@ builder.add_edge("assistant", "postprocessing")
 builder.add_edge("postprocessing", END)
 
 claim_decomposer = builder.compile()
+
+if __name__ == "__main__":
+    # Example usage
+    text = "The Apollo 11 mission landed humans on the Moon for the first time on July 20, 1969."
+    result = claim_decomposer.invoke({'text': text})
+    print("Claims:")
+    for claim in result['claims']:
+        print(f"- {claim}")
