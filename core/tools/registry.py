@@ -1,20 +1,20 @@
 import requests
 
 
-class RegisteredTool():
-    def __init__(self,
-                 name: str,
-                 description: str,  # i.e. the function docstring, instructs the agent how to use it
-                 endpoint: str,
-                 api_key: str = None,  # optional key for authentication if needed
-                 http_method: str = "POST",
-                 query_params: dict = None,
-                 body_format: str = "json",
-
-                 # optional: only return specified fields from API response
-                 return_fields: list = None,
-                 # TODO: make this more elegant like a Pydantic model or 2d list or something to handle nested properties and array indices
-                 ):
+class RegisteredTool:
+    def __init__(
+        self,
+        name: str,
+        description: str,  # i.e. the function docstring, instructs the agent how to use it
+        endpoint: str,
+        api_key: str = None,  # optional key for authentication if needed
+        http_method: str = "POST",
+        query_params: dict = None,
+        body_format: str = "json",
+        # optional: only return specified fields from API response
+        return_fields: list = None,
+        # TODO: make this more elegant like a Pydantic model or 2d list or something to handle nested properties and array indices
+    ):
         self.name = name
         self.description = description
         self.endpoint = endpoint
@@ -26,8 +26,9 @@ class RegisteredTool():
 
     def __repr__(self):
         s = f"Tool(name={self.name}, description={self.description}, endpoint={self.endpoint}"
-        s += (", return_fields=" + str(self.return_fields)
-              ) if self.return_fields else ""
+        s += (
+            (", return_fields=" + str(self.return_fields)) if self.return_fields else ""
+        )
         return s + ")"
 
     def __filter_response(self, response_data: dict):
@@ -80,7 +81,7 @@ def main():
         # Example API endpoint (replace with actual)
         endpoint="https://pokeapi.co/api/v2/pokemon/pikachu",
         http_method="GET",
-        return_fields=['weight', 'location_area_encounters']
+        return_fields=["weight", "location_area_encounters"],
     )
     print(f"poketool: {poketool}")
 

@@ -1,4 +1,3 @@
-
 from pprint import pprint
 from IPython.display import Image, display
 from dotenv import load_dotenv
@@ -6,7 +5,13 @@ import importlib
 import os
 import sys
 
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage, SystemMessage
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    ToolMessage,
+    SystemMessage,
+)
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
@@ -14,8 +19,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict
 
 # Add project root to Python path
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../.."))
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
@@ -25,13 +29,13 @@ import core.tools.registry
 
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
-load_dotenv('../.env', override=True)
+load_dotenv("../.env", override=True)
 PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
-    'core.tools.builtins.calculator': ['multiply', 'add', 'divide'],
-    'core.tools.builtins.wikipedia': ['query']
+    "core.tools.builtins.calculator": ["multiply", "add", "divide"],
+    "core.tools.builtins.wikipedia": ["query"],
 }
 
 
@@ -53,13 +57,17 @@ def import_function(module_name, function_name):
         print(f"I'm in cwd: {os.getcwd()}")
         print(f"Available modules: {os.listdir(os.getcwd())}")
         print(
-            f"Error: Could not import function '{function_name}' from module '{module_name}'.")
+            f"Error: Could not import function '{function_name}' from module '{module_name}'."
+        )
         print(f"Exception: {e}")
         return None
 
 
-tools = [import_function(module, function) for module,
-         functions in TOOL_REGISTRY.items() for function in functions]
+tools = [
+    import_function(module, function)
+    for module, functions in TOOL_REGISTRY.items()
+    for function in functions
+]
 
 
 llm = ChatOllama(
@@ -76,7 +84,7 @@ class State(TypedDict):
     evidence: list[dict]
 
 
-with open('prompts/research_agent_system_prompt.txt', 'r') as f:
+with open("prompts/research_agent_system_prompt.txt", "r") as f:
     sys_msg = SystemMessage(content=f.read())
 
 
@@ -86,12 +94,12 @@ def preprocessing(state: State):
     Currently, this just extracts the claim from the state and sets it as a HumanMessage
     following the SystemMessage
     """
-    state['messages'] = [sys_msg, HumanMessage(content=state['claim'])]
+    state["messages"] = [sys_msg, HumanMessage(content=state["claim"])]
     return state
 
 
 def assistant(state: State) -> State:
-    response = llm.invoke(state['messages'])
+    response = llm.invoke(state["messages"])
     return {"messages": response}
 
 
@@ -102,22 +110,28 @@ def postprocessing(state: State) -> State:
     """
 
     evidence = []
-    for i in range(len(state['messages'])):
-        message = state['messages'][i]
-        if isinstance(message, AIMessage) and hasattr(message, 'tool_calls'):
+    for i in range(len(state["messages"])):
+        message = state["messages"][i]
+        if isinstance(message, AIMessage) and hasattr(message, "tool_calls"):
             for tool_call in message.tool_calls:
                 # Scan later messages for the corresponding ToolMessage
-                for j in range(i + 1, len(state['messages'])):
-                    next_message = state['messages'][j]
-                    if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
+                for j in range(i + 1, len(state["messages"])):
+                    next_message = state["messages"][j]
+                    if (
+                        isinstance(next_message, ToolMessage)
+                        and next_message.tool_call_id == tool_call["id"]
+                    ):
                         # Found the corresponding ToolMessage
-                        evidence.append({
-                            'name': tool_call['name'],
-                            'args': tool_call['args'],
-                            'result': next_message.content})
+                        evidence.append(
+                            {
+                                "name": tool_call["name"],
+                                "args": tool_call["args"],
+                                "result": next_message.content,
+                            }
+                        )
                         break
 
-    return {'evidence': evidence}
+    return {"evidence": evidence}
     # return state
 
 
@@ -136,7 +150,7 @@ builder.add_edge("preprocessing", "assistant")
 builder.add_conditional_edges(
     source="assistant",
     path=tools_condition,
-    path_map={'tools': 'tools', '__end__': 'postprocessing'}
+    path_map={"tools": "tools", "__end__": "postprocessing"},
 )
 builder.add_edge("tools", "assistant")
 builder.add_edge("postprocessing", END)

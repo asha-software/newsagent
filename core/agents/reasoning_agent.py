@@ -12,7 +12,7 @@ from typing import Annotated, Literal, TypedDict
 
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
-load_dotenv('.env', override=True)
+load_dotenv(".env", override=True)
 
 
 class State(TypedDict):
@@ -26,15 +26,10 @@ class State(TypedDict):
 LLM_OUTPUT_FORMAT = {
     "type": "object",
     "properties": {
-        "label": {
-            "type": "string",
-            "enum": ["true", "false", "unknown"]
-        },
-        "justification": {
-            "type": "string"
-        }
+        "label": {"type": "string", "enum": ["true", "false", "unknown"]},
+        "justification": {"type": "string"},
     },
-    "required": ["label", "justification"]
+    "required": ["label", "justification"],
 }
 
 llm = ChatOllama(
@@ -62,12 +57,12 @@ def preprocessing(state: State) -> State:
     formatted_prompt = system_prompt.format(evidence=evidence_str)
 
     # Set system and human messages in the state
-    state['messages'] = [SystemMessage(content=formatted_prompt)]
-    return {'messages': HumanMessage(content=state['claim'])}
+    state["messages"] = [SystemMessage(content=formatted_prompt)]
+    return {"messages": HumanMessage(content=state["claim"])}
 
 
 def assistant(state: State) -> State:
-    response = llm.invoke(state['messages'])
+    response = llm.invoke(state["messages"])
     return {"messages": response}
 
 
@@ -75,7 +70,7 @@ def postprocessing(state: State) -> State:
     """
     #TODO: migrate the postprocessing logic to Pydantic/Langchain
     """
-    reasoning = state['messages'][-1].content
+    reasoning = state["messages"][-1].content
 
     try:
         # Try to parse the reasoning as JSON
@@ -84,8 +79,8 @@ def postprocessing(state: State) -> State:
         print(f"JSONDecodeError: {e}")
         print(f"Reasoning content: {reasoning}")
 
-    label = formatted_reasoning['label']
-    justification = formatted_reasoning['justification']
+    label = formatted_reasoning["label"]
+    justification = formatted_reasoning["justification"]
     return {"label": label, "justification": justification}
 
 

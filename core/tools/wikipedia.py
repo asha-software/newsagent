@@ -2,8 +2,10 @@
 
 import wikipediaapi
 
-LANGUAGE = 'en'
-USER_AGENT = user_agent = 'newsagent/1.0 (https://ashasoftware.com/newsagent; info@ashasoftware.com)'
+LANGUAGE = "en"
+USER_AGENT = user_agent = (
+    "newsagent/1.0 (https://ashasoftware.com/newsagent; info@ashasoftware.com)"
+)
 
 
 def query(query: str) -> str:
@@ -16,8 +18,7 @@ def query(query: str) -> str:
     Returns:
         str: The summary of the Wikipedia page.
     """
-    wiki_wiki = wikipediaapi.Wikipedia(
-        user_agent=USER_AGENT, language=LANGUAGE)
+    wiki_wiki = wikipediaapi.Wikipedia(user_agent=USER_AGENT, language=LANGUAGE)
     page = wiki_wiki.page(query)
 
     if page.exists():

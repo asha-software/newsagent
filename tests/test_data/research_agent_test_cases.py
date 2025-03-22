@@ -10,17 +10,20 @@ TOOL_USAGE_TEST_CASES = [
     {
         "claim": "12 multiplied by 10 equals 120",
         "expected_tools": ["multiply"],
-        "description": "Calculator tool should be used for mathematical claims." + DETAIL_MESSAGE
+        "description": "Calculator tool should be used for mathematical claims."
+        + DETAIL_MESSAGE,
     },
     {
         "claim": "Albert Einstein developed the theory of relativity",
         "expected_tools": ["query"],
-        "description": "Wikipedia tool should be used for historical claims." + DETAIL_MESSAGE
+        "description": "Wikipedia tool should be used for historical claims."
+        + DETAIL_MESSAGE,
     },
     {
         "claim": "The capital of France is Berlin",
         "expected_tools": ["query"],
-        "description": "Wikipedia tool should be used for geographical claims." + DETAIL_MESSAGE
+        "description": "Wikipedia tool should be used for geographical claims."
+        + DETAIL_MESSAGE,
     },
     # Add more test cases here
 ]
