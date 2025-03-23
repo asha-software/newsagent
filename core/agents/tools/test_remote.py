@@ -1,4 +1,5 @@
-from remote_tool import RemoteTool
+# Use absolute import
+from core.agents.tools.remote_tool import create_remote_tool, get_available_methods, get_method_info
 
 MOCK_METHODS = {
     "get_article": {
@@ -13,23 +14,30 @@ MOCK_METHODS = {
     }
 }
 
-def test_mock_mode():
-    """Test RemoteTool in mock mode"""
-    print("\nTesting Mock Mode")
+def test_function_based_approach():
+    """Test the function-based approach"""
+    print("\nTesting Function-Based Approach")
     
-    tool = RemoteTool(
+    # Create a tool instance using the function-based approach
+    tool_instance = create_remote_tool(
         name="NewsAPI",
         url="https://example.com/api",
         api_key="test_key",
         mock=True,
         mock_methods=MOCK_METHODS
     )
-
-    methods = tool.get_available_methods()
+    
+    # Get available methods
+    methods = get_available_methods()
     print(f"Available methods: {methods}")
-
-    result = tool.use_tool("get_article", ["https://example.com/sample-article"])
+    
+    # Get method info
+    method_info = get_method_info("get_article")
+    print(f"Method info: {method_info}")
+    
+    # Use the tool
+    result = tool_instance.use_tool("get_article", ["https://example.com/sample-article"])
     print(f"Method result: {result}")
 
 if __name__ == "__main__":
-    test_mock_mode()
+    test_function_based_approach()
