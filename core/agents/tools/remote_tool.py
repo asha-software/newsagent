@@ -120,26 +120,14 @@ def remote_tool(url: str) -> dict:
     
     Args:
         url: URL of the news article to retrieve information about
+        
+    Returns:
+        Dictionary containing article information
     """
-    mock_methods = {
-        "get_article": {
-            "description": "Get information about a news article",
-            "input_types": [str],  # URL
-            "mock_response": {
-                "title": "News Article",
-                "author": "John Doe",
-                "published_date": "2025-03-22",
-                "content": "This is an example news article content."
-            }
-        }
+    # Define the mock response directly
+    return {
+        "title": "News Article",
+        "author": "John Doe",
+        "published_date": "2025-03-22",
+        "content": "This is an example news article content."
     }
-    
-    tool_instance = create_remote_tool(
-        name="NewsAPI",
-        url="https://example.com/api",
-        api_key="test_key",
-        mock=True,
-        mock_methods=mock_methods
-    )
-    
-    return tool_instance.use_tool("get_article", [url])

@@ -10,12 +10,10 @@ RemoteTool allows you to:
 - Use mock responses for testing
 - Make real API calls in production
 
-## Usage Example
-
-Here's how to create and use a RemoteTool for a weather API:
+## Function-Based API
 
 ```python
-from core.agents.tools.remote_tool import RemoteTool
+from core.agents.tools.remote_tool import create_remote_tool, get_available_methods, get_method_info
 
 # Define methods for the weather API
 weather_methods = {
@@ -40,7 +38,7 @@ weather_methods = {
 }
 
 # Create the tool (mock mode for testing)
-weather_tool = RemoteTool(
+weather_tool = create_remote_tool(
     name="WeatherAPI",
     url="https://api.weather.example.com",
     api_key="abc123",
@@ -55,8 +53,16 @@ print(current)  # {"temperature": 22, "conditions": "Sunny", "humidity": 45}
 forecast = weather_tool.use_tool("get_forecast", ["New York"])
 print(forecast[0])  # {"day": "Monday", "high": 24, "low": 18, "conditions": "Sunny"}
 
+# Get available methods
+methods = get_available_methods()
+print(methods)  # ["get_current_weather", "get_forecast"]
+
+# Get method info
+method_info = get_method_info("get_current_weather")
+print(method_info["description"])  # "Get current weather for a location"
+
 # For production use, switch to real API mode
-production_tool = RemoteTool(
+production_tool = create_remote_tool(
     name="WeatherAPI",
     url="https://api.weather.example.com",
     api_key="REAL_API_KEY",
@@ -67,31 +73,29 @@ production_tool = RemoteTool(
 
 ## How It Works
 
-1. When initialized, RemoteTool calls `_setup_methods()` with the provided methods
-2. For each method, `_register_method()` is called to:
-   - Store method information
-   - Create a function that handles the method call
-   - Register the function with the tool system
-
+1. When initialized, RemoteTool registers the provided methods
+2. For each method, a function is created that handles the method call
 3. When `use_tool()` is called:
    - In mock mode: Returns the pre-defined mock response
    - In real mode: Makes an HTTP request to the API endpoint
 
 ## API Reference
 
-### RemoteTool Constructor
-
 ```python
-RemoteTool(
+create_remote_tool(
     name: str,           # Name of the tool
     url: str,            # Base URL for the API
     api_key: str = None, # API key (optional)
     mock: bool = True,   # Whether to use mock mode
     mock_methods: Dict[str, Any] = None  # Method definitions
-)
+) -> tool
+
+get_available_methods() -> List[str]  # Get list of available methods
+
+get_method_info(method_name: str) -> Dict[str, Any]  # Get info about a method
 ```
 
-### Method Definition Format
+## Method Definition Format
 
 ```python
 {

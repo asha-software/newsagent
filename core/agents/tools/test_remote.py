@@ -1,4 +1,3 @@
-# Use absolute import
 from core.agents.tools.remote_tool import create_remote_tool, get_available_methods, get_method_info
 
 MOCK_METHODS = {
