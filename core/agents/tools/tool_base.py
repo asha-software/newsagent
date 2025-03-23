@@ -39,16 +39,11 @@ class tool:
             tool_function_descriptor: tool_function = self.registered_tools[tool_name]
             if len(query_arguments) != tool_function_descriptor.input_length:
                 print(
-                    f"Input length mismatch error! Given input ${query_arguments} does not match expected length ${tool_function_descriptor.input_length} for types ${tool_function_descriptor.input_types}"
+                    f"Input length mismatch error! Given input {query_arguments} does not match expected length {tool_function_descriptor.input_length} for types {tool_function_descriptor.input_types}"
                 )
-                return
-            for iterator in range(tool_function_descriptor.input_length):
-                if issubclass(
-                    tool_function_descriptor.input_types[iterator],
-                    query_arguments[iterator],
-                ):
-                    print(
-                        f"Input length mismatch error! Given input ${query_arguments} does not match expected types ${tool_function_descriptor.input_types}"
-                    )
-                    return
+                return None
+            
             return tool_function_descriptor.action(*query_arguments)
+        else:
+            print(f"Tool '{tool_name}' not found. Available tools: {list(self.registered_tools.keys())}")
+            return None
