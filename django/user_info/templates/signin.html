@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asha Software | Login</title>
+    {% load static %}
+    <!-- Load CSS files -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/fontawesome-all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/iofrm-style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/iofrm-theme28.css' %}">
+</head>
+<body>
+    <div class="form-body">
+        <div class="website-logo">
+            <a href="{% url 'home' %}">
+                <div class="logo">
+                    <img class="logo-size" src="{% static 'images/logo-light.svg' %}" alt="">
+                </div>
+            </a>
+        </div>
+        <div class="iofrm-layout">
+            <div class="img-holder">
+                <div class="bg"></div>
+                <div class="info-holder">
+
+                </div>
+            </div>
+            <div class="form-holder">
+                <div class="form-content">
+                    <div class="form-items">
+                        <h3>Fact Verification System.</h3>
+                        <p>Access to the most powerful tool to fact-check your query.</p>
+                        <div class="page-links">
+                            <a href="{% url 'signin' %}" class="active">Login</a><a href="{% url 'signup' %}">Register</a>
+                        </div>
+                        <form action="{% url 'signin' %}" method="POST">
+                            {% csrf_token %}
+                            {% if error %}
+                            <div class="alert alert-danger">
+                                {{ error }}
+                            </div>
+                            {% endif %}
+                            {% if success %}
+                            <div class="alert alert-success">
+                                {{ success }}
+                            </div>
+                            {% endif %}
+                            <input class="form-control" type="text" name="user_name" placeholder="Username" required>
+                            <input class="form-control" type="password" name="password" placeholder="Password" required>
+                            <div class="form-button">
+                                <button id="submit" type="submit" class="ibtn">Login</button> <a href="{% url 'forgot' %}">Forget password?</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<script src="{% static 'js/popper.min.js' %}"></script>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>
