@@ -25,10 +25,28 @@ class tool:
 
     def register_tool_function(
         self,
-        action: Callable,
+        input_types=None,
+        action: Callable = None,
+        description: str = None,
     ):
-        tool_function_name = action.__name__
-        self.registered_tools[tool_function_name] = tool_function(action)
+        # Handle both the old and new calling conventions
+        if action is None and isinstance(input_types, Callable):
+            # Old style: register_tool_function(action)
+            action = input_types
+            tool_function_name = action.__name__
+            self.registered_tools[tool_function_name] = tool_function(action)
+        else:
+            # New style: register_tool_function(input_types, action, description)
+            tool_function_name = action.__name__
+            # Create a tool_function instance manually
+            tf = tool_function(action)
+            # Override the attributes if provided
+            if input_types is not None:
+                tf.input_types = input_types
+                tf.input_length = len(input_types)
+            if description is not None:
+                tf.description = description
+            self.registered_tools[tool_function_name] = tf
 
     def use_tool(self, tool_name, query_arguments: collections.abc.Sequence) -> Any:
         if tool_name in self.registered_tools:

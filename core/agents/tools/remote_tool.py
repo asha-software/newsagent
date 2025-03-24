@@ -2,10 +2,11 @@ import json
 import requests
 from typing import Dict, Any, List
 from core.agents.tools.tool_base import tool
+from langchain_core.tools import tool as langchain_tool
 
 _available_methods = {}
 
-def create_remote_tool(name: str, url: str, api_key: str = None, mock: bool = True, mock_methods: Dict[str, Any] = None) -> tool:
+def create_remote_tool(name: str, url: str, api_key: str = None, mock: bool = True, mock_methods: Dict[str, Any] = None, use_langchain: bool = False):
     """
     Create a remote tool that connects to a remote API endpoint.
     
@@ -15,6 +16,7 @@ def create_remote_tool(name: str, url: str, api_key: str = None, mock: bool = Tr
         api_key: API key for authentication (optional)
         mock: Whether to use mock data (True) or make real API calls (False)
         mock_methods: Dictionary of mock methods and their responses (required if mock=True)
+        use_langchain: Whether to return a langchain Tool (True) or a custom tool (False)
         
     Returns:
         A tool instance configured with the specified methods
@@ -22,12 +24,18 @@ def create_remote_tool(name: str, url: str, api_key: str = None, mock: bool = Tr
     if mock and not mock_methods:
         raise ValueError("mock_methods must be provided when mock=True")
     
-    remote_tool_instance = tool(name)
-    
-    if mock_methods:
-        setup_methods(remote_tool_instance, url, api_key, mock, mock_methods)
-    
-    return remote_tool_instance
+    if use_langchain:
+        # For langchain compatibility, return the remote_tool function directly
+        # This allows it to be used with langchain agents
+        return remote_tool
+    else:
+        # For custom tool usage, return a tool instance
+        remote_tool_instance = tool(name)
+        
+        if mock_methods:
+            setup_methods(remote_tool_instance, url, api_key, mock, mock_methods)
+        
+        return remote_tool_instance
 
 def setup_methods(tool_instance: tool, url: str, api_key: str, mock: bool, mock_methods: Dict[str, Any]):
     """
@@ -82,11 +90,16 @@ def register_method(tool_instance: tool, method_name: str, method_info: Dict[str
     method_function.__doc__ = method_info["description"]
     method_function.__name__ = method_name
     
+    # Register with the custom tool system
     tool_instance.register_tool_function(
         method_info["input_types"],
         method_function,
         method_info["description"]
     )
+    
+    # Also make it available as a standalone function that can be used with langchain
+    # This is done by adding it to the global namespace with the langchain_tool decorator
+    globals()[method_name] = langchain_tool(description=method_info["description"])(method_function)
 
 def get_available_methods() -> List[str]:
     """
@@ -115,7 +128,8 @@ def get_method_info(method_name: str) -> Dict[str, Any]:
         return _available_methods[method_name]
     return {"error": f"Method '{method_name}' not found"}
 
-def remote_tool(url: str) -> dict:
+# Function that can be used with both the @langchain_tool decorator and langchain.agents.Tool
+def remote_tool_func(url: str) -> dict:
     """Get information about a news article from a URL.
     
     Args:
@@ -131,3 +145,9 @@ def remote_tool(url: str) -> dict:
         "published_date": "2025-03-22",
         "content": "This is an example news article content."
     }
+
+# Decorated version for use with langchain_core.tools
+@langchain_tool(description="Get information about a news article from a URL")
+def remote_tool(url: str) -> dict:
+    """Get information about a news article from a URL."""
+    return remote_tool_func(url)
