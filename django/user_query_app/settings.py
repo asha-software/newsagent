@@ -84,7 +84,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": os.getenv("DB_NAME", "fakenews_db"),
         "USER": os.getenv("DB_USER", "fakenews_user"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "your_password"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "password"),
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": 3306,
     }

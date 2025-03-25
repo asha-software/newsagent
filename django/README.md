@@ -25,12 +25,12 @@ CREATE DATABASE fakenews_db;
 ### Step 2: Create Database User
 
 ```sql
-CREATE USER 'fakenews_user' IDENTIFIED BY 'your_password';
+CREATE USER 'fakenews_user' IDENTIFIED BY 'password';
 GRANT ALL PRIVILEGES ON fakenews_db.* TO 'fakenews_user';
 FLUSH PRIVILEGES;
 ```
 
-*Replace `fakenews_db`, `fakenews_user`, and `your_password` as needed.*
+*Replace `fakenews_db`, `fakenews_user`, and `password` as needed.*
 
 ### Step 3: Configure Django Settings
 
@@ -42,7 +42,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "fakenews_db",
         "USER": "fakenews_user",
-        "PASSWORD": "your_password",
+        "PASSWORD": "password",
     }
 }
 ```
