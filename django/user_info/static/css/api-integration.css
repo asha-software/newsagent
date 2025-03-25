@@ -1,0 +1,85 @@
+/* Loading spinner */
+.loading {
+  text-align: center;
+  padding: 20px;
+}
+
+.spinner {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #007bff;
+  animation: spin 1s ease-in-out infinite;
+  margin-top: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Results styling */
+.result-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  padding: 20px;
+  position: relative;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.result-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: #333;
+  flex: 1;
+}
+
+.result-icon {
+  width: 30px;
+  height: 30px;
+  margin-left: 15px;
+}
+
+.result-content {
+  color: #555;
+  line-height: 1.6;
+}
+
+.result-source {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #777;
+}
+
+.result-source a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.result-source a:hover {
+  text-decoration: underline;
+}
+
+.no-results, .error {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.error {
+  color: #721c24;
+  background-color: #f8d7da;
+}

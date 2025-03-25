@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-fakenews_db}
+      MYSQL_USER: ${MYSQL_USER:-fakenews_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Web Application
+  django:
+    build:
+      context: ./django
+      dockerfile: Dockerfile
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB_HOST=${DB_HOST:-db}
+      - DB_NAME=${DB_NAME:-fakenews_db}
+      - DB_USER=${DB_USER:-fakenews_user}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - API_URL=${API_URL:-http://api:8000}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./django:/app
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+
+  # FastAPI Application
+  api:
+    build:
+      context: ./core
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./core:/app
+
+volumes:
+  mysql_data:
