@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
 def signin(request): 
     if request.user.is_authenticated:
@@ -66,11 +67,17 @@ def search(request):
         # Get the search query
         query = request.POST.get('search')
         
-        # If any query is submitted, show the gold price content
+        # If any query is submitted, show the results section
         if query:
             show_results = True
+    
+    # Pass API_URL from settings to the template
+    context = {
+        'show_results': show_results,
+        'API_URL': settings.API_URL
+    }
         
-    return render(request, 'search.html', {'show_results': show_results})  # Render the search page with context
+    return render(request, 'search.html', context)  # Render the search page with context
 
 def forgot_password_view(request):
     return render(request, 'forgot.html')  # Render the forgot password page

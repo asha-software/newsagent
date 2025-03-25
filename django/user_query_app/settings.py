@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +30,7 @@ SECRET_KEY = "django-insecure-*^48$l3*)32zqcv&)h+0r*2cnf4u=l#et9sa95c)7txun*+y%p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 
 
 # Application definition
@@ -77,10 +82,10 @@ WSGI_APPLICATION = "user_query_app.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "fakenews_db",
-        "USER": "fakenews_user",
-        "PASSWORD": "your_password",
-        "HOST": "localhost",
+        "NAME": os.getenv("DB_NAME", "fakenews_db"),
+        "USER": os.getenv("DB_USER", "fakenews_user"),
+        "PASSWORD": os.getenv("DB_PASSWORD", "your_password"),
+        "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": 3306,
     }
 }
@@ -121,8 +126,12 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "user_info/static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 LOGIN_URL = 'signin'  # Redirect to sign-in page for unauthenticated users
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# API URL for FastAPI service
+API_URL = os.getenv("API_URL", "http://localhost:8001")

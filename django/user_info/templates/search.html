@@ -7,6 +7,7 @@
     <meta name="author" content="colorlib.com">
     <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/api-integration.css' %}">
   </head>
   <body>
     <div class="s006">
@@ -59,16 +60,11 @@
         
         {% if show_results %}
         <div class="search-results">
-          <div class="result-card">
-            <div class="result-header">
-              <h2>Gold Prices Surge Amid Economic Uncertainty</h2>
-              <img src="{% static 'images/yes.png' %}" alt="Yes" class="result-icon">
-            </div>
-            <div class="result-content">
-              <p>The going price for New York spot gold closed Thursday at record $2,988 per troy ounce — the standard for measuring precious metals, which is equivalent to 31 grams — per FactSet. That's over $825 higher than gold's spot price one year ago.
-                Gold futures surpassed the $3,000 mark Thursday. But as of Friday afternoon, fell to just over $2,994.</p>
-            </div>
-            <div class="result-source">Source: <a href="https://apnews.com/article/gold-price-record-high-economic-uncertainty-59ef0a740910042f488609ff471b4334" target="_blank">AP News</a></div>
+          <div id="loading" class="loading">
+            <p>Analyzing your query...</p>
+            <div class="spinner"></div>
+          </div>
+          <div id="results-container" style="display: none;">
           </div>
         </div>
         {% endif %}
@@ -78,6 +74,113 @@
   document.getElementById('search').addEventListener('focus', function() {
     this.value = '';
   });
+
+  // When the form is submitted
+  document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const searchQuery = document.getElementById('search').value.trim();
+    if (!searchQuery) return;
+    
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('results-container').style.display = 'none';
+
+    const selectedSources = Array.from(document.querySelectorAll('input[name="source"]:checked'))
+      .map(checkbox => checkbox.value);
+
+    fetch('{{ API_URL }}/query', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        body: searchQuery,
+        sources: selectedSources
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      document.getElementById('loading').style.display = 'none';
+
+      const resultsContainer = document.getElementById('results-container');
+      resultsContainer.style.display = 'block';
+      resultsContainer.innerHTML = '';
+
+      data.forEach(result => {
+        const resultCard = document.createElement('div');
+        resultCard.className = 'result-card';
+        
+        const header = document.createElement('div');
+        header.className = 'result-header';
+        
+        const title = document.createElement('h2');
+        title.textContent = result.claim || 'Claim Analysis';
+        
+        const icon = document.createElement('img');
+        icon.src = result.verdict === 'true' ? 
+          "{% static 'images/yes.png' %}" : 
+          "{% static 'images/no.png' %}";
+        icon.alt = result.verdict === 'true' ? 'True' : 'False';
+        icon.className = 'result-icon';
+        
+        header.appendChild(title);
+        header.appendChild(icon);
+        
+        const content = document.createElement('div');
+        content.className = 'result-content';
+        
+        const reasoning = document.createElement('p');
+        reasoning.textContent = result.reasoning || 'No reasoning provided';
+        content.appendChild(reasoning);
+        
+        if (result.sources && result.sources.length > 0) {
+          const sourceDiv = document.createElement('div');
+          sourceDiv.className = 'result-source';
+          sourceDiv.textContent = 'Sources: ';
+          
+          result.sources.forEach((source, index) => {
+            const sourceLink = document.createElement('a');
+            sourceLink.href = source.url;
+            sourceLink.target = '_blank';
+            sourceLink.textContent = source.name || `Source ${index + 1}`;
+            
+            sourceDiv.appendChild(sourceLink);
+            
+            if (index < result.sources.length - 1) {
+              sourceDiv.appendChild(document.createTextNode(', '));
+            }
+          });
+          
+          resultCard.appendChild(sourceDiv);
+        }
+        
+        resultCard.appendChild(header);
+        resultCard.appendChild(content);
+        
+        resultsContainer.appendChild(resultCard);
+      });
+      
+      if (data.length === 0) {
+        const noResults = document.createElement('div');
+        noResults.className = 'no-results';
+        noResults.textContent = 'No results found for your query.';
+        resultsContainer.appendChild(noResults);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      document.getElementById('loading').style.display = 'none';
+      
+      const resultsContainer = document.getElementById('results-container');
+      resultsContainer.style.display = 'block';
+      resultsContainer.innerHTML = '<div class="error">Error processing your request. Please try again.</div>';
+    });
+  });
 </script>
-</body><!-- This templates was made by Colorlib (https://colorlib.com) -->
+</body>
 </html>
