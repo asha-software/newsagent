@@ -1,6 +1,3 @@
-
-from pprint import pprint
-from IPython.display import Image, display
 from dotenv import load_dotenv
 import importlib
 import os
@@ -20,7 +17,6 @@ if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
 # TODO: implement specific functions, or better yet check which functions the user wants then dynamically import those
-import core.tools.registry
 
 
 MODEL = "mistral-nemo"
@@ -30,8 +26,8 @@ PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
-    'core.tools.builtins.calculator': ['multiply', 'add', 'divide'],
-    'core.tools.builtins.wikipedia': ['query']
+    'agents.tools.calculator': ['multiply', 'add', 'divide'],
+    'agents.tools.wikipedia': ['query']
 }
 
 
@@ -72,11 +68,10 @@ llm = ChatOllama(
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
-    # {'name': tool name, 'args': {kwargs}, 'result': str}
     evidence: list[dict]
 
 
-with open('prompts/research_agent_system_prompt.txt', 'r') as f:
+with open('agents/prompts/research_agent_system_prompt.txt', 'r') as f:
     sys_msg = SystemMessage(content=f.read())
 
 

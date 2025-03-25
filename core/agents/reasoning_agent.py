@@ -47,7 +47,7 @@ llm = ChatOllama(
 """
 Define agent
 """
-with open("prompts/reasoning_agent_system_prompt.txt", "r") as f:
+with open("agents/prompts/reasoning_agent_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 
 
