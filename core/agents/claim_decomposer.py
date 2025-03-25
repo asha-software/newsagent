@@ -42,7 +42,7 @@ llm = ChatOllama(
 Build the graph
 """
 
-with open("prompts/claim_decomposer_system_prompt.txt", "r") as f:
+with open("agents/prompts/claim_decomposer_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 system_message = SystemMessage(content=system_prompt)
 
