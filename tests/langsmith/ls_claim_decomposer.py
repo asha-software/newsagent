@@ -12,11 +12,11 @@ import sys
 # Add project root to sys path so we can import from core.agents
 project_root = Path(__file__).resolve().parent.parent.parent
 if str(project_root) not in sys.path:
-    print(f"Adding {project_root} to sys.path")
     sys.path.insert(0, str(project_root))
 
 # fmt: off
-from core.agents.claim_decomposer import claim_decomposer
+# 
+
 # fmt: on
 
 
@@ -29,6 +29,7 @@ def argument_parser():
 
 
 def target_function(initial_state) -> list[str]:
+    from core.agents.claim_decomposer import claim_decomposer
     result = claim_decomposer.invoke(initial_state)
     return result["claims"]
 
