@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import importlib
 import os
+from pathlib import Path
 import sys
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage, SystemMessage
@@ -11,14 +12,12 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict
 
 # Add project root to Python path
-project_root = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "../.."))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+# project_root = os.path.abspath(
+#     os.path.join(os.path.dirname(__file__), "../.."))
+# if project_root not in sys.path:
+#     sys.path.insert(0, project_root)
 
-# TODO: implement specific functions, or better yet check which functions the user wants then dynamically import those
-
-
+BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 load_dotenv('../.env', override=True)
@@ -26,8 +25,8 @@ PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
-    'agents.tools.calculator': ['multiply', 'add', 'divide'],
-    'agents.tools.wikipedia': ['query']
+    'tools.calculator': ['multiply', 'add', 'divide'],
+    'tools.wikipedia': ['query']
 }
 
 
@@ -71,7 +70,7 @@ class State(TypedDict):
     evidence: list[dict]
 
 
-with open('agents/prompts/research_agent_system_prompt.txt', 'r') as f:
+with open(BASE_DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
     sys_msg = SystemMessage(content=f.read())
 
 

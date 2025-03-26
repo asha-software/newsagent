@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import json
 import os
+from pathlib import Path
 from langchain.prompts import SystemMessagePromptTemplate
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
@@ -9,7 +10,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, Literal, TypedDict
 
-
+BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 load_dotenv('.env', override=True)
@@ -47,7 +48,7 @@ llm = ChatOllama(
 """
 Define agent
 """
-with open("agents/prompts/reasoning_agent_system_prompt.txt", "r") as f:
+with open(BASE_DIR / "prompts/reasoning_agent_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 
 

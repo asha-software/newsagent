@@ -1,0 +1,135 @@
+[
+  {
+    "inputs": { "text": "Judy Garland was born in Grand Rapids, Minnesota, on June 10, 1922." },
+    "outputs": {
+      "claims": ["Judy Garland was born in Grand Rapids, Minnesota, on June 10, 1922."]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Mike Johnson is the speaker of the U.S. House of Representatives." },
+    "outputs": {
+      "claims": [
+        "Mike Johnson currently serves as the speaker of the U.S. House of Representatives."
+      ]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "The GDP is a number produced by the Federal Reserve." },
+    "outputs": { "claims": ["The Federal Reserve produces the GDP"] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "The president can control inflation if he wants to." },
+    "outputs": { "claims": ["The president has the power to control inflation"] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Eggs are more expensive than milk." },
+    "outputs": {
+      "claims": ["On average, the current price of eggs exceeds the current price of milk."]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "BREAKING: The Eiffel Tower is being dismantled for renovations!" },
+    "outputs": { "claims": ["The Eiffel Tower is currently being dismantled for renovations."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Elvis Presley faked his death and is alive in Argentina." },
+    "outputs": { "claims": ["Elvis Presley is alive and currently residing in Argentina."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Experts agree: Drinking coffee before bed is actually good for sleep." },
+    "outputs": { "claims": ["Drinking coffee before bed improves sleep, according to experts."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "California just banned all gasoline-powered cars!" },
+    "outputs": {
+      "claims": ["California has implemented a complete ban on gasoline-powered cars."]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Rumors say the moon landing was staged in a Hollywood basement." },
+    "outputs": { "claims": ["The moon landing was staged in a Hollywood basement."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": {
+      "text": "Did you know? Tomatoes are officially classified as a fruit by the U.S. Supreme Court."
+    },
+    "outputs": {
+      "claims": ["The U.S. Supreme Court has officially classified tomatoes as a fruit."]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "It's obvious at this point: The stock market is about to crash." },
+    "outputs": { "claims": ["The stock market is about to experience a significant crash."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Scientists have discovered a new planet that could support human life!" },
+    "outputs": {
+      "claims": ["Scientists have discovered a new planet capable of supporting human life."]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Mark Zuckerberg personally reads every Facebook message." },
+    "outputs": { "claims": ["Mark Zuckerberg personally reviews all Facebook messages."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Global warming? More like global cooling—temperatures are dropping!" },
+    "outputs": { "claims": ["Global temperatures are decreasing."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": {
+      "text": "NASA just confirmed aliens exist and have been visiting Earth for decades."
+    },
+    "outputs": {
+      "claims": [
+        "NASA has confirmed the existence of aliens and their visits to Earth for decades."
+      ]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Your phone listens to everything you say, even when it's off." },
+    "outputs": { "claims": ["Phones continuously record audio even when turned off."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": {
+      "text": "The U.S. government is about to replace the dollar with a digital currency."
+    },
+    "outputs": {
+      "claims": ["The U.S. government is planning to replace the dollar with a digital currency."]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "Chocolate cures depression. Scientists have proven it." },
+    "outputs": { "claims": ["Scientific research has proven that chocolate cures depression."] },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "There are more trees on Earth than stars in the Milky Way." },
+    "outputs": {
+      "claims": ["The number of trees on Earth exceeds the number of stars in the Milky Way."]
+    },
+    "metadata": { "type": "single_statement" }
+  },
+  {
+    "inputs": { "text": "5G towers are causing birds to drop dead from the sky." },
+    "outputs": { "claims": ["5G towers are responsible for birds suddenly dying in mid-air."] },
+    "metadata": { "type": "single_statement" }
+  }
+]

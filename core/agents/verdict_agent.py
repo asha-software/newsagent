@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 import json
 import os
+from pathlib import Path
 from langchain_core.messages import SystemMessage, BaseMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
@@ -10,13 +11,15 @@ from typing import Annotated, TypedDict
 # Load environment variables
 load_dotenv('.env', override=True)
 
-# LLM Model
+BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 
 llm = ChatOllama(model=MODEL, temperature=TEMPERATURE)
 
 # State Object with explicit reducer
+
+
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claims: list[str]
@@ -27,8 +30,9 @@ class State(TypedDict):
 
 # Nodes definitions
 
+
 def prompt_prep_node(state: State) -> dict:
-    with open("prompts/verdict_agent_system_prompt.txt", "r") as f:
+    with open(BASE_DIR / "prompts/verdict_agent_system_prompt.txt", "r") as f:
         prompt_text = f.read()
 
     claim_analysis = "\n".join(
@@ -41,10 +45,12 @@ def prompt_prep_node(state: State) -> dict:
     # Return ONLY new messages
     return {"messages": [SystemMessage(content=formatted_prompt)]}
 
+
 def verdict_node(state: State) -> dict:
     response = llm.invoke(state['messages'])
     # Return only newly generated message
     return {"messages": [response]}
+
 
 def postprocessing_node(state: State) -> dict:
     response_text = state["messages"][-1].content
@@ -72,6 +78,7 @@ Respond ONLY with the JSON object. No additional text.
         "final_justification": results["final_justification"]
     }
 
+
 # Graph
 builder = StateGraph(State)
 
@@ -85,4 +92,3 @@ builder.add_edge("verdict", "postprocessing")
 builder.add_edge("postprocessing", END)
 
 verdict_agent = builder.compile()
-

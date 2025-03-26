@@ -2,6 +2,7 @@
 from dotenv import load_dotenv
 import json
 import os
+from pathlib import Path
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
@@ -9,7 +10,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict
 
-
+BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 load_dotenv('.env', override=True)
@@ -42,7 +43,8 @@ llm = ChatOllama(
 Build the graph
 """
 
-with open("agents/prompts/claim_decomposer_system_prompt.txt", "r") as f:
+# with open("agents/prompts/claim_decomposer_system_prompt.txt", "r") as f:
+with open(BASE_DIR / "prompts/claim_decomposer_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 system_message = SystemMessage(content=system_prompt)
 
