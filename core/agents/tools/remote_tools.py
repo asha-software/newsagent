@@ -11,19 +11,33 @@ def fetch_tools(user_id):
         a list of dictionaries. each dictionary has api name and api url
     '''
     if user_id=="123":
-        return [{"name":"temperature_api","url":"https://temperature/api?","params":{"key":"whatever"}}, 
-                {"name":"news", "url":"https://nytimes/api","params":"whatever"}]
+        return [{"name":"temperature_api","url":"https://temperature/api?","params":{"key":"whatever",'q':''}}, 
+                {"name":"news", "url":"https://nytimes/api","params":{"key":"whatever"}}]
     else:
         ##@Taufique please add code here
         return
         
 def construct_url(tool_dict):
     '''
-    Construct a new URL based on the key-value pairs in tool_dict.
+    Construct a full URL from a tool dictionary and a query string.
+
+    This function takes two arguments:
+    1. `tool_dict` (dict or str): A dictionary or JSON string representing the tool, which must contain:
+        - 'name' (str): The tool's name.
+        - 'url' (str): The base URL.
+        - 'params' (dict): Optional parameters to include in the query string (key-value pairs).
+
+    The function builds a complete URL by appending parameters to the base URL.
+
     Args:
-        tool_dict: Dictionary containing API data (expects "url" and "params").
+        tool_dict (dict or str): A dictionary representing the tool (or a JSON string that can be parsed into a dictionary).
+
     Returns:
-        A new URL string.
+        str: The full URL with the appended query parameters.
+
+    Raises:
+        ValueError: If `tool_dict` is neither a valid dictionary nor a valid JSON string.
+        ValueError: If `tool_dict` is missing required fields like 'url' or 'params'.
     '''
     # Ensure input is a dictionary
     if isinstance(tool_dict, str):
@@ -55,7 +69,7 @@ def remote_api_call(url):
     Returns:
          Dictionary containing api response.
     '''
-    if url =="https://temperature/api?key=whatever":
+    if url =="https://temperature/api?key=whatever&q=temperature":
         return {"temperature":20}
     else:
         response = requests.get(url)
