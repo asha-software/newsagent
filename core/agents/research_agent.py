@@ -68,6 +68,7 @@ class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
     evidence: list[dict]
+    formatted_output: list[dict]
 
 
 with open(BASE_DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
@@ -111,7 +112,8 @@ def postprocessing(state: State) -> State:
                             'result': next_message.content})
                         break
 
-    return {'evidence': evidence}
+    return {'evidence': evidence,
+            "formatted_output": evidence}
     # return state
 
 

@@ -27,10 +27,9 @@ class State(TypedDict):
     justifications: list[str]
     final_label: str | None
     final_justification: str | None
+    formatted_output: dict | None
 
 # Nodes definitions
-
-
 def prompt_prep_node(state: State) -> dict:
     with open(BASE_DIR / "prompts/verdict_agent_system_prompt.txt", "r") as f:
         prompt_text = f.read()
@@ -75,7 +74,8 @@ Respond ONLY with the JSON object. No additional text.
     return {
         "messages": [formatted_response],  # Only new message
         "final_label": results["final_label"],
-        "final_justification": results["final_justification"]
+        "final_justification": results["final_justification"],
+        "formatted_output": results 
     }
 
 
