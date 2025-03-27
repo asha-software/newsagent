@@ -12,8 +12,7 @@ Example:
     url_template = 'https://pokeapi.co/api/v2/pokemon/{name}'
     headers = {'Accept': 'application/json'}
 
-    # This tells the tool function that it takes one parameter, `name`, and that it
-    # is used in the url template
+    # This tells the tool function that it takes one parameter, `name`, used in the url template
     param_mapping = {
         'name': 'url_params',  # Maps to URL placeholders
     }
@@ -32,7 +31,7 @@ Example:
     get_pokemon = create_tool(
         method='GET', url_template=url_template, headers=headers,
         docstring='Get information about a Pokémon from the PokeAPI.\nArgs:\n  name: name of the pokemon you want',
-        target_fields=,
+        target_fields=target_fields,
         param_mapping=param_mapping
     )
 ```
