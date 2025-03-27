@@ -1,0 +1,164 @@
+{% load static %}
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Your Tools</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <style>
+        .tool-card {
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: rgba(40, 40, 40, 0.9);
+            color: #fff;
+        }
+        .tool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .tool-body {
+            padding: 15px;
+        }
+        .tool-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-tool {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        .tool-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-active {
+            background-color: rgba(21, 87, 36, 0.7);
+            color: #fff;
+        }
+        .status-inactive {
+            background-color: rgba(114, 28, 36, 0.7);
+            color: #fff;
+        }
+        .tools-container {
+            width: 100%;
+            max-width: 1000px;
+            z-index: 1;
+            position: relative;
+        }
+        .btn-create {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            border-radius: 5px;
+            padding: 8px 16px;
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-create:hover {
+            background-color: white;
+            color: black;
+        }
+        .text-muted {
+            color: #ccc !important;
+        }
+        .badge {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+        .alert-info {
+            background-color: rgba(40, 40, 40, 0.9);
+            color: #fff;
+            border: none;
+        }
+        .alert-info a {
+            color: #4da6ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="s006">
+        <div class="website-logo">
+            <a href="{% url 'search' %}">
+                <div class="logo">
+                    <img class="logo-size" src="{% static 'images/logo-light.svg' %}" alt="">
+                </div>
+            </a>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+        
+        <div class="tools-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 style="color: white;">Your API Tools</h1>
+                <a href="{% url 'tool_create' %}" class="btn-create">Create New Tool</a>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <a href="{% url 'search' %}" style="color: white; text-decoration: none; margin-right: 20px;">
+                    <span style="border-bottom: 2px solid transparent; padding-bottom: 5px;">Search</span>
+                </a>
+                <a href="{% url 'tool_list' %}" style="color: white; text-decoration: none;">
+                    <span style="border-bottom: 2px solid white; padding-bottom: 5px;">My Tools</span>
+                </a>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}" style="background: rgba(40, 40, 40, 0.9); color: white;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if tools %}
+                <div class="row">
+                    {% for tool in tools %}
+                        <div class="col-md-6">
+                            <div class="tool-card">
+                                <div class="tool-header">
+                                    <h5 class="mb-0">{{ tool.name }}</h5>
+                                    <div>
+                                        <span class="tool-status {% if tool.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                            {% if tool.is_active %}Active{% else %}Inactive{% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="tool-body">
+                                    <p>{{ tool.description|default:"No description provided" }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge">{{ tool.method }}</span>
+                                            <small class="text-muted ml-2">Created: {{ tool.created_at|date:"M d, Y" }}</small>
+                                        </div>
+                                        <div class="tool-actions">
+                                            <a href="{% url 'tool_edit' tool.id %}" class="btn btn-sm btn-outline-light btn-tool">Edit</a>
+                                            <a href="{% url 'tool_delete' tool.id %}" class="btn btn-sm btn-outline-danger btn-tool">Delete</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <p>You haven't created any tools yet. <a href="{% url 'tool_create' %}">Create your first tool</a> to get started!</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>
