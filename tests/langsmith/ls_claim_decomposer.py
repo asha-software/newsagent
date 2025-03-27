@@ -4,7 +4,9 @@ python ls_claim_decomposer.py -p <prefix name>
 """
 
 import argparse
+from dotenv import load_dotenv
 from langsmith import Client
+import os
 from pathlib import Path
 import sys
 
@@ -13,11 +15,6 @@ import sys
 project_root = Path(__file__).resolve().parent.parent.parent
 if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
-
-# fmt: off
-# 
-
-# fmt: on
 
 
 def argument_parser():
@@ -42,6 +39,12 @@ def number_of_claims_diff(outputs: dict, reference_outputs: dict) -> int:
 
 
 def main():
+    # Make sure tests/.env variables are set
+    load_dotenv("../.env", override=True)
+    assert "LANGCHAIN_API_KEY" in os.environ, "Please set the LANGCHAIN_API_KEY environment variable"
+    assert os.environ["LANGCHAIN_TRACING_V2"] == "true", "Please set the LANGCHAIN_TRACING_V2 environment variable to true"
+
+    
     args = argument_parser()
     ls_client = Client()
     experiment_results = ls_client.evaluate(

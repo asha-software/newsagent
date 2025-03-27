@@ -11,7 +11,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict
 
 BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "deepseek-r1:32b"
+MODEL = "mistral-nemo"
 TEMPERATURE = 0
 load_dotenv('.env', override=True)
 
