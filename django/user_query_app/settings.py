@@ -122,7 +122,7 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "user_info/static"]
 
-LOGIN_URL = 'signin'  # Redirect to sign-in page for unauthenticated users
+LOGIN_URL = "signin"  # Redirect to sign-in page for unauthenticated users
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

@@ -10,7 +10,7 @@ app = FastAPI()
 
 def delete_messages(states: list[dict]):
     for state in states:
-        del state['messages']
+        del state["messages"]
 
 
 @app.get("/health")
@@ -21,27 +21,26 @@ async def health():
 @app.post("/query")
 async def query(request: Request):
     req = await request.json()
-    text = req.get('body')
+    text = req.get("body")
 
     if not text:
-        raise HTTPException(
-            status_code=400, detail="Input {'body': str} is required.")
+        raise HTTPException(status_code=400, detail="Input {'body': str} is required.")
 
     # Claims decomposer
     initial_state = {"text": text}
     result = claim_decomposer.invoke(initial_state)
     claims = result["claims"]
 
-    research_results = [research_agent.invoke(
-        {"claim": claim}) for claim in claims]
+    research_results = [research_agent.invoke({"claim": claim}) for claim in claims]
     delete_messages(research_results)
 
-    reasoning_results = [reasoning_agent.invoke(
-        state) for state in research_results]
+    reasoning_results = [reasoning_agent.invoke(state) for state in research_results]
     delete_messages(reasoning_results)
 
     return reasoning_results
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

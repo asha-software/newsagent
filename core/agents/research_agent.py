@@ -31,8 +31,8 @@ PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
-    'agents.tools.calculator': ['multiply', 'add', 'divide'],
-    'agents.tools.wikipedia': ['query']
+    "agents.tools.calculator": ["multiply", "add", "divide"],
+    "agents.tools.wikipedia": ["query"],
 }
 
 
@@ -80,7 +80,7 @@ class State(TypedDict):
     evidence: list[dict]
 
 
-with open('agents/prompts/research_agent_system_prompt.txt', 'r') as f:
+with open("agents/prompts/research_agent_system_prompt.txt", "r") as f:
     sys_msg = SystemMessage(content=f.read())
 
 

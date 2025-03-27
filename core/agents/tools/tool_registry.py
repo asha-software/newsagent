@@ -1,6 +1,1 @@
-from core.agents.tools import tool_base
-
-
-class tool_registry:
-    def __init__(self):
-        self.tools: list[tool_base] = []
+USER_AGENT = "newsagent/1.0 (https://ashasoftware.com/newsagent; info@ashasoftware.com)"
