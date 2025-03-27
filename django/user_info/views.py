@@ -1,8 +1,12 @@
 from django.contrib.auth.models import User
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django.contrib import messages
+from .models import UserTool
+from .forms import UserToolForm
+import json
 
 def signin(request): 
     if request.user.is_authenticated:
@@ -81,3 +85,63 @@ def search(request):
 
 def forgot_password_view(request):
     return render(request, 'forgot.html')  # Render the forgot password page
+
+# Tool views
+@login_required
+def tool_list(request):
+    tools = UserTool.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'user_info/tool_list.html', {'tools': tools})
+
+@login_required
+def tool_create(request):
+    if request.method == 'POST':
+        form = UserToolForm(request.POST)
+        if form.is_valid():
+            tool = form.save(commit=False)
+            tool.user = request.user
+            tool.save()
+            messages.success(request, f"Tool '{tool.name}' created successfully!")
+            return redirect('tool_list')
+    else:
+        form = UserToolForm()
+    
+    return render(request, 'user_info/tool_form.html', {
+        'form': form,
+        'title': 'Create New Tool'
+    })
+
+@login_required
+def tool_edit(request, tool_id):
+    tool = get_object_or_404(UserTool, id=tool_id, user=request.user)
+    
+    if request.method == 'POST':
+        form = UserToolForm(request.POST, instance=tool)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Tool '{tool.name}' updated successfully!")
+            return redirect('tool_list')
+    else:
+        # Convert JSON fields to strings for the form
+        initial_data = {
+            field: json.dumps(getattr(tool, field), indent=2) if getattr(tool, field) else ''
+            for field in ['headers', 'default_params', 'data', 'json_payload', 'target_fields', 'param_mapping']
+        }
+        form = UserToolForm(instance=tool, initial=initial_data)
+    
+    return render(request, 'user_info/tool_form.html', {
+        'form': form,
+        'tool': tool,
+        'title': f"Edit Tool: {tool.name}"
+    })
+
+@login_required
+def tool_delete(request, tool_id):
+    tool = get_object_or_404(UserTool, id=tool_id, user=request.user)
+    
+    if request.method == 'POST':
+        tool_name = tool.name
+        tool.delete()
+        messages.success(request, f"Tool '{tool_name}' deleted successfully!")
+        return redirect('tool_list')
+    
+    return render(request, 'user_info/tool_confirm_delete.html', {'tool': tool})
