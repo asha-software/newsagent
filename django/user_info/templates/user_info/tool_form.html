@@ -1,0 +1,250 @@
+{% load static %}
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>{{ title }}</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <style>
+        .form-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(40, 40, 40, 0.9);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .form-section h3 {
+            margin-bottom: 20px;
+            color: #fff;
+            font-size: 1.5rem;
+        }
+        .field-help {
+            font-size: 0.85rem;
+            color: #ccc;
+            margin-top: 5px;
+        }
+        textarea.json-field {
+            font-family: monospace;
+            font-size: 0.9rem;
+            background-color: rgba(30, 30, 30, 0.9) !important;
+            color: #fff !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+        }
+        .required-field label:after {
+            content: " *";
+            color: #dc3545;
+        }
+        .form-container {
+            width: 100%;
+            max-width: 1000px;
+            z-index: 1;
+            position: relative;
+        }
+        .form-control {
+            background-color: rgba(30, 30, 30, 0.9) !important;
+            color: #fff !important;
+            border-color: rgba(255, 255, 255, 0.2) !important;
+        }
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+        }
+        label {
+            color: #fff;
+        }
+        .btn-primary {
+            background-color: transparent;
+            border: 2px solid white;
+            color: white;
+            transition: all 0.3s ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: white;
+            color: black;
+            border-color: white;
+        }
+        .btn-outline-secondary {
+            color: #ccc;
+            border-color: #ccc;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #ccc;
+            color: #333;
+        }
+        .alert-danger {
+            background-color: rgba(114, 28, 36, 0.7);
+            color: #fff;
+            border: none;
+        }
+        .invalid-feedback {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div class="s006">
+        <div class="website-logo">
+            <a href="{% url 'search' %}">
+                <div class="logo">
+                    <img class="logo-size" src="{% static 'images/logo-light.svg' %}" alt="">
+                </div>
+            </a>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+        
+        <div class="form-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 style="color: white;">{{ title }}</h1>
+                <a href="{% url 'tool_list' %}" class="btn btn-outline-secondary">Back to Tools</a>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <a href="{% url 'search' %}" style="color: white; text-decoration: none; margin-right: 20px;">
+                    <span style="border-bottom: 2px solid transparent; padding-bottom: 5px;">Search</span>
+                </a>
+                <a href="{% url 'tool_list' %}" style="color: white; text-decoration: none;">
+                    <span style="border-bottom: 2px solid white; padding-bottom: 5px;">My Tools</span>
+                </a>
+            </div>
+
+            {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h4 class="alert-heading">Please correct the errors below:</h4>
+                    {{ form.errors }}
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                
+                <div class="form-section">
+                    <h3>Basic Information</h3>
+                    <div class="form-group required-field">
+                        <label for="{{ form.name.id_for_label }}">Tool Name</label>
+                        {{ form.name }}
+                        <div class="field-help">A descriptive name for your tool</div>
+                        {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">{{ form.name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                        <div class="field-help">A brief description of what this tool does (for human users)</div>
+                        {% if form.description.errors %}
+                            <div class="invalid-feedback d-block">{{ form.description.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>API Configuration</h3>
+                    <div class="form-group required-field">
+                        <label for="{{ form.method.id_for_label }}">HTTP Method</label>
+                        {{ form.method }}
+                        <div class="field-help">The HTTP method to use for the API request</div>
+                        {% if form.method.errors %}
+                            <div class="invalid-feedback d-block">{{ form.method.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group required-field">
+                        <label for="{{ form.url_template.id_for_label }}">URL Template</label>
+                        {{ form.url_template }}
+                        <div class="field-help">The URL template with placeholders for parameters (e.g., https://api.example.com/v1/{resource})</div>
+                        {% if form.url_template.errors %}
+                            <div class="invalid-feedback d-block">{{ form.url_template.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.docstring.id_for_label }}">Docstring (For AI)</label>
+                        {{ form.docstring }}
+                        <div class="field-help">Technical documentation for the AI system on how to use this tool</div>
+                        {% if form.docstring.errors %}
+                            <div class="invalid-feedback d-block">{{ form.docstring.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-section">
+                    <h3>Advanced Configuration</h3>
+                    <p style="color: #ccc; margin-bottom: 20px;">All fields below should be valid JSON. Leave empty if not needed.</p>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.headers.id_for_label }}">Headers</label>
+                        {{ form.headers }}
+                        <div class="field-help">HTTP headers as JSON object (e.g., {"Content-Type": "application/json"})</div>
+                        {% if form.headers.errors %}
+                            <div class="invalid-feedback d-block">{{ form.headers.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.default_params.id_for_label }}">Default Parameters</label>
+                        {{ form.default_params }}
+                        <div class="field-help">Default URL parameters as JSON object (e.g., {"format": "json"})</div>
+                        {% if form.default_params.errors %}
+                            <div class="invalid-feedback d-block">{{ form.default_params.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.data.id_for_label }}">Form Data</label>
+                        {{ form.data }}
+                        <div class="field-help">Form data as JSON object (for POST requests)</div>
+                        {% if form.data.errors %}
+                            <div class="invalid-feedback d-block">{{ form.data.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.json_payload.id_for_label }}">JSON Payload</label>
+                        {{ form.json_payload }}
+                        <div class="field-help">JSON payload as JSON object (for POST/PUT requests)</div>
+                        {% if form.json_payload.errors %}
+                            <div class="invalid-feedback d-block">{{ form.json_payload.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.target_fields.id_for_label }}">Target Fields</label>
+                        {{ form.target_fields }}
+                        <div class="field-help">Fields to extract from the response as JSON array of arrays (e.g., [["data", "items", 0, "title"]])</div>
+                        {% if form.target_fields.errors %}
+                            <div class="invalid-feedback d-block">{{ form.target_fields.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="{{ form.param_mapping.id_for_label }}">Parameter Mapping</label>
+                        {{ form.param_mapping }}
+                        <div class="field-help">Mapping of function arguments to request components as JSON object (e.g., {"query": "params", "api_key": "headers"})</div>
+                        {% if form.param_mapping.errors %}
+                            <div class="invalid-feedback d-block">{{ form.param_mapping.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="form-group mb-5">
+                    <button type="submit" class="btn btn-primary">Save Tool</button>
+                    <a href="{% url 'tool_list' %}" class="btn btn-outline-secondary ml-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script>
+        // Add Bootstrap form classes
+        $(document).ready(function() {
+            $('input[type="text"], textarea, select').addClass('form-control');
+            $('.json-field').addClass('json-field');
+        });
+    </script>
+</body>
+</html>
