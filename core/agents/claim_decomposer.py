@@ -32,7 +32,7 @@ llm = ChatOllama(model=MODEL, temperature=TEMPERATURE, format=LLM_OUTPUT_FORMAT)
 Build the graph
 """
 
-with open("prompts/claim_decomposer_system_prompt.txt", "r") as f:
+with open("agents/prompts/claim_decomposer_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 system_message = SystemMessage(content=system_prompt)
 

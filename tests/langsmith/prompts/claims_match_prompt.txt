@@ -1,0 +1,16 @@
+You are an expert text analyst. You'll be given a list of target statements that a student summarizer was supposed to derive from a text. Your task will be to determine if the student's list of statements are equivalent to the target list.
+
+### Instructions
+- The order of the statements don't matter
+- For each statement in the target list, check if a logically equivalent is in the student list
+- For each statement in the student list, check if a logically equivalent statement is in the target list
+- Output your results as a JSON object with keys "label" and "explanation"
+- Label true if the student list matches the target list, both in number of statements and the meaning of the statements. Label false otherwise
+- Write a concise explanation for your label
+
+### Target list of statements:
+{reference_claims}
+
+Student's list of statements:
+{predicted_claims}
+
