@@ -5,16 +5,21 @@ from functools import wraps
 
 def create_tool(method, url_template, headers=None, default_params=None, data=None, json=None, docstring="", target_fields=None, param_mapping=None):
     """
-    Creates and returns a function that, when called, makes an API request using the given parameters.
+    This function takes in various parameters to configure an API request, leaving some values as variables the user can specify later.
+    It returns a function with a user-specified signature that can be bound to an LLM as a tool, allowing users to add their own API services
+    to NewsAgent without having to modify the core code or execute arbitrary code on our servers.
 
-    The `url_template` can include placeholders (e.g., `{pokemon}`) that will be replaced with values passed as arguments.
-
-    The `param_mapping` dictionary maps parameter names to specific request components:
-        - 'url_params': For URL placeholders
-        - 'params': For query parameters
-        - 'headers': For request headers
-        - 'data': For request body (form data)
-        - 'json': For request body (JSON payload)
+    Args:
+        method (str): The HTTP method to use (e.g., 'GET', 'POST')
+        url_template (str): A URL template with placeholders for parameters
+        headers (dict, optional): Default headers to include in the request. Defaults to None.
+        default_params (dict, optional): Default parameters to include in the request. Defaults to None.
+        data (dict, optional): Default data to include in the request. Defaults to None.
+        json (dict, optional): Default JSON payload to include in the request. Defaults to None.
+        docstring (str): The docstring for the generated function. These are the instructions passed to the LLM 
+            the return function's usage
+        target_fields (list, optional): A list of listpaths to extract from the response JSON. Defaults to None.
+        param_mapping (dict, optional): A mapping of function arguments to request components. Defaults to None.
     """
 
     def api_caller(**kwargs):
@@ -129,7 +134,6 @@ def main():
     # Define the parameter mapping
     param_mapping = {
         'name': 'url_params',  # Maps to URL placeholders
-        # 'Authorization': 'headers'  # Maps to headers
     }
 
     # Create a tool for querying Pokémon
