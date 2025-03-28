@@ -1,5 +1,5 @@
 """
-Run this script from /tests/langsmith/ to load env variables 
+Run this script from /tests/langsmith/ to load env variables
 """
 
 import argparse
