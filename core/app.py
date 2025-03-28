@@ -27,7 +27,7 @@ async def query(request: Request):
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
 
-    # Claims decomposer
+    # Run through newsagent
     initial_state = {"text": text}
     result = claim_decomposer.invoke(initial_state)
     claims = result["claims"]
