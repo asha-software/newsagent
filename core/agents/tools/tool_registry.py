@@ -3,7 +3,17 @@ from inspect import Signature, Parameter
 from functools import wraps
 
 
-def create_tool(method, url_template, headers=None, default_params=None, data=None, json=None, docstring="", target_fields=None, param_mapping=None):
+def create_tool(
+    method,
+    url_template,
+    headers=None,
+    default_params=None,
+    data=None,
+    json=None,
+    docstring="",
+    target_fields=None,
+    param_mapping=None,
+):
     """
     This function takes in various parameters to configure an API request, leaving some values as variables the user can specify later.
     It returns a function with a user-specified signature that can be bound to an LLM as a tool, allowing users to add their own API services
@@ -16,7 +26,7 @@ def create_tool(method, url_template, headers=None, default_params=None, data=No
         default_params (dict, optional): Default parameters to include in the request. Defaults to None.
         data (dict, optional): Default data to include in the request. Defaults to None.
         json (dict, optional): Default JSON payload to include in the request. Defaults to None.
-        docstring (str): The docstring for the generated function. These are the instructions passed to the LLM 
+        docstring (str): The docstring for the generated function. These are the instructions passed to the LLM
             the return function's usage
         target_fields (list, optional): A list of listpaths to extract from the response JSON. Defaults to None.
         param_mapping (dict, optional): A mapping of function arguments to request components. Defaults to None.
@@ -24,21 +34,21 @@ def create_tool(method, url_template, headers=None, default_params=None, data=No
 
     def api_caller(**kwargs):
         # Extract URL parameters from kwargs and format the URL
-        url = url_template.format(**kwargs.pop('url_params', {}))
+        url = url_template.format(**kwargs.pop("url_params", {}))
 
         # Start with default params, and update if 'params' is provided via kwargs
         params = default_params.copy() if default_params else {}
-        if 'params' in kwargs:
-            params.update(kwargs.pop('params'))
+        if "params" in kwargs:
+            params.update(kwargs.pop("params"))
 
         # If headers or other arguments are passed via kwargs, you can also handle them similarly
         req_headers = headers.copy() if headers else {}
-        if 'headers' in kwargs:
-            req_headers.update(kwargs.pop('headers'))
+        if "headers" in kwargs:
+            req_headers.update(kwargs.pop("headers"))
 
         # Other kwargs (like data or json) can override the defaults provided to create_api_caller
-        req_data = kwargs.pop('data', data)
-        req_json = kwargs.pop('json', json)
+        req_data = kwargs.pop("data", data)
+        req_json = kwargs.pop("json", json)
 
         # Any other remaining kwargs can be passed directly to requests.request
         response = requests.request(
@@ -48,7 +58,7 @@ def create_tool(method, url_template, headers=None, default_params=None, data=No
             params=params,
             data=req_data,
             json=req_json,
-            **kwargs  # Pass any additional keyword arguments to requests.request
+            **kwargs,  # Pass any additional keyword arguments to requests.request
         )
         return response
 
@@ -80,15 +90,15 @@ def create_tool(method, url_template, headers=None, default_params=None, data=No
             response_json = response.json()
         except ValueError:
             print(
-                f"Error: Could not parse response as JSON. Response text: {response.text}")
+                f"Error: Could not parse response as JSON. Response text: {response.text}"
+            )
             return response.text
 
         if target_fields:
             return_fields = []
             for listpath in target_fields:
                 # Make a copy of the listpath to avoid mutating the original
-                return_fields.append(extract_fields(
-                    response_json, listpath[:]))
+                return_fields.append(extract_fields(response_json, listpath[:]))
             return return_fields
 
         return response
@@ -98,7 +108,10 @@ def create_tool(method, url_template, headers=None, default_params=None, data=No
         parameters = []
         for param_name, param_type in param_mapping.items():
             parameters.append(
-                Parameter(param_name, Parameter.POSITIONAL_OR_KEYWORD, annotation=param_type))
+                Parameter(
+                    param_name, Parameter.POSITIONAL_OR_KEYWORD, annotation=param_type
+                )
+            )
         custom_signature = Signature(parameters)
 
         @wraps(tool)
@@ -111,7 +124,8 @@ def create_tool(method, url_template, headers=None, default_params=None, data=No
             for param_name, value in bound_args.arguments.items():
                 if param_name in param_mapping:
                     mapped_kwargs.setdefault(param_mapping[param_name], {})[
-                        param_name] = value
+                        param_name
+                    ] = value
                 else:
                     mapped_kwargs[param_name] = value
 
@@ -128,64 +142,69 @@ def create_tool(method, url_template, headers=None, default_params=None, data=No
 
 def main():
     # Use a URL template with a placeholder for the Pokémon name
-    url_template = 'https://pokeapi.co/api/v2/pokemon/{name}'
-    headers = {'Accept': 'application/json'}
+    url_template = "https://pokeapi.co/api/v2/pokemon/{name}"
+    headers = {"Accept": "application/json"}
 
     # Define the parameter mapping
     param_mapping = {
-        'name': 'url_params',  # Maps to URL placeholders
+        "name": "url_params",  # Maps to URL placeholders
     }
 
     # Create a tool for querying Pokémon
     get_pokemon = create_tool(
-        'GET', url_template, headers,
-        docstring='Get information about a Pokémon from the PokeAPI.',
-        target_fields=[['abilities', 0, 'ability', 'name'],
-                       ['abilities', 1, 'ability', 'name']],
-        param_mapping=param_mapping
+        "GET",
+        url_template,
+        headers,
+        docstring="Get information about a Pokémon from the PokeAPI.",
+        target_fields=[
+            ["abilities", 0, "ability", "name"],
+            ["abilities", 1, "ability", "name"],
+        ],
+        param_mapping=param_mapping,
     )
 
     # Query for Pikachu with custom parameters
-    response = get_pokemon(name='pikachu')
+    response = get_pokemon(name="pikachu")
     print(f"Pikachu's abilities: {response}")
 
     # Query for Bulbasaur with default headers
-    response = get_pokemon(name='bulbasaur')
+    response = get_pokemon(name="bulbasaur")
     print(f"Bulbasaur's abilities: {response}")
 
     # OpenAI version
     param_mapping = {
-        'model': 'json',       # Maps to the JSON payload
-        'messages': 'json',    # Maps to the JSON payload
-        'temperature': 'json',  # Maps to the JSON payload
-        'max_tokens': 'json'   # Maps to the JSON payload
+        "model": "json",  # Maps to the JSON payload
+        "messages": "json",  # Maps to the JSON payload
+        "temperature": "json",  # Maps to the JSON payload
+        "max_tokens": "json",  # Maps to the JSON payload
     }
     import os
-    openai_key = os.getenv('OPENAI_API_KEY')
+
+    openai_key = os.getenv("OPENAI_API_KEY")
     assert openai_key, "Please set the OPENAI_API_KEY environment variable."
 
     headers = {
         # Include your Bearer token here
-        'Authorization': f'Bearer {openai_key}',
-        'Content-Type': 'application/json'
+        "Authorization": f"Bearer {openai_key}",
+        "Content-Type": "application/json",
     }
     get_gpt_completion = create_tool(
-        method='post',
-        url_template='https://api.openai.com/v1/chat/completions',
+        method="post",
+        url_template="https://api.openai.com/v1/chat/completions",
         headers=headers,
-        docstring='Get a completion from the OpenAI GPT API.',
-        target_fields=[['choices', 0, 'message', 'content']],
-        param_mapping=param_mapping
+        docstring="Get a completion from the OpenAI GPT API.",
+        target_fields=[["choices", 0, "message", "content"]],
+        param_mapping=param_mapping,
     )
 
     response = get_gpt_completion(
-        model='gpt-4',
+        model="gpt-4",
         messages=[
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "What is the capital of France?"}
+            {"role": "user", "content": "What is the capital of France?"},
         ],
         temperature=0.7,
-        max_tokens=100
+        max_tokens=100,
     )
     print(f"GPT-4 response: {response}")
 

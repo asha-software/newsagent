@@ -30,7 +30,7 @@ SECRET_KEY = "django-insecure-*^48$l3*)32zqcv&)h+0r*2cnf4u=l#et9sa95c)7txun*+y%p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts in development
+ALLOWED_HOSTS = ["*"]  # Allow all hosts in development
 
 
 # Application definition
@@ -128,7 +128,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "user_info/static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-LOGIN_URL = 'signin'  # Redirect to sign-in page for unauthenticated users
+LOGIN_URL = "signin"  # Redirect to sign-in page for unauthenticated users
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

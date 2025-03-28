@@ -9,7 +9,7 @@ from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
 
 # Load environment variables
-load_dotenv('.env', override=True)
+load_dotenv(".env", override=True)
 
 BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
@@ -27,6 +27,7 @@ class State(TypedDict):
     justifications: list[str]
     final_label: str | None
     final_justification: str | None
+
 
 # Nodes definitions
 
@@ -47,7 +48,7 @@ def prompt_prep_node(state: State) -> dict:
 
 
 def verdict_node(state: State) -> dict:
-    response = llm.invoke(state['messages'])
+    response = llm.invoke(state["messages"])
     # Return only newly generated message
     return {"messages": [response]}
 
@@ -62,20 +63,20 @@ def postprocessing_node(state: State) -> dict:
 Respond ONLY with the JSON object. No additional text.
 """
 
-    formatted_response = llm.invoke(response_text + '\n' + prompt)
+    formatted_response = llm.invoke(response_text + "\n" + prompt)
 
     try:
         results = json.loads(formatted_response.content)
     except json.JSONDecodeError:
         results = {
             "final_label": "unknown",
-            "final_justification": "LLM response could not be parsed as JSON."
+            "final_justification": "LLM response could not be parsed as JSON.",
         }
 
     return {
         "messages": [formatted_response],  # Only new message
         "final_label": results["final_label"],
-        "final_justification": results["final_justification"]
+        "final_justification": results["final_justification"],
     }
 
 
