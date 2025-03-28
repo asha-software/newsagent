@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import messages
+from django.http import JsonResponse
 from .models import UserTool
 from .forms import UserToolForm
 import json
@@ -145,3 +146,14 @@ def tool_delete(request, tool_id):
         return redirect('tool_list')
     
     return render(request, 'user_info/tool_confirm_delete.html', {'tool': tool})
+
+@login_required
+def get_session_id(request):
+    """
+    Returns the current user's session ID.
+    This endpoint is used by the FastAPI backend to authenticate users.
+    """
+    return JsonResponse({
+        'session_id': request.session.session_key,
+        'username': request.user.username
+    })
