@@ -17,8 +17,22 @@ from typing import Annotated, TypedDict
 # if project_root not in sys.path:
 #     sys.path.insert(0, project_root)
 
+LLM_OUTPUT_FORMAT = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "args": {"type": "object"},
+            "result": {"type": "string"}
+        },
+        "required": ["name", "args", "result"]
+    }
+}
+
+
 BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "mistral-nemo"
+MODEL = "llama3.2"
 TEMPERATURE = 0
 load_dotenv('../.env', override=True)
 PATH_TO_FILE = os.path.abspath(__file__)
@@ -60,6 +74,7 @@ tools = [import_function(module, function) for module,
 llm = ChatOllama(
     model=MODEL,
     temperature=TEMPERATURE,
+    format=LLM_OUTPUT_FORMAT
     # base_url="http://host.docker.internal:11434", # if running in the studio
 ).bind_tools(tools)
 
@@ -68,6 +83,7 @@ class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
     evidence: list[dict]
+    formatted_output: list[dict]
 
 
 with open(BASE_DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
@@ -95,25 +111,12 @@ def postprocessing(state: State) -> State:
     (tool_name, tool_args, tool_result) for the 'evidence' list in the state
     """
 
-    evidence = []
-    for i in range(len(state['messages'])):
-        message = state['messages'][i]
-        if isinstance(message, AIMessage) and hasattr(message, 'tool_calls'):
-            for tool_call in message.tool_calls:
-                # Scan later messages for the corresponding ToolMessage
-                for j in range(i + 1, len(state['messages'])):
-                    next_message = state['messages'][j]
-                    if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
-                        # Found the corresponding ToolMessage
-                        evidence.append({
-                            'name': tool_call['name'],
-                            'args': tool_call['args'],
-                            'result': next_message.content})
-                        break
-
-    return {'evidence': evidence}
-    # return state
-
+    last_msg = state['messages'][-1]
+    assert isinstance(last_msg, AIMessage)
+    return {
+    "evidence": last_msg.content,  # now a list of dicts
+    "formatted_output": last_msg.content  # optional
+}
 
 # Graph
 builder = StateGraph(State)
