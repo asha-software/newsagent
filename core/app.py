@@ -181,6 +181,7 @@ async def query(request: Request):
                 state) for state in research_results]
             delete_messages(reasoning_results)
 
+
             # Add user information to the response
             for result in reasoning_results:
                 result["user"] = user["username"]

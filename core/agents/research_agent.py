@@ -11,22 +11,20 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict
 
-# Add project root to Python path
-# project_root = os.path.abspath(
-#     os.path.join(os.path.dirname(__file__), "../.."))
-# if project_root not in sys.path:
-#     sys.path.insert(0, project_root)
-
-BASE_DIR = Path(__file__).parent.resolve()
+BASE_DIR = Path(__file__).parent.resolve()  # absolute path to this dir. For relative paths like prompts
+ROOT_DIR = BASE_DIR.parent.parent  # absolute path to repo root. This will be used to import tools
+if str(ROOT_DIR) not in sys.path:
+    print(f"Adding {ROOT_DIR} to sys.path")
+    sys.path.insert(0, str(ROOT_DIR))
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
-load_dotenv('../.env', override=True)
+load_dotenv(ROOT_DIR / 'core/.env', override=True)
 PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
-    'agents.tools.calculator': ['multiply', 'add', 'divide'],
-    'agents.tools.wikipedia': ['query']
+    'core.agents.tools.calculator': ['multiply', 'add', 'divide'],
+    'core.agents.tools.wikipedia': ['query']
 }
 
 
@@ -139,7 +137,7 @@ research_agent = builder.compile()
 
 
 def main():
-    print(f"I was able to import foo: {foo}")
+    print(f"Research agent: {research_agent}")
 
 
 if __name__ == "__main__":
