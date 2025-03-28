@@ -17,6 +17,20 @@ from typing import Annotated, TypedDict
 # if project_root not in sys.path:
 #     sys.path.insert(0, project_root)
 
+LLM_OUTPUT_FORMAT = {
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "args": {"type": "object"},
+            "result": {"type": "string"}
+        },
+        "required": ["name", "args", "result"]
+    }
+}
+
+
 BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "llama3.2"
 TEMPERATURE = 0
@@ -60,6 +74,7 @@ tools = [import_function(module, function) for module,
 llm = ChatOllama(
     model=MODEL,
     temperature=TEMPERATURE,
+    format=LLM_OUTPUT_FORMAT
     # base_url="http://host.docker.internal:11434", # if running in the studio
 ).bind_tools(tools)
 
