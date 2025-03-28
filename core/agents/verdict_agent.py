@@ -12,13 +12,12 @@ from typing import Annotated, TypedDict
 load_dotenv('.env', override=True)
 
 BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "mistral-nemo"
+MODEL = "llama3.2"
 TEMPERATURE = 0
 
 llm = ChatOllama(model=MODEL, temperature=TEMPERATURE)
 
 # State Object with explicit reducer
-
 
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]

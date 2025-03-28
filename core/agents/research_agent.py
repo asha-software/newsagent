@@ -18,7 +18,7 @@ from typing import Annotated, TypedDict
 #     sys.path.insert(0, project_root)
 
 BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "mistral-nemo"
+MODEL = "llama3.2"
 TEMPERATURE = 0
 load_dotenv('../.env', override=True)
 PATH_TO_FILE = os.path.abspath(__file__)
