@@ -111,26 +111,12 @@ def postprocessing(state: State) -> State:
     (tool_name, tool_args, tool_result) for the 'evidence' list in the state
     """
 
-    evidence = []
-    for i in range(len(state['messages'])):
-        message = state['messages'][i]
-        if isinstance(message, AIMessage) and hasattr(message, 'tool_calls'):
-            for tool_call in message.tool_calls:
-                # Scan later messages for the corresponding ToolMessage
-                for j in range(i + 1, len(state['messages'])):
-                    next_message = state['messages'][j]
-                    if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
-                        # Found the corresponding ToolMessage
-                        evidence.append({
-                            'name': tool_call['name'],
-                            'args': tool_call['args'],
-                            'result': next_message.content})
-                        break
-
-    return {'evidence': evidence,
-            "formatted_output": evidence}
-    # return state
-
+    last_msg = state['messages'][-1]
+    assert isinstance(last_msg, AIMessage)
+    return {
+    "evidence": last_msg.content,  # now a list of dicts
+    "formatted_output": last_msg.content  # optional
+}
 
 # Graph
 builder = StateGraph(State)
