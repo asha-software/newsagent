@@ -36,7 +36,8 @@ LLM_OUTPUT_FORMAT = {
 llm = ChatOllama(
     model=MODEL,
     temperature=TEMPERATURE,
-    format=LLM_OUTPUT_FORMAT
+    format=LLM_OUTPUT_FORMAT,
+    base_url="http://host.docker.internal:11434"  # when running in Docker
 )
 
 """

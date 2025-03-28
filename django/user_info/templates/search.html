@@ -59,16 +59,14 @@
           </fieldset>
         </form>
         
-        {% if show_results %}
         <div class="search-results">
-          <div id="loading" class="loading">
-            <p>Analyzing your query...</p>
+          <div id="loading" class="loading" style="display: none;">
+            <p style="color: white;">Analyzing your query...</p>
             <div class="spinner"></div>
           </div>
           <div id="results-container" style="display: none;">
           </div>
         </div>
-        {% endif %}
       </div>
     </div>
   <script>
@@ -83,17 +81,33 @@
     const searchQuery = document.getElementById('search').value.trim();
     if (!searchQuery) return;
     
-    document.getElementById('loading').style.display = 'block';
-    document.getElementById('results-container').style.display = 'none';
+    const loadingElement = document.getElementById('loading');
+    const resultsContainer = document.getElementById('results-container');
+    
+    if (loadingElement) {
+      loadingElement.style.display = 'block';
+    }
+    
+    if (resultsContainer) {
+      resultsContainer.style.display = 'none';
+    }
 
     const selectedSources = Array.from(document.querySelectorAll('input[name="source"]:checked'))
       .map(checkbox => checkbox.value);
 
-    fetch('{{ API_URL }}/query', {
+    // Fix API URL for browser access
+    let apiUrl = '{{ API_URL }}';
+    if (apiUrl.includes('api:8000')) {
+      apiUrl = apiUrl.replace('api:8000', 'localhost:8001');
+    }
+    
+    fetch(apiUrl + '/query', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
       },
+      credentials: 'include', // Include cookies in the request
       body: JSON.stringify({
         body: searchQuery,
         sources: selectedSources
@@ -101,18 +115,25 @@
     })
     .then(response => {
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        return response.text().then(text => {
+          throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        });
       }
       return response.json();
     })
     .then(data => {
-      document.getElementById('loading').style.display = 'none';
-
+      const loadingElement = document.getElementById('loading');
       const resultsContainer = document.getElementById('results-container');
-      resultsContainer.style.display = 'block';
-      resultsContainer.innerHTML = '';
+      
+      if (loadingElement) {
+        loadingElement.style.display = 'none';
+      }
+      
+      if (resultsContainer) {
+        resultsContainer.style.display = 'block';
+        resultsContainer.innerHTML = '';
 
-      data.forEach(result => {
+        data.forEach(result => {
         const resultCard = document.createElement('div');
         resultCard.className = 'result-card';
         
@@ -123,10 +144,11 @@
         title.textContent = result.claim || 'Claim Analysis';
         
         const icon = document.createElement('img');
-        icon.src = result.verdict === 'true' ? 
+        // Use label instead of verdict
+        icon.src = result.label === 'true' ? 
           "{% static 'images/yes.png' %}" : 
           "{% static 'images/no.png' %}";
-        icon.alt = result.verdict === 'true' ? 'True' : 'False';
+        icon.alt = result.label === 'true' ? 'True' : 'False';
         icon.className = 'result-icon';
         
         header.appendChild(title);
@@ -136,52 +158,57 @@
         content.className = 'result-content';
         
         const reasoning = document.createElement('p');
-        reasoning.textContent = result.reasoning || 'No reasoning provided';
+        // Use justification instead of reasoning
+        reasoning.textContent = result.justification || 'No reasoning provided';
         content.appendChild(reasoning);
         
-        if (result.sources && result.sources.length > 0) {
+        // Display evidence instead of sources
+        if (result.evidence && result.evidence.length > 0) {
           const sourceDiv = document.createElement('div');
           sourceDiv.className = 'result-source';
-          sourceDiv.textContent = 'Sources: ';
+          sourceDiv.textContent = 'Evidence: ';
           
-          result.sources.forEach((source, index) => {
-            const sourceLink = document.createElement('a');
-            sourceLink.href = source.url;
-            sourceLink.target = '_blank';
-            sourceLink.textContent = source.name || `Source ${index + 1}`;
+          result.evidence.forEach((evidence, index) => {
+            const sourceText = document.createElement('span');
+            sourceText.textContent = evidence.name || `Evidence ${index + 1}`;
             
-            sourceDiv.appendChild(sourceLink);
+            sourceDiv.appendChild(sourceText);
             
-            if (index < result.sources.length - 1) {
+            if (index < result.evidence.length - 1) {
               sourceDiv.appendChild(document.createTextNode(', '));
             }
           });
           
-          resultCard.appendChild(sourceDiv);
+          content.appendChild(sourceDiv);
         }
         
         resultCard.appendChild(header);
         resultCard.appendChild(content);
         
-        resultsContainer.appendChild(resultCard);
-      });
-      
-      if (data.length === 0) {
-        const noResults = document.createElement('div');
-        noResults.className = 'no-results';
-        noResults.textContent = 'No results found for your query.';
-        resultsContainer.appendChild(noResults);
+          resultsContainer.appendChild(resultCard);
+        });
+        
+        if (data.length === 0) {
+          const noResults = document.createElement('div');
+          noResults.className = 'no-results';
+          noResults.textContent = 'No results found for your query.';
+          resultsContainer.appendChild(noResults);
+        }
       }
     })
     .catch(error => {
-      console.error('Error:', error);
-      document.getElementById('loading').style.display = 'none';
-      
+      const loadingElement = document.getElementById('loading');
       const resultsContainer = document.getElementById('results-container');
-      resultsContainer.style.display = 'block';
-      resultsContainer.innerHTML = '<div class="error">Error processing your request. Please try again.</div>';
+      
+      if (loadingElement) {
+        loadingElement.style.display = 'none';
+      }
+      
+      if (resultsContainer) {
+        resultsContainer.style.display = 'block';
+        resultsContainer.innerHTML = `<div class="error">Error processing your request: ${error.message}</div>`;
+      }
     });
   });
 </script>
 </body>
-</html>
