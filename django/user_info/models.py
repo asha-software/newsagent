@@ -13,16 +13,17 @@ class UserQuery(models.Model):
     def __str__(self):
         return self.username
 
+
 class UserTool(models.Model):
     METHOD_CHOICES = [
-        ('GET', 'GET'),
-        ('POST', 'POST'),
-        ('PUT', 'PUT'),
-        ('DELETE', 'DELETE'),
-        ('PATCH', 'PATCH'),
+        ("GET", "GET"),
+        ("POST", "POST"),
+        ("PUT", "PUT"),
+        ("DELETE", "DELETE"),
+        ("PATCH", "PATCH"),
     ]
-    
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tools')
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tools")
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -37,6 +38,6 @@ class UserTool(models.Model):
     docstring = models.TextField(blank=True)
     target_fields = models.JSONField(null=True, blank=True)
     param_mapping = models.JSONField(null=True, blank=True)
-    
+
     def __str__(self):
         return self.name
