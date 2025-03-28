@@ -25,8 +25,8 @@ PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
-    'tools.calculator': ['multiply', 'add', 'divide'],
-    'tools.wikipedia': ['query']
+    'agents.tools.calculator': ['multiply', 'add', 'divide'],
+    'agents.tools.wikipedia': ['query']
 }
 
 
@@ -60,7 +60,7 @@ tools = [import_function(module, function) for module,
 llm = ChatOllama(
     model=MODEL,
     temperature=TEMPERATURE,
-    # base_url="http://host.docker.internal:11434", # if running in the studio
+    base_url="http://host.docker.internal:11434", # if running in the studio
 ).bind_tools(tools)
 
 

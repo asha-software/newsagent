@@ -15,7 +15,11 @@ BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 
-llm = ChatOllama(model=MODEL, temperature=TEMPERATURE)
+llm = ChatOllama(
+    model=MODEL, 
+    temperature=TEMPERATURE,
+    base_url="http://host.docker.internal:11434"  # when running in Docker
+)
 
 # State Object with explicit reducer
 
