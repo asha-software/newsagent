@@ -79,8 +79,11 @@ class DjangoSessionMiddleware(BaseHTTPMiddleware):
                     # Parse the JSON data
                     session_dict = JSONSerializer().loads(decoded)
                     
-                    # Get the user ID from the session
+                    # Sanitize the user ID from the session to prevent SQL injection
                     auth_user_id = session_dict.get('_auth_user_id')
+                    if auth_user_id and not str(auth_user_id).isdigit():
+                        # If auth_user_id is not a digit, it could be an injection attempt
+                        return None
                     
                     if not auth_user_id:
                         return None
@@ -93,16 +96,15 @@ class DjangoSessionMiddleware(BaseHTTPMiddleware):
                     user_row = cursor.fetchone()
                 except Exception:
                     # Fallback to the JOIN query if decoding fails
-                    cursor.execute(
-                        """
+                    # Use explicit parameterization to prevent SQL injection
+                    query = """
                         SELECT au.id, au.username, au.email 
                         FROM auth_user au
                         JOIN django_session ds ON ds.session_key = %s
                         WHERE ds.expire_date > NOW()
                         LIMIT 1
-                        """,
-                        (session_key,)
-                    )
+                        """
+                    cursor.execute(query, (session_key,))
                     user_row = cursor.fetchone()
                 
                 if user_row:
