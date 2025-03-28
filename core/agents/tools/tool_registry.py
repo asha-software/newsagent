@@ -1,9 +1,21 @@
 import requests
 from inspect import Signature, Parameter
 from functools import wraps
+from typing import Literal
 
 
-def create_tool(method, url_template, headers=None, default_params=None, data=None, json=None, docstring="", target_fields=None, param_mapping=None):
+def create_tool(
+    param_mapping: dict[str, Literal['url_params', 'params', 'headers', 'data', 'json']],
+    # NOTE: Do we need to support the DELETE or PATCH verbs?
+    method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    url_template: str,
+    headers: dict[str, str] = None,
+    default_params: dict[str, str] = None,
+    data: dict[str, str] = None,
+    json: dict[str, str] = None,
+    docstring: str = "",
+    target_fields: list[list[str | int]] = None,
+):
     """
     This function takes in various parameters to configure an API request, leaving some values as variables the user can specify later.
     It returns a function with a user-specified signature that can be bound to an LLM as a tool, allowing users to add their own API services
@@ -19,7 +31,7 @@ def create_tool(method, url_template, headers=None, default_params=None, data=No
         docstring (str): The docstring for the generated function. These are the instructions passed to the LLM 
             the return function's usage
         target_fields (list, optional): A list of listpaths to extract from the response JSON. Defaults to None.
-        param_mapping (dict, optional): A mapping of function arguments to request components. Defaults to None.
+        param_mapping (dict): A mapping of function arguments to request components. Defaults to None.
     """
 
     def api_caller(**kwargs):
