@@ -93,13 +93,9 @@
             </a>
         </div>
         <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+        <a href="{% url 'tool_list' %}" class="btn-logout" style="right: 150px;">Back to Tools</a>
         
         <div class="form-container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 style="color: white;">{{ title }}</h1>
-                <a href="{% url 'tool_list' %}" class="btn btn-outline-secondary">Back to Tools</a>
-            </div>
-            
             <div style="margin-bottom: 20px;">
                 <a href="{% url 'search' %}" style="color: white; text-decoration: none; margin-right: 20px;">
                     <span style="border-bottom: 2px solid transparent; padding-bottom: 5px;">Search</span>
@@ -225,6 +221,19 @@
                         <div class="field-help">Mapping of function arguments to request components as JSON object (e.g., {"query": "params", "api_key": "headers"})</div>
                         {% if form.param_mapping.errors %}
                             <div class="invalid-feedback d-block">{{ form.param_mapping.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox" style="display: flex; align-items: center;">
+                            {{ form.is_active }}
+                            <label class="custom-control-label" for="{{ form.is_active.id_for_label }}" style="margin-left: 10px; font-weight: bold;">Active</label>
+                        </div>
+                        <div class="field-help">Enable this checkbox to make the tool available in the search page</div>
+                        {% if form.is_active.errors %}
+                            <div class="invalid-feedback d-block">{{ form.is_active.errors }}</div>
                         {% endif %}
                     </div>
                 </div>

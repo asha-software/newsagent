@@ -43,10 +43,19 @@
                 <input type="checkbox" name="source" value="wikipedia">
                 <span>CNN</span>
               </label>
-              <label class="suggestion-item">
-                <input type="checkbox" name="source" value="custom">
-                <span>Custom</span>
-              </label>
+              {% if user_tools %}
+                {% for tool in user_tools %}
+                <label class="suggestion-item">
+                  <input type="checkbox" name="source" value="{{ tool.name }}">
+                  <span>{{ tool.name }}</span>
+                </label>
+                {% endfor %}
+              {% else %}
+                <label class="suggestion-item">
+                  <input type="checkbox" name="source" value="custom">
+                  <span>Custom</span>
+                </label>
+              {% endif %}
             </div>
           </fieldset>
         </form>

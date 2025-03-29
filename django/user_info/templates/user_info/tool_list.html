@@ -96,13 +96,9 @@
             </a>
         </div>
         <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+        <a href="{% url 'tool_create' %}" class="btn-logout" style="right: 150px;">Create New Tool</a>
         
         <div class="tools-container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 style="color: white;">Your API Tools</h1>
-                <a href="{% url 'tool_create' %}" class="btn-create">Create New Tool</a>
-            </div>
-            
             <div style="margin-bottom: 20px;">
                 <a href="{% url 'search' %}" style="color: white; text-decoration: none; margin-right: 20px;">
                     <span style="border-bottom: 2px solid transparent; padding-bottom: 5px;">Search</span>

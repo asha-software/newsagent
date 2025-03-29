@@ -76,10 +76,17 @@ def search(request):
         if query:
             show_results = True
     
+    # Get the user's active tools
+    user_tools = UserTool.objects.filter(user=request.user, is_active=True).order_by('name')
+    
+    # Debug: Print the user tools to the console
+    print(f"Active tools for {request.user.username}: {[tool.name for tool in user_tools]}")
+    
     # Pass API_URL from settings to the template
     context = {
         'show_results': show_results,
-        'API_URL': settings.API_URL
+        'API_URL': settings.API_URL,
+        'user_tools': user_tools
     }
         
     return render(request, 'search.html', context)  # Render the search page with context
