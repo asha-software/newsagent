@@ -3,9 +3,6 @@ from inspect import Signature, Parameter
 from functools import wraps
 from typing import Literal
 
-USER_AGENT = "newsagent/1.0 (https://ashasoftware.com/newsagent; info@ashasoftware.com)"
-
-
 def create_tool(
     method,
     url_template,
