@@ -1,0 +1,32 @@
+from googlesearch_with_custom_agent import search
+import typeguard
+from core.agents.tools import tool_registry_globals
+import langchain.tools
+
+
+@langchain.tools.tool()
+def perform_search(search_term: str) -> str:
+    """
+    Perform a Google Search and get back a response
+    Args:
+        search_term (str): The term to search on Google.
+
+    Returns:
+        Titles and descriptions for each search result
+    """
+    try:
+        # Type check inputs
+        typeguard.check_type(search_term, str)
+    except TypeError:
+        return "Invalid input type!"
+    # Perform google search and return a JSON result to the language model
+    return "\n\n".join(
+        f"Title: {result.title}\nDescription {result.description}"
+        for result in search(
+            search_term,
+            num_results=10,
+            advanced=True,
+            unique=True,
+            user_agent=tool_registry_globals.USER_AGENT,
+        )
+    )
