@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import json
 import os
 from pathlib import Path
-from langchain_core.messages import SystemMessage, BaseMessage
+from langchain_core.messages import SystemMessage, BaseMessage, AIMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
@@ -11,11 +11,26 @@ from typing import Annotated, TypedDict
 # Load environment variables
 load_dotenv('.env', override=True)
 
+LLM_OUTPUT_FORMAT = {
+    "type": "object",
+    "properties": {
+        "final_label": {
+            "type": "string",
+            "enum": ["true", "false", "mixed", "unknown"]
+        },
+        "final_justification": {
+            "type": "string"
+        }
+    },
+    "required": ["final_label", "final_justification"]
+}
+
+
 BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 
-llm = ChatOllama(model=MODEL, temperature=TEMPERATURE)
+llm = ChatOllama(model=MODEL, temperature=TEMPERATURE, format=LLM_OUTPUT_FORMAT)
 
 # State Object with explicit reducer
 
@@ -53,30 +68,15 @@ def verdict_node(state: State) -> dict:
 
 
 def postprocessing_node(state: State) -> dict:
-    response_text = state["messages"][-1].content
-    prompt = """Format the response into a JSON object with the following keys:
-{
-  "final_label": "true" | "false" | "mixed" | "unknown",
-  "final_justification": "A summary of why this document is classified this way."
-}
-Respond ONLY with the JSON object. No additional text.
-"""
-
-    formatted_response = llm.invoke(response_text + '\n' + prompt)
-
-    try:
-        results = json.loads(formatted_response.content)
-    except json.JSONDecodeError:
-        results = {
-            "final_label": "unknown",
-            "final_justification": "LLM response could not be parsed as JSON."
-        }
-
+    response = state["messages"][-1]
+    assert isinstance(response, AIMessage)
+    structured = response.content  
+    
     return {
-        "messages": [formatted_response],  # Only new message
-        "final_label": results["final_label"],
-        "final_justification": results["final_justification"]
-    }
+        "final_label": structured["final_label"],
+        "final_justification": structured["final_justification"],
+        "formatted_output": structured  
+}
 
 
 # Graph
