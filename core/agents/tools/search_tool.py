@@ -1,6 +1,6 @@
 from googlesearch_with_custom_agent import search
 import typeguard
-from core.agents.tools import tool_registry
+from core.agents.tools import tool_registry_globals
 import langchain.tools
 
 
@@ -12,7 +12,7 @@ def perform_search(search_term: str) -> str:
         search_term (str): The term to search on Google.
 
     Returns:
-        A list of titles and descriptions for each search result
+        Titles and descriptions for each search result
     """
     try:
         # Type check inputs
@@ -27,6 +27,6 @@ def perform_search(search_term: str) -> str:
             num_results=10,
             advanced=True,
             unique=True,
-            user_agent=tool_registry.USER_AGENT,
+            user_agent=tool_registry_globals.USER_AGENT,
         )
     )

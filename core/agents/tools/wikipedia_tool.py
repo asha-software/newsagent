@@ -2,7 +2,7 @@
 import langchain.tools
 import wikipedia
 from typeguard import check_type
-from core.agents.tools import tool_registry
+from core.agents.tools import tool_registry_globals
 
 
 @langchain.tools.tool()
@@ -22,7 +22,7 @@ def query(query_str: str) -> str:
     except TypeError:
         return "Invalid types for function inputs!"
     # Use our user agent
-    wikipedia.USER_AGENT = tool_registry.USER_AGENT
+    wikipedia.USER_AGENT = tool_registry_globals.USER_AGENT
     try:
         # See if we can find a page
         results: tuple[list[str], str] = wikipedia.search(
