@@ -1,10 +1,13 @@
-from typing import Any
-import numbers
-from langchain_core.tools import tool
+def multiply(a: int, b: int) -> int:
+    """Multiply `a` and `b`
 
+    Args:
+        a: First number
+        b: Second number
+    """
+    return a * b
 
-@tool(description="This tool adds two numbers.")
-def add(a: numbers.Complex, b: numbers.Complex) -> Any:
+def add(a: int, b: int) -> int:
     """Add `a` and `b`
 
     Args:
@@ -13,9 +16,7 @@ def add(a: numbers.Complex, b: numbers.Complex) -> Any:
     """
     return a + b
 
-
-@tool(description="This tool divides two complex numbers.")
-def divide(a: numbers.Complex, b: numbers.Complex) -> Any:
+def divide(a: int, b: int) -> int:
     """Divide `a` and `b`
 
     Args:
@@ -23,14 +24,3 @@ def divide(a: numbers.Complex, b: numbers.Complex) -> Any:
         b: Second number
     """
     return a / b
-
-
-@tool(description="This tool divides two numbers.")
-def integer_divide(a: numbers.Integral, b: numbers.Integral) -> int:
-    """Divide `a` and `b`, throw away the remainder
-
-    Args:
-        a: First number
-        b: Second number
-    """
-    return int(a) // int(b)
