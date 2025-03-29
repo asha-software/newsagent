@@ -9,19 +9,19 @@ from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
-from typing import Annotated, TypedDict
+from typing import Annotated, TypedDict, FunctionType
 
 # Absolute path to this dir. For relative paths like prompts
 BASE_DIR = Path(__file__).parent.resolve()
 
-# Absolute path to repo root. This will be used to import tools
+# Absolute path to repo root. This will be used to import builtin tools
 ROOT_DIR = BASE_DIR.parent.parent
 if str(ROOT_DIR) not in sys.path:
-    print(f"Adding {ROOT_DIR} to sys.path")
     sys.path.insert(0, str(ROOT_DIR))
 
 # Path prefix for builtin tools
-BUILTINS_PACKAGE_PREFIX = "core.agents.tools.builtins"
+# BUILTINS_PACKAGE_PREFIX = "core.agents.tools.builtins"
+PACKAGE_PREFIX = "core.agents.tools"
 
 load_dotenv(ROOT_DIR / 'core/.env', override=True)
 PATH_TO_FILE = os.path.abspath(__file__)
@@ -45,7 +45,7 @@ def import_builtin(module_name, function_name):
     """
     try:
         module = importlib.import_module(
-            f"{BUILTINS_PACKAGE_PREFIX}.{module_name}")
+            f"{PACKAGE_PREFIX}.builtins.{module_name}")
         function = getattr(module, function_name)
         return function
     except (ImportError, AttributeError) as e:
@@ -56,23 +56,28 @@ def import_builtin(module_name, function_name):
         print(f"Exception: {e}")
         return None
 
+def render_user_defined_tools(user_tools: list[dict]) -> list[FunctionType]:
 
 def create_agent(
         model: str = 'mistral-nemo',
-        builtin_tools: dict[str, str] = None) -> StateGraph:
+        builtin_tools: dict[str, str] = None,
+        user_tools: list[dict] = None) -> StateGraph:
     """
     Build the research agent graph.
     Args:
         model (str): The model to use for the agent.
         builtin_tools (dict[str, str]): A dictionary of builtin tools to use.
             Keys are module names, values are lists of function names.
+        user_tools (list[dict]): A list of user-defined tools to use.
+            each dict should be kwargs needed for tool_registry.create_tool
     Returns:
         StateGraph: The compiled state graph for the research agent.
     """
 
-    print(f"Builtin tools: {builtin_tools}")
-    tools = [import_builtin(module, function) for module,
-             functions in builtin_tools.items() for function in functions]
+    # Handle builtin tools
+    builtins = [import_builtin(module, function) for module,
+                functions in builtin_tools.items() for function in functions]
+
 
     # TODO: switch on model type to allow ChatOpenAI, ChatAnthropic, etc.
     llm = ChatOllama(
@@ -159,10 +164,10 @@ def main():
         model='mistral-nemo',
         builtin_tools=builtin_tools_wanted
     )
-    claim = "Python was created by Guido van Rossum"
-    final_state = research_agent.invoke({"claim": claim})
-    print(f"Final evidence: {final_state['evidence']}")
-    print()
+    # claim = "Python was created by Guido van Rossum"
+    # final_state = research_agent.invoke({"claim": claim})
+    # print(f"Final evidence: {final_state['evidence']}")
+    # print()
 
 
 if __name__ == "__main__":
