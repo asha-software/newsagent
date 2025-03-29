@@ -28,9 +28,12 @@ def query(query_input: str) -> str:
         result = wolframalpha.Client(os.environ[WOLFRAM_APP_ID_NAME]).query(query_input)
     except Exception:
         return "Unable to query Wolfram Alpha!"
-    return str(next(result.results).text)
+    try:
+        return str(next(result.results).text)
+    except StopIteration:
+        return f"No results on Wolfram Alpha for {query_input}!"
 
 
 if __name__ == "__main__":
-    a = query("what is two plus two")
+    a = query("erbwdsfmvoms")
     print(a)
