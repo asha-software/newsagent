@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from .models import UserTool
 from .forms import UserToolForm
 import json
+from django.views.decorators.csrf import csrf_exempt
 
 def signin(request): 
     if request.user.is_authenticated:
@@ -157,3 +158,53 @@ def get_session_id(request):
         'session_id': request.session.session_key,
         'username': request.user.username
     })
+
+def validate_is_preferred(value):
+    """
+    Validates and normalizes the is_preferred value.
+    """
+    if isinstance(value, bool):
+        return value
+    elif isinstance(value, str) and value.lower() in ['true', 'false']:
+        return value.lower() == 'true'
+    elif isinstance(value, int) and value in [0, 1]:
+        return bool(value)
+    else:
+        raise ValueError('is_preferred must be a boolean, 0/1, or "true"/"false".')
+
+@csrf_exempt
+@login_required
+def set_tool_preference(request):
+    """
+    API endpoint to allow users to specify whether they prefer a tool.
+    """
+    if request.method == 'POST':
+        try:
+            # Parse the JSON body
+            data = json.loads(request.body)
+            tool_id = data.get('tool_id')
+            is_preferred = data.get('is_preferred')
+
+            if tool_id is None or is_preferred is None:
+                return JsonResponse({'error': 'tool_id and is_preferred are required.'}, status=400)
+
+            # Validate and normalize is_preferred
+            try:
+                is_preferred = validate_is_preferred(is_preferred)
+            except ValueError as e:
+                return JsonResponse({'error': str(e)}, status=400)
+
+            # Fetch the tool for the current user
+            tool = get_object_or_404(UserTool, id=tool_id, user=request.user)
+
+            # Update the tool's preference
+            tool.is_preferred = is_preferred
+            tool.save()
+
+            return JsonResponse({'message': f"Preference for tool '{tool.name}' updated successfully!"})
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method.'}, status=405)
