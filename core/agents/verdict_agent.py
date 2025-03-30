@@ -6,7 +6,7 @@ from langchain_core.messages import SystemMessage, BaseMessage, AIMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from typing import Annotated, TypedDict
+from typing import Annotated, TypedDict, Dict
 
 # Load environment variables
 load_dotenv('.env', override=True)
@@ -36,8 +36,6 @@ llm = ChatOllama(
     format=LLM_OUTPUT_FORMAT)
 
 # State Object with explicit reducer
-
-
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claims: list[str]
@@ -45,6 +43,7 @@ class State(TypedDict):
     justifications: list[str]
     final_label: str | None
     final_justification: str | None
+    formatted_output: dict | None
 
 # Nodes definitions
 def prompt_prep_node(state: State) -> dict:
@@ -57,7 +56,6 @@ def prompt_prep_node(state: State) -> dict:
     )
 
     formatted_prompt = prompt_text.format(claim_analysis=claim_analysis)
-    # Return ONLY new messages
     return {"messages": [SystemMessage(content=formatted_prompt)]}
 
 
@@ -67,13 +65,16 @@ def verdict_node(state: State) -> dict:
     return {"messages": [response]}
 
 
-def postprocessing_node(state: State) -> dict:
+def postprocessing_node(state: State) -> Dict:
     response = state["messages"][-1]
     assert isinstance(response, AIMessage)
 
     try:
         structured = json.loads(response.content)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        print("JSON decode error:", e)
+        print("Raw response content:", response.content)
+        
         structured = {
             "final_label": "unknown",
             "final_justification": "Model did not return valid JSON."
@@ -82,11 +83,10 @@ def postprocessing_node(state: State) -> dict:
     return {
         "final_label": structured.get("final_label", "unknown"),
         "final_justification": structured.get("final_justification", "unknown"),
-        "messages": state["messages"]
     }
 
 
-# Graph
+# Graph definition
 builder = StateGraph(State)
 builder.add_node("prompt_prep", prompt_prep_node)
 builder.add_node("verdict", verdict_node)
