@@ -6,7 +6,7 @@ from langchain_core.messages import SystemMessage, BaseMessage, AIMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from typing import Annotated, TypedDict
+from typing import Annotated, TypedDict, Dict
 
 # Load environment variables
 load_dotenv('.env', override=True)
@@ -27,14 +27,12 @@ LLM_OUTPUT_FORMAT = {
 
 
 BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "mistral-nemo"
+MODEL = "llama3"
 TEMPERATURE = 0
 
 llm = ChatOllama(model=MODEL, temperature=TEMPERATURE, format=LLM_OUTPUT_FORMAT)
 
 # State Object with explicit reducer
-
-
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claims: list[str]
@@ -42,10 +40,9 @@ class State(TypedDict):
     justifications: list[str]
     final_label: str | None
     final_justification: str | None
+    formatted_output: dict | None
 
 # Nodes definitions
-
-
 def prompt_prep_node(state: State) -> dict:
     with open(BASE_DIR / "prompts/verdict_agent_system_prompt.txt", "r") as f:
         prompt_text = f.read()
@@ -56,8 +53,6 @@ def prompt_prep_node(state: State) -> dict:
     )
 
     formatted_prompt = prompt_text.format(claim_analysis=claim_analysis)
-
-    # Return ONLY new messages
     return {"messages": [SystemMessage(content=formatted_prompt)]}
 
 
@@ -67,19 +62,30 @@ def verdict_node(state: State) -> dict:
     return {"messages": [response]}
 
 
-def postprocessing_node(state: State) -> dict:
+def postprocessing_node(state: State) -> Dict:
     response = state["messages"][-1]
     assert isinstance(response, AIMessage)
-    structured = response.content  
-    
+
+    try:
+        structured = json.loads(response.content)
+    except json.JSONDecodeError as e:
+        print("JSON decode error:", e)
+        print("Raw response content:", response.content)
+        
+        structured = {
+            "final_label": "unknown",
+            "final_justification": "Model did not return valid JSON."
+        }
+
     return {
-        "final_label": structured["final_label"],
-        "final_justification": structured["final_justification"],
-        "formatted_output": structured  
-}
+        "final_label": structured.get("final_label", "unknown"),
+        "final_justification": structured.get("final_justification", "unknown"),
+        "formatted_output": structured,
+        "messages": []
+    }
 
 
-# Graph
+# Graph definition
 builder = StateGraph(State)
 
 builder.add_node("prompt_prep", prompt_prep_node)
