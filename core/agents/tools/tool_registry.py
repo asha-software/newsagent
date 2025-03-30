@@ -13,6 +13,7 @@ TYPE_MAPPING = {
     "None": type(None)  # For NoneType
 }
 
+
 def create_tool(
     param_mapping: dict[str, dict[str, str | Literal['url_params', 'params', 'headers', 'data', 'json']]],
     # NOTE: Do we need to support the DELETE or PATCH verbs?
@@ -90,6 +91,20 @@ def create_tool(
             data=req_data,
             json=req_json
         )
+        try:
+            response_json = response.json()
+        except ValueError:
+            print(
+                f"Error: Could not parse response as JSON. Response text: {response.text}")
+            return response.text
+
+        if target_fields:
+            return_fields = []
+            for listpath in target_fields:
+                # Make a copy of the listpath to avoid mutating the original
+                return_fields.append(extract_fields(
+                    response_json, listpath[:]))
+            return return_fields
         return response
 
     # Dynamically create the function signature
@@ -121,7 +136,7 @@ def main():
     param_mapping = {
         'name': {
             'type': 'str',
-            'for': 'url_params' 
+            'for': 'url_params'
         }
     }
     method = 'GET'
