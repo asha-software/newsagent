@@ -39,7 +39,8 @@ async def query(request: Request):
         builtin_tools={
             'calculator': ['multiply', 'add'],
             'wikipedia': ['query']
-        }
+        },
+        user_tool_kwargs=[]
     )
 
     # Claims decomposer
