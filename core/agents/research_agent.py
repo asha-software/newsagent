@@ -20,6 +20,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 # Path prefix for builtin tools
+# BUILTINS_PACKAGE_PREFIX = "core.agents.tools.builtins"
 PACKAGE_PREFIX = "core.agents.tools"
 
 load_dotenv(ROOT_DIR / 'core/.env', override=True)
