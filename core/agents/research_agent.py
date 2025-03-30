@@ -9,7 +9,7 @@ from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
-from typing import Annotated, TypedDict, FunctionType
+from typing import Annotated, TypedDict, Callable
 
 # Absolute path to this dir. For relative paths like prompts
 BASE_DIR = Path(__file__).parent.resolve()
@@ -56,12 +56,30 @@ def import_builtin(module_name, function_name):
         print(f"Exception: {e}")
         return None
 
-def render_user_defined_tools(user_tools: list[dict]) -> list[FunctionType]:
+
+def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
+    """
+    Takes a list of kwargs for user-defined tools and returns a list of tool instances.
+    Args:
+        tool_kwargs (list[dict]): A list of dictionaries, each dict comprising kwargs needed
+            for tool_registry.create_tool
+    Returns:
+        list[Callable]: A list of tool instances created from the provided kwargs, to bind to LLM
+    """
+    if not tool_kwargs:
+        return []
+
+    create_tool = getattr(importlib.import_module(
+        f"{PACKAGE_PREFIX}.tool_registry"), "create_tool")
+
+    return [
+        create_tool(**kwargs) for kwargs in tool_kwargs]
+
 
 def create_agent(
         model: str = 'mistral-nemo',
         builtin_tools: dict[str, str] = None,
-        user_tools: list[dict] = None) -> StateGraph:
+        user_tool_kwargs: list[dict] = None) -> StateGraph:
     """
     Build the research agent graph.
     Args:
@@ -78,13 +96,18 @@ def create_agent(
     builtins = [import_builtin(module, function) for module,
                 functions in builtin_tools.items() for function in functions]
 
+    # Handle user-defined tools
+    user_defined_tools = render_user_defined_tools(
+        tool_kwargs=user_tool_kwargs)
+
+    tools = builtins + user_defined_tools
 
     # TODO: switch on model type to allow ChatOpenAI, ChatAnthropic, etc.
     llm = ChatOllama(
         model=model,
         temperature=0,
         # base_url="http://host.docker.internal:11434", # if running in the studio
-    ).bind_tools(tools)
+    ).bind_tools(builtins + user_defined_tools)
 
     class State(TypedDict):
         messages: Annotated[list[BaseMessage], add_messages]
@@ -160,9 +183,22 @@ def main():
         'calculator': ['multiply', 'add'],
         'wikipedia': ['query']
     }
+
+    user_kwargs = {
+        'method': 'GET',
+        'url_template': 'https://pokeapi.co/api/v2/pokemon/{name}',
+        'docstring': 'Get information about a Pokémon from the PokeAPI.',
+        'headers': {'Accept': 'application/json'},
+        'target_fields': [['abilities', 0, 'ability', 'name'],
+                          ['abilities', 1, 'ability', 'name']],
+        'param_mapping': {
+            'name': 'url_params',  # Maps to URL placeholders
+        },
+    }
     research_agent = create_agent(
         model='mistral-nemo',
-        builtin_tools=builtin_tools_wanted
+        builtin_tools=builtin_tools_wanted,
+        user_tool_kwargs=[]
     )
     # claim = "Python was created by Guido van Rossum"
     # final_state = research_agent.invoke({"claim": claim})
