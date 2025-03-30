@@ -1,6 +1,6 @@
 from googlesearch_with_custom_agent import search
 import typeguard
-from core.agents.tools import tool_registry_globals
+import tool_registry_globals
 import langchain.tools
 
 
