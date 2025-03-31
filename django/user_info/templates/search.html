@@ -102,17 +102,31 @@
       apiUrl = apiUrl.replace('api:8000', 'localhost:8001');
     }
     
-    fetch(apiUrl + '/query', {
-      method: 'POST',
+    // Get the API key
+    fetch('/api/api-keys/', {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       },
-      credentials: 'include', // Include cookies in the request
-      body: JSON.stringify({
-        body: searchQuery,
-        sources: selectedSources
-      })
+      credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+      const apiKey = data.api_key;
+      
+      // Use the API key to make the query
+      return fetch(apiUrl + '/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-API-Key': apiKey
+        },
+        body: JSON.stringify({
+          body: searchQuery,
+          sources: selectedSources
+        })
+      });
     })
     .then(response => {
       if (!response.ok) {

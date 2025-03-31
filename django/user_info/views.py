@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import messages
 from django.http import JsonResponse
-from .models import UserTool
+from .models import UserTool, APIKey
 from .forms import UserToolForm
 import json
 
@@ -155,12 +155,20 @@ def tool_delete(request, tool_id):
     return render(request, 'user_info/tool_confirm_delete.html', {'tool': tool})
 
 @login_required
-def get_session_id(request):
+def get_api_key(request):
     """
-    Returns the current user's session ID.
+    Returns the current user's API key.
     This endpoint is used by the FastAPI backend to authenticate users.
     """
+    # Get the user's first active API key, or create one if none exists
+    api_key = APIKey.objects.filter(user=request.user, is_active=True).first()
+    
+    if not api_key:
+        # Create a new API key
+        api_key = APIKey(user=request.user, name="Auto-generated API Key")
+        api_key.save()
+    
     return JsonResponse({
-        'session_id': request.session.session_key,
+        'api_key': api_key.key,
         'username': request.user.username
     })

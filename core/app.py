@@ -1,12 +1,13 @@
 import os
 import sys
-import base64
 import datetime
 import pymysql
 from typing import Optional, Dict, Any
-from fastapi import FastAPI, HTTPException, Request, Depends
+from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+import uuid
 from agents.claim_decomposer import claim_decomposer
 from agents.research_agent import research_agent
 from agents.reasoning_agent import reasoning_agent
@@ -20,7 +21,6 @@ try:
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'user_query_app.settings')
     import django
     django.setup()
-    from django.contrib.sessions.serializers import JSONSerializer
 except ImportError as e:
     pass
 
@@ -33,79 +33,40 @@ DB_CONFIG = {
     "port": 3306,
 }
 
-# Django session authentication middleware
-class DjangoSessionMiddleware(BaseHTTPMiddleware):
+# API Key authentication middleware
+class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
-        # Get the session ID from the cookie
-        session_id = request.cookies.get("sessionid")
+        # Get the API key from the header
+        api_key = request.headers.get("X-API-Key")
         request.state.user = None
         
-        if session_id:
-            # Get the user from the session
-            user = await self.get_user_from_session(session_id)
+        if api_key:
+            # Get the user from the API key
+            user = await self.get_user_from_api_key(api_key)
             if user:
                 request.state.user = user
+                # Update last_used_at timestamp
+                await self.update_api_key_usage(api_key)
         
         response = await call_next(request)
         return response
     
-    async def get_user_from_session(self, session_key: str) -> Optional[Dict[str, Any]]:
+    async def get_user_from_api_key(self, api_key: str) -> Optional[Dict[str, Any]]:
         try:
             # Connect to the Django database
             connection = pymysql.connect(**DB_CONFIG)
             with connection.cursor() as cursor:
-                # Get the session from the database
+                # Get the user associated with the API key
                 cursor.execute(
-                    "SELECT session_data, expire_date FROM django_session WHERE session_key = %s",
-                    (session_key,)
+                    """
+                    SELECT au.id, au.username, au.email 
+                    FROM auth_user au
+                    JOIN user_info_apikey uak ON uak.user_id = au.id
+                    WHERE uak.key = %s AND uak.is_active = 1
+                    """,
+                    (api_key,)
                 )
-                session_row = cursor.fetchone()
-                
-                if not session_row or session_row[1] < datetime.datetime.now():
-                    return None
-                
-                # Get the user ID from the session data
-                session_data = session_row[0] 
-                
-                try:
-                    # Remove the base64 padding
-                    session_data = session_data.decode('ascii')
-                    if ':' in session_data:
-                        session_data = session_data.split(':', 1)[1]
-                    
-                    # Decode the base64 data
-                    decoded = base64.b64decode(session_data).decode('utf-8')
-                    
-                    # Parse the JSON data
-                    session_dict = JSONSerializer().loads(decoded)
-                    
-                    # Sanitize the user ID from the session to prevent SQL injection
-                    auth_user_id = session_dict.get('_auth_user_id')
-                    if auth_user_id and not str(auth_user_id).isdigit():
-                        # If auth_user_id is not a digit, it could be an injection attempt
-                        return None
-                    
-                    if not auth_user_id:
-                        return None
-                    
-                    # Get the user from the database
-                    cursor.execute(
-                        "SELECT id, username, email FROM auth_user WHERE id = %s",
-                        (auth_user_id,)
-                    )
-                    user_row = cursor.fetchone()
-                except Exception:
-                    # Fallback to the JOIN query if decoding fails
-                    # Use explicit parameterization to prevent SQL injection
-                    query = """
-                        SELECT au.id, au.username, au.email 
-                        FROM auth_user au
-                        JOIN django_session ds ON ds.session_key = %s
-                        WHERE ds.expire_date > NOW()
-                        LIMIT 1
-                        """
-                    cursor.execute(query, (session_key,))
-                    user_row = cursor.fetchone()
+                user_row = cursor.fetchone()
                 
                 if user_row:
                     return {
@@ -115,11 +76,30 @@ class DjangoSessionMiddleware(BaseHTTPMiddleware):
                     }
                 
                 return None
-        except Exception:
+        except Exception as e:
+            print(f"Error getting user from API key: {e}")
             return None
         finally:
             if 'connection' in locals() and connection:
                 connection.close()
+    
+    async def update_api_key_usage(self, api_key: str):
+        try:
+            # Connect to the Django database
+            connection = pymysql.connect(**DB_CONFIG)
+            with connection.cursor() as cursor:
+                # Update the last_used_at timestamp
+                cursor.execute(
+                    "UPDATE user_info_apikey SET last_used_at = NOW() WHERE key = %s",
+                    (api_key,)
+                )
+                connection.commit()
+        except Exception as e:
+            print(f"Error updating API key usage: {e}")
+        finally:
+            if 'connection' in locals() and connection:
+                connection.close()
+
 
 # Create FastAPI app
 app = FastAPI()
@@ -133,8 +113,8 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
-# Add the Django session middleware
-app.add_middleware(DjangoSessionMiddleware)
+# Add the API key middleware
+app.add_middleware(APIKeyMiddleware)
 
 # Helper function to get the current user
 async def get_current_user(request: Request) -> Dict[str, Any]:
@@ -142,6 +122,19 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
+
+# API Key models
+class APIKeyCreate(BaseModel):
+    name: str
+
+
+class APIKeyResponse(BaseModel):
+    id: int
+    name: str
+    key: str
+    created_at: datetime.datetime
+    last_used_at: Optional[datetime.datetime] = None
+    is_active: bool
 
 
 def delete_messages(states: list[dict]):
@@ -210,6 +203,84 @@ async def get_user(user: Dict[str, Any] = Depends(get_current_user)):
         "username": user["username"],
         "email": user["email"]
     }
+
+
+# create_api_key endpoint removed to prevent users from creating unlimited API keys
+# API keys should now be created only through the Django admin interface or
+# automatically when using the web interface
+
+@app.get("/api-keys")
+async def list_api_keys(user: Dict[str, Any] = Depends(get_current_user)):
+    """
+    Lists all API keys for the authenticated user.
+    """
+    try:
+        # Connect to the Django database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Get all API keys for the user
+            cursor.execute(
+                """
+                SELECT id, name, key, created_at, last_used_at, is_active 
+                FROM user_info_apikey 
+                WHERE user_id = %s
+                """,
+                (user["id"],)
+            )
+            rows = cursor.fetchall()
+            
+            return [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "key": row[2],
+                    "created_at": row[3],
+                    "last_used_at": row[4],
+                    "is_active": bool(row[5])
+                }
+                for row in rows
+            ]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error listing API keys: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+@app.delete("/api-keys/{api_key_id}")
+async def delete_api_key(api_key_id: int, user: Dict[str, Any] = Depends(get_current_user)):
+    """
+    Deletes an API key for the authenticated user.
+    """
+    try:
+        # Connect to the Django database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Check if the API key belongs to the user
+            cursor.execute(
+                """
+                SELECT id FROM user_info_apikey 
+                WHERE id = %s AND user_id = %s
+                """,
+                (api_key_id, user["id"])
+            )
+            if not cursor.fetchone():
+                raise HTTPException(status_code=404, detail="API key not found")
+            
+            # Delete the API key
+            cursor.execute(
+                "DELETE FROM user_info_apikey WHERE id = %s",
+                (api_key_id,)
+            )
+            connection.commit()
+            
+            return {"message": "API key deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting API key: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
 
 if __name__ == "__main__":
     import uvicorn

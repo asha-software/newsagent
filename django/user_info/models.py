@@ -1,5 +1,22 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import User
+
+class APIKey(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
+    key = models.CharField(max_length=64, unique=True, editable=False)
+    name = models.CharField(max_length=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = uuid.uuid4().hex
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.name} ({self.user.username})"
 
 class UserQuery(models.Model):
     username = models.CharField(max_length=150, unique=True)
