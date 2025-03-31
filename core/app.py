@@ -7,9 +7,8 @@ from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-import uuid
 from agents.claim_decomposer import claim_decomposer
-from agents.research_agent import research_agent
+from agents.research_agent import create_agent as create_research_agent
 from agents.reasoning_agent import reasoning_agent
 
 # Add the Django project directory to the Python path
@@ -45,8 +44,6 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             user = await self.get_user_from_api_key(api_key)
             if user:
                 request.state.user = user
-                # Update last_used_at timestamp
-                await self.update_api_key_usage(api_key)
         
         response = await call_next(request)
         return response
@@ -79,23 +76,6 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         except Exception as e:
             print(f"Error getting user from API key: {e}")
             return None
-        finally:
-            if 'connection' in locals() and connection:
-                connection.close()
-    
-    async def update_api_key_usage(self, api_key: str):
-        try:
-            # Connect to the Django database
-            connection = pymysql.connect(**DB_CONFIG)
-            with connection.cursor() as cursor:
-                # Update the last_used_at timestamp
-                cursor.execute(
-                    "UPDATE user_info_apikey SET last_used_at = NOW() WHERE key = %s",
-                    (api_key,)
-                )
-                connection.commit()
-        except Exception as e:
-            print(f"Error updating API key usage: {e}")
         finally:
             if 'connection' in locals() and connection:
                 connection.close()
@@ -149,48 +129,39 @@ async def health():
 
 @app.post("/query")
 async def query(request: Request):
-    try:
-        # Get user information
-        user = await get_current_user(request)
-        
-        # Parse the request body
-        req = await request.json()
-        text = req.get('body')
 
-        if not text:
-            raise HTTPException(
-                status_code=400, detail="Input {'body': str} is required.")
+    # Parse the request body
+    req = await request.json()
+    text = req.get('body')
 
+    if not text:
+        raise HTTPException(
+            status_code=400, detail="Input {'body': str} is required.")
 
-        try:
-            # Claims decomposer
-            initial_state = {"text": text}
-            result = claim_decomposer.invoke(initial_state)
-            claims = result["claims"]
+    # Try constructing research agent
+    research_agent = create_research_agent(
+        model="mistral-nemo",
+        builtin_tools={
+            'calculator': ['multiply', 'add'],
+            'wikipedia': ['query']
+        },
+        user_tool_kwargs=[]
+    )
 
-            research_results = [research_agent.invoke(
-                {"claim": claim}) for claim in claims]
-            delete_messages(research_results)
+    # Claims decomposer
+    initial_state = {"text": text}
+    result = claim_decomposer.invoke(initial_state)
+    claims = result["claims"]
 
-            reasoning_results = [reasoning_agent.invoke(
-                state) for state in research_results]
-            delete_messages(reasoning_results)
+    research_results = [research_agent.invoke(
+        {"claim": claim}) for claim in claims]
+    delete_messages(research_results)
 
+    reasoning_results = [reasoning_agent.invoke(
+        state) for state in research_results]
+    delete_messages(reasoning_results)
 
-            # Add user information to the response
-            for result in reasoning_results:
-                result["user"] = user["username"]
-
-            return reasoning_results
-        except Exception as e:
-            # Return a simplified response for debugging
-            return {
-                "error": "Error processing query",
-                "message": str(e),
-                "user": user["username"]
-            }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+    return reasoning_results
 
 @app.get("/user")
 async def get_user(user: Dict[str, Any] = Depends(get_current_user)):
