@@ -99,3 +99,14 @@ builder.add_edge("assistant", "postprocessing")
 builder.add_edge("postprocessing", END)
 
 claim_decomposer = builder.compile()
+
+
+def main():
+    # Example usage
+    initial_state = {"text": "The sky is blue and the grass is green."}
+    result = claim_decomposer.invoke(initial_state)
+    print(f"Decomposed claims: {result['claims']}")
+
+
+if __name__ == "__main__":
+    main()

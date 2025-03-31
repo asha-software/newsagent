@@ -44,7 +44,7 @@ def import_builtin(module_name, function_name):
     """
     try:
         module = importlib.import_module(
-            f"{PACKAGE_PREFIX}.{module_name}")
+            f"{PACKAGE_PREFIX}.builtins.{module_name}")
         function = getattr(module, function_name)
         return function
     except (ImportError, AttributeError) as e:

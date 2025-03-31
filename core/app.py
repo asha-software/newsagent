@@ -80,7 +80,6 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             if 'connection' in locals() and connection:
                 connection.close()
 
-
 # Create FastAPI app
 app = FastAPI()
 
