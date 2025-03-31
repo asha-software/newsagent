@@ -44,7 +44,6 @@ def extract_fields(obj: dict, listpath_to_field: list):
 
 def create_tool(
     name: str,
-    param_mapping: dict[str, dict[str, str | Literal['url_params', 'params', 'headers', 'data', 'json']]],
     # NOTE: Do we need to support the DELETE or PATCH verbs?
     method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     url_template: str,
@@ -54,6 +53,8 @@ def create_tool(
     json: dict[str, str] = None,
     docstring: str = "",
     target_fields: list[list[str | int]] = None,
+    param_mapping: dict[str, dict[str, str | Literal['url_params',
+                                                     'params', 'headers', 'data', 'json']]] = {},
 ):
     """
     This function takes in various parameters to configure an API request, leaving some values as variables the user can specify later.
@@ -61,6 +62,7 @@ def create_tool(
     to NewsAgent without having to modify the core code or execute arbitrary code on our servers.
 
     Args:
+        name (str): The user-defined name of the tool. NOTE: this should be unique amongst the user's tools.
         method (str): The HTTP method to use (e.g., 'GET', 'POST')
         url_template (str): A URL template with placeholders for parameters
         headers (dict, optional): Default headers to include in the request. Defaults to None.
@@ -70,7 +72,7 @@ def create_tool(
         docstring (str): The docstring for the generated function. These are the instructions passed to the LLM 
             the return function's usage
         target_fields (list, optional): A list of listpaths to extract from the response JSON. Defaults to None.
-        param_mapping (dict): A mapping of function arguments to request components. Defaults to None.
+        param_mapping (dict): A mapping of function arguments to request components. Defaults to empty dict.
             {
                 'param_name': {
                     'type': 'str',
