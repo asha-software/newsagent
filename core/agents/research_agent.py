@@ -27,8 +27,8 @@ PATH_TO_FILE = os.path.abspath(__file__)
 
 
 TOOL_REGISTRY = {
-    'calculator': ['multiply', 'add', 'divide'],
-    'wikipedia': ['query']
+    'core.agents.tools.calculator': ['multiply', 'add', 'divide'],
+    'core.agents.tools.wikipedia': ['query']
 }
 
 
