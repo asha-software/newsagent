@@ -226,6 +226,7 @@
                 </div>
 
                 <div class="form-section">
+                    <h3>Tool Settings</h3>
                     <div class="form-group">
                         <div class="custom-control custom-checkbox" style="display: flex; align-items: center;">
                             {{ form.is_active }}
@@ -234,6 +235,17 @@
                         <div class="field-help">Enable this checkbox to make the tool available in the search page</div>
                         {% if form.is_active.errors %}
                             <div class="invalid-feedback d-block">{{ form.is_active.errors }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox" style="display: flex; align-items: center;">
+                            {{ form.is_preferred }}
+                            <label class="custom-control-label" for="{{ form.is_preferred.id_for_label }}" style="margin-left: 10px; font-weight: bold;">Preferred</label>
+                        </div>
+                        <div class="field-help">Enable this checkbox to automatically select this tool in the search page</div>
+                        {% if form.is_preferred.errors %}
+                            <div class="invalid-feedback d-block">{{ form.is_preferred.errors }}</div>
                         {% endif %}
                     </div>
                 </div>

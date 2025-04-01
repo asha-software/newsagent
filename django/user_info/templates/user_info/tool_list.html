@@ -51,6 +51,11 @@
             background-color: rgba(114, 28, 36, 0.7);
             color: #fff;
         }
+        .status-preferred {
+            background-color: rgba(255, 193, 7, 0.7);
+            color: #000;
+            margin-left: 5px;
+        }
         .tools-container {
             width: 100%;
             max-width: 1000px;
@@ -127,6 +132,11 @@
                                         <span class="tool-status {% if tool.is_active %}status-active{% else %}status-inactive{% endif %}">
                                             {% if tool.is_active %}Active{% else %}Inactive{% endif %}
                                         </span>
+                                        {% if tool.is_preferred %}
+                                        <span class="tool-status status-preferred">
+                                            Preferred
+                                        </span>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="tool-body">

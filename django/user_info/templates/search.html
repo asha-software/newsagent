@@ -46,7 +46,7 @@
               {% if user_tools %}
                 {% for tool in user_tools %}
                 <label class="suggestion-item">
-                  <input type="checkbox" name="source" value="{{ tool.name }}">
+                  <input type="checkbox" name="source" value="{{ tool.name }}" {% if tool.is_preferred %}checked{% endif %}>
                   <span>{{ tool.name }}</span>
                 </label>
                 {% endfor %}
