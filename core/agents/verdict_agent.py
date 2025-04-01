@@ -1,12 +1,11 @@
 from dotenv import load_dotenv
 import json
-import os
 from pathlib import Path
 from langchain_core.messages import SystemMessage, BaseMessage, AIMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from typing import Annotated, TypedDict, Dict
+from typing import Annotated, TypedDict
 
 # Load environment variables
 load_dotenv('.env', override=True)
@@ -24,7 +23,7 @@ LLM_OUTPUT_FORMAT = {
     "required": ["final_label", "final_justification"]
 }
 BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "llama3"
+MODEL = "mistral-nemo"
 TEMPERATURE = 0
 
 llm = ChatOllama(
@@ -33,7 +32,6 @@ llm = ChatOllama(
     base_url="http://host.docker.internal:11434"  # when running in Docker
 )
 
-# State Object with explicit reducer
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claims: list[str]
@@ -42,28 +40,29 @@ class State(TypedDict):
     final_label: str | None
     final_justification: str | None
 
+
+with open(BASE_DIR / "prompts/claim_decomposer_system_prompt.txt", "r") as f:
+    system_prompt = f.read()
+system_message = SystemMessage(content=system_prompt)
+
+
 # Nodes definitions
 def prompt_prep_node(state: State) -> dict:
-    with open(BASE_DIR / "prompts/verdict_agent_system_prompt.txt", "r") as f:
-        prompt_text = f.read()
 
-    claim_analysis = "\n".join(
+    claim_analysis = "### Claims Analysis\n" + "\n".join(
         f"Claim: {state['claims'][i]}\nVerdict: {state['labels'][i]}\nJustification: {state['justifications'][i]}"
         for i in range(len(state["claims"]))
     )
-
-    formatted_prompt = prompt_text.format(claim_analysis=claim_analysis)
-    return {"messages": [SystemMessage(content=formatted_prompt)]}
+    return {"messages": [system_message, AIMessage(content=claim_analysis)]}
 
 
 def verdict_node(state: State) -> dict:
     response = llm.invoke(state['messages'])
-    return {"messages": [response]}
+    return {"messages": response}
 
 
 def postprocessing_node(state: State) -> dict:
-    response = state["messages"][-1]
-    assert isinstance(response, AIMessage)
+    response = state['messages'][-1]
 
     try:
         structured = json.loads(response.content)
@@ -77,9 +76,10 @@ def postprocessing_node(state: State) -> dict:
         }
 
     return {
-        "final_label": structured.get("final_label", "unknown"),
-        "final_justification": structured.get("final_justification", "unknown"),
+        "final_label": structured.get("final_label", "Verdict Agent did not return a verdict."),
+        "final_justification": structured.get("final_justification", "Verdict Agent did not return a justification."),
     }
+
 
 # Graph definition
 builder = StateGraph(State)

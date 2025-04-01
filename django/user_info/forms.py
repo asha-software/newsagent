@@ -16,7 +16,7 @@ class UserToolForm(forms.ModelForm):
         fields = [
             'name', 'description', 'is_active', 'method', 'url_template',
             'headers', 'default_params', 'data', 'json_payload',
-            'docstring', 'target_fields', 'param_mapping'
+            'docstring', 'target_fields', 'param_mapping', 'is_preferred',
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
