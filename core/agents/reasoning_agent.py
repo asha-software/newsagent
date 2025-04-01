@@ -11,7 +11,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, Literal, TypedDict
 
 BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "mistral-nemo"
+MODEL = "llama3.2"
 TEMPERATURE = 0
 load_dotenv('.env', override=True)
 
