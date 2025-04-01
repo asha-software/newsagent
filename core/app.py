@@ -1,5 +1,4 @@
 import os
-import sys
 import datetime
 import pymysql
 from typing import Optional, Dict, Any
@@ -11,25 +10,13 @@ from agents.claim_decomposer import claim_decomposer
 from agents.research_agent import create_agent as create_research_agent
 from agents.reasoning_agent import reasoning_agent
 
-# Add the Django project directory to the Python path
-django_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../django'))
-sys.path.insert(0, django_path)
-
-# Initialize Django settings for using Django components
-try:
-    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'user_query_app.settings')
-    import django
-    django.setup()
-except ImportError as e:
-    pass
-
-# Django database connection settings
+# Database connection settings - directly configured without Django dependency
 DB_CONFIG = {
     "host": os.getenv("DB_HOST", "localhost"),
     "user": os.getenv("DB_USER", "fakenews_user"),
     "password": os.getenv("DB_PASSWORD", "password"),
     "database": os.getenv("DB_NAME", "fakenews_db"),
-    "port": 3306,
+    "port": int(os.getenv("DB_PORT", "3306")),
 }
 
 # API Key authentication middleware
@@ -50,10 +37,11 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     
     async def get_user_from_api_key(self, api_key: str) -> Optional[Dict[str, Any]]:
         try:
-            # Connect to the Django database
+            # Connect directly to MySQL database
             connection = pymysql.connect(**DB_CONFIG)
             with connection.cursor() as cursor:
                 # Get the user associated with the API key
+                # Same query as before, just with a clearer comment
                 cursor.execute(
                     """
                     SELECT au.id, au.username, au.email 
@@ -127,11 +115,17 @@ async def health():
 
 
 @app.post("/query")
-async def query(request: Request):
-
+async def query(request: Request, user: Dict[str, Any] = Depends(get_current_user)):
+    # User is authenticated at this point
+    
     # Parse the request body
     req = await request.json()
+
     text = req.get('body')
+    
+    # Extract the sources array from the request
+    selected_sources = req.get('sources', [])  # Default to empty list if not provided
+    print(f"Selected sources: {selected_sources}")
 
     if not text:
         raise HTTPException(
@@ -153,7 +147,7 @@ async def query(request: Request):
     claims = result["claims"]
 
     research_results = [research_agent.invoke(
-        {"claim": claim}) for claim in claims]
+        {"claim": claim, "selected_sources": selected_sources}) for claim in claims]
     delete_messages(research_results)
 
     reasoning_results = [reasoning_agent.invoke(
@@ -185,7 +179,7 @@ async def list_api_keys(user: Dict[str, Any] = Depends(get_current_user)):
     Lists all API keys for the authenticated user.
     """
     try:
-        # Connect to the Django database
+        # Connect directly to MySQL database
         connection = pymysql.connect(**DB_CONFIG)
         with connection.cursor() as cursor:
             # Get all API keys for the user
@@ -222,7 +216,7 @@ async def delete_api_key(api_key_id: int, user: Dict[str, Any] = Depends(get_cur
     Deletes an API key for the authenticated user.
     """
     try:
-        # Connect to the Django database
+        # Connect directly to MySQL database
         connection = pymysql.connect(**DB_CONFIG)
         with connection.cursor() as cursor:
             # Check if the API key belongs to the user
