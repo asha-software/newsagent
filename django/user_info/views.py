@@ -8,7 +8,6 @@ from django.http import JsonResponse
 from .models import UserTool
 from .forms import UserToolForm
 import json
-from django.views.decorators.csrf import csrf_exempt
 
 def signin(request): 
     if request.user.is_authenticated:

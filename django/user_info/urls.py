@@ -1,7 +1,6 @@
 from django.urls import path
 from .views import register, signin, home, search, logout_view, forgot_password_view
 from .views import tool_list, tool_create, tool_edit, tool_delete, get_session_id
-from .views import set_tool_preference
 
 urlpatterns = [
     path('', home, name='home'),
