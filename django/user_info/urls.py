@@ -19,5 +19,4 @@ urlpatterns = [
     
     # API endpoints
     path('api/session-id/', get_session_id, name='get_session_id'),
-    path('api/tools/preference/', set_tool_preference, name='set_tool_preference'),
 ]
