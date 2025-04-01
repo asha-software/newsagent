@@ -34,6 +34,7 @@ class UserTool(models.Model):
     docstring = models.TextField(blank=True)
     target_fields = models.JSONField(null=True, blank=True)
     param_mapping = models.JSONField(null=True, blank=True)
+    is_preferred = models.BooleanField(default=False)  # Boolean field to indicate user preference
     
     def __str__(self):
         return self.name
