@@ -1,0 +1,269 @@
+[
+  {
+    "inputs": {
+      "text": "Pope Francis endorses Donald Trump for president"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "Pope Francis endorses Donald Trump for president",
+      "search_results": [
+        {
+          "title": "Read all about it: The biggest fake news stories of 2016",
+          "url": "https://www.cnbc.com/2016/12/30/read-all-about-it-the-biggest-fake-news-stories-of-2016.html",
+          "snippet": "The story was originally published by a site called WTOE 5 News before being copied by a popular fake news publisher Ending the Fed. When it was operational, it openly admitted to fabricating content and even had a disclaimer on its homepage saying: “most articles on wt0e5news.com are satire or pure fantasy.” During a press conference on October 2, Pope Francis spoke publicly about the U.S. election for the first time, saying “I never say a word about electoral campaigns”"
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "NASA confirms discovery of an Earth-like planet with signs of life"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "NASA confirms discovery of an Earth-like planet with signs of life",
+      "search_results": [
+        {
+          "title": "NASA debunks viral claim about discovering alien life",
+          "url": "https://www.space.com/nasa-debunks-alien-life-claims",
+          "snippet": "NASA scientists confirm finding an Earth-like exoplanet in the habitable zone, but there is no direct evidence of life yet. Viral claims on social media exaggerated the announcement."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "Apple announces acquisition of Tesla for $1 trillion"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "Apple acquisition of Tesla for $1 trillion",
+      "search_results": [
+        {
+          "title": "Fact Check: Apple is NOT buying Tesla in record-breaking deal",
+          "url": "https://www.reuters.com/fact-check-apple-tesla-acquisition",
+          "snippet": "A viral social media post claimed that Apple is acquiring Tesla for $1 trillion, but no official sources or financial disclosures support this claim."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "Amazon to accept Bitcoin for all purchases starting next month"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "Amazon to accept Bitcoin for purchases",
+      "search_results": [
+        {
+          "title": "Amazon denies rumors about accepting Bitcoin payments",
+          "url": "https://www.bloomberg.com/amazon-bitcoin-payment-rumors",
+          "snippet": "A spokesperson for Amazon confirmed that the company has no immediate plans to accept Bitcoin as payment despite online rumors suggesting otherwise."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "WHO issues global alert about new airborne virus outbreak"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "WHO global alert new airborne virus",
+      "search_results": [
+        {
+          "title": "WHO clarifies misinformation about new virus outbreak",
+          "url": "https://www.who.int/news-room/fact-check-virus-alert",
+          "snippet": "WHO officials have stated that while new respiratory illnesses emerge frequently, there has been no global alert regarding an airborne virus of concern at this time."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "Elon Musk steps down as CEO of SpaceX"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "Elon Musk steps down as SpaceX CEO",
+      "search_results": [
+        {
+          "title": "False reports claim Elon Musk resigns from SpaceX",
+          "url": "https://www.cnn.com/elon-musk-spacex-ceo-rumors",
+          "snippet": "Despite speculation, SpaceX officials confirm that Elon Musk remains CEO and has no plans to step down."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "NASA successfully lands Perseverance rover on Mars"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "NASA Perseverance rover Mars landing",
+      "search_results": [
+        {
+          "title": "NASA’s Perseverance Rover Successfully Lands on Mars",
+          "url": "https://www.nasa.gov/perseverance-mars-landing",
+          "snippet": "On February 18, 2021, NASA’s Perseverance rover successfully touched down in Jezero Crater on Mars, beginning its mission to search for signs of past life."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "WHO declares COVID-19 a global pandemic"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "WHO declares COVID-19 pandemic",
+      "search_results": [
+        {
+          "title": "WHO Declares COVID-19 a Pandemic",
+          "url": "https://www.who.int/covid-19-pandemic-declaration",
+          "snippet": "On March 11, 2020, the World Health Organization officially declared COVID-19 a global pandemic due to its rapid spread across multiple countries."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "James Webb Space Telescope captures first images of exoplanet"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "James Webb Space Telescope exoplanet images",
+      "search_results": [
+        {
+          "title": "James Webb Telescope Captures Its First Exoplanet Images",
+          "url": "https://www.nasa.gov/jwst-exoplanet-images",
+          "snippet": "NASA’s James Webb Space Telescope has captured its first direct images of an exoplanet, marking a major milestone in astronomical observations."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "Amazon surpasses $2 trillion in market capitalization"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "Amazon market cap surpasses $2 trillion",
+      "search_results": [
+        {
+          "title": "Amazon Hits $2 Trillion Market Cap for the First Time",
+          "url": "https://www.bloomberg.com/amazon-2-trillion-market-cap",
+          "snippet": "Amazon has officially surpassed a $2 trillion market capitalization, making it one of the largest publicly traded companies in history."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "Pfizer COVID-19 vaccine receives full FDA approval"
+    },
+    "outputs": {
+      "tool_call": "search",
+      "query": "Pfizer COVID-19 vaccine full FDA approval",
+      "search_results": [
+        {
+          "title": "Pfizer COVID-19 Vaccine Receives Full FDA Approval",
+          "url": "https://www.fda.gov/pfizer-covid19-vaccine-approval",
+          "snippet": "The U.S. Food and Drug Administration has granted full approval to the Pfizer-BioNTech COVID-19 vaccine, marking a significant milestone in the fight against the pandemic."
+        }
+      ]
+    },
+    "metadata": { "type": "uses_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "The U.S. constitution permits the president to serve more than two terms"
+    },
+    "outputs": {
+      "query": null,
+      "search_results": null
+    },
+    "metadata": { "type": "skips_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "Water boils at 100°C at sea level"
+    },
+    "outputs": {
+      "query": null,
+      "search_results": null
+    },
+    "metadata": { "type": "skips_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "The capital of France is Paris"
+    },
+    "outputs": {
+      "query": null,
+      "search_results": null
+    },
+    "metadata": { "type": "skips_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "Shakespeare wrote Hamlet"
+    },
+    "outputs": {
+      "query": null,
+      "search_results": null
+    },
+    "metadata": { "type": "skips_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "The Earth revolves around the Sun"
+    },
+    "outputs": {
+      "query": null,
+      "search_results": null
+    },
+    "metadata": { "type": "skips_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "The Great Wall of China is located in China"
+    },
+    "outputs": {
+      "query": null,
+      "search_results": null
+    },
+    "metadata": { "type": "skips_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "Einstein developed the theory of relativity"
+    },
+    "outputs": {
+      "query": null,
+      "search_results": null
+    },
+    "metadata": { "type": "skips_web_search" }
+  },
+  {
+    "inputs": {
+      "text": "The United Nations was established in 1945 following World War II"
+    },
+    "outputs": {
+      "query": null,
+      "search_results": null
+    },
+    "metadata": { "type": "skips_web_search" }
+  }
+]
