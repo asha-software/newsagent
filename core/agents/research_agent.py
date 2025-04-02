@@ -1,3 +1,9 @@
+"""
+NOTE: If you want to run this as a standalone script, run
+python -m core.agents.research_agent
+from project root
+"""
+
 from dotenv import load_dotenv
 import importlib
 import os
@@ -14,10 +20,14 @@ from typing import Annotated, TypedDict, Callable
 # Absolute path to this dir. For relative paths like prompts
 BASE_DIR = Path(__file__).parent.resolve()
 
-# Absolute path to repo root. This will be used to import builtin tools
+# Absolute path to repo root. This will be used to import builtin tools and Evidence from common_types
 ROOT_DIR = BASE_DIR.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
+
+# fmt: off
+from core.agents.common_types import Evidence
+# fmt: on
 
 # Path prefix for builtin tools
 PACKAGE_PREFIX = "core.agents.tools"
@@ -101,7 +111,6 @@ def create_agent(
 
     tools = builtins + user_defined_tools
 
-    # TODO: switch on model type to allow ChatOpenAI, ChatAnthropic, etc.
     llm = ChatOllama(
         model=model,
         temperature=0,
@@ -145,10 +154,9 @@ def create_agent(
                         next_message = state['messages'][j]
                         if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
                             # Found the corresponding ToolMessage
-                            evidence.append({
-                                'name': tool_call['name'],
-                                'args': tool_call['args'],
-                                'result': next_message.content})
+                            evidence_item = Evidence(
+                                name=tool_call['name'], args=tool_call['args'], result=next_message.content)
+                            evidence.append(evidence_item)
                             break
 
         return {'evidence': evidence}
@@ -179,25 +187,34 @@ def create_agent(
 
 def main():
     builtin_tools_wanted = {
-        'calculator': ['multiply', 'add'],
-        'wikipedia': ['query']
+        'calculator': ['add', 'multiply'],
+        # 'wikipedia': ['query']
     }
 
-    user_kwargs = {
+    pokemon_kwargs = {
+        'name': 'pokeapi',
         'method': 'GET',
-        'url_template': 'https://pokeapi.co/api/v2/pokemon/{name}',
-        'docstring': 'Get information about a Pokémon from the PokeAPI.',
         'headers': {'Accept': 'application/json'},
+        'url_template': 'https://pokeapi.co/api/v2/pokemon/{name}',
+        'docstring': '''Get information about a Pokémon from the PokeAPI.
+    Args:
+        name (str): The name of the Pokémon to query, ALWAYS LOWERCASED.
+    Returns:
+        list: A list containing the Pokémon's abilities.
+    ''',
         'target_fields': [['abilities', 0, 'ability', 'name'],
                           ['abilities', 1, 'ability', 'name']],
         'param_mapping': {
-            'name': 'url_params',  # Maps to URL placeholders
+            'name': {
+                'type': 'str',
+                'for': 'url_params'
+            }
         },
     }
     research_agent = create_agent(
         model='mistral-nemo',
         builtin_tools=builtin_tools_wanted,
-        user_tool_kwargs=[]
+        user_tool_kwargs=[pokemon_kwargs]
     )
     # claim = "Python was created by Guido van Rossum"
     # final_state = research_agent.invoke({"claim": claim})
