@@ -185,7 +185,7 @@ async def list_api_keys(user: Dict[str, Any] = Depends(get_current_user)):
             # Get all API keys for the user
             cursor.execute(
                 """
-                SELECT id, name, key, created_at, last_used_at, is_active 
+                SELECT id, name, `key`, created_at, last_used_at, is_active 
                 FROM user_info_apikey 
                 WHERE user_id = %s
                 """,
