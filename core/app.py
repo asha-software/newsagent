@@ -52,6 +52,13 @@ async def query(request: Request):
         {"claim": claim}) for claim in claims]
     delete_messages(research_results)
 
+    # Drop the 'args' from the research results evidence, leaving only tool name and result content
+    evidence_for_reasoning = [{'name': evidence['name'], 
+                              'content': evidence['content']}
+                              for evidence in research_results['evidence']]
+    
+    
+
     reasoning_results = [reasoning_agent.invoke(
         state) for state in research_results]
     delete_messages(reasoning_results)

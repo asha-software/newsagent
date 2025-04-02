@@ -1,16 +1,25 @@
 from dotenv import load_dotenv
 import json
-import os
 from pathlib import Path
-from langchain.prompts import SystemMessagePromptTemplate
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
+import sys
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, Literal, TypedDict
 
+# Absolute path to this dir. For relative paths like prompts
 BASE_DIR = Path(__file__).parent.resolve()
+
+# Absolute path to repo root. This will be used to import Evidence from common_types
+ROOT_DIR = BASE_DIR.parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+# fmt: off
+from core.agents.common_types import Evidence
+# fmt: on
+
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 load_dotenv('.env', override=True)
@@ -19,7 +28,7 @@ load_dotenv('.env', override=True)
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
-    evidence: list[str]
+    evidence: list[Evidence]
     label: Literal["true", "false", "unknown"] | None
     justification: str | None
 
@@ -59,15 +68,19 @@ def preprocessing(state: State) -> State:
     system prompt will help make the model trust it more than the claim.
     """
     # Format system prmopt template: unwind the evidence list to a bullet list
-    evidence_str = "\n".join([f"* {e}" for e in state["evidence"]])
+    evidence_str = "\n".join(
+        [f"* {ev['name']}: {ev['result']}" for ev in state["evidence"]])
     formatted_prompt = system_prompt.format(evidence=evidence_str)
 
     # Set system and human messages in the state
-    state['messages'] = [SystemMessage(content=formatted_prompt)]
-    return {'messages': HumanMessage(content=state['claim'])}
+    sys_message = SystemMessage(content=formatted_prompt)
+    claim_message = HumanMessage(content='Claim: ' + state['claim'])
+
+    return {'messages': [sys_message, claim_message]}
 
 
 def assistant(state: State) -> State:
+
     response = llm.invoke(state['messages'])
     return {"messages": response}
 

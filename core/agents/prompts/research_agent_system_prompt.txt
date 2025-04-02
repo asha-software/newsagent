@@ -21,7 +21,6 @@ Tool calls: [{"tool": "wikipedia", "args": {"query": "Eiffel Tower"}}]
 Claim: "The U.S. GDP increased 3% this year, but this is down from a 3.6% increase last year, representing a 33% decline in growth rate."
 Tool calls: [
     {"tool": "web_search", "args": {"query": "united states GDP increase this year"}}, 
-    {"tool": "web_search", "args": {"query": "united states GDP increase last year"}},
     {"tool": "calculator", "args": {"divide": "a": 3, "b": 3.6}}
 ]
 
