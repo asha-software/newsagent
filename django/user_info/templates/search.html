@@ -36,25 +36,26 @@
             </div>
             <div class="suggestion-wrap">
               <label class="suggestion-item">
-                <input type="checkbox" name="source" value="ap_news">
+                <input type="checkbox" name="source" value="calculator">
                 <span>AP News</span>
               </label>
               <label class="suggestion-item">
-                <input type="checkbox" name="source" value="cnn">
+                <input type="checkbox" name="source" value="wikipedia">
                 <span>CNN</span>
               </label>
-              <label class="suggestion-item">
-                <input type="checkbox" name="source" value="bbc">
-                <span>BBC</span>
-              </label>
-              <label class="suggestion-item">
-                <input type="checkbox" name="source" value="wikipedia">
-                <span>Wikipedia</span>
-              </label>
-              <label class="suggestion-item">
-                <input type="checkbox" name="source" value="custom">
-                <span>Custom</span>
-              </label>
+              {% if user_tools %}
+                {% for tool in user_tools %}
+                <label class="suggestion-item">
+                  <input type="checkbox" name="source" value="{{ tool.name }}" {% if tool.is_preferred %}checked{% endif %}>
+                  <span>{{ tool.name }}</span>
+                </label>
+                {% endfor %}
+              {% else %}
+                <label class="suggestion-item">
+                  <input type="checkbox" name="source" value="custom">
+                  <span>Custom</span>
+                </label>
+              {% endif %}
             </div>
           </fieldset>
         </form>
@@ -101,17 +102,31 @@
       apiUrl = apiUrl.replace('api:8000', 'localhost:8001');
     }
     
-    fetch(apiUrl + '/query', {
-      method: 'POST',
+    // Get the API key
+    fetch('/api/api-keys/', {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest'
       },
-      credentials: 'include', // Include cookies in the request
-      body: JSON.stringify({
-        body: searchQuery,
-        sources: selectedSources
-      })
+      credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+      const apiKey = data.api_key;
+      
+      // Use the API key to make the query
+      return fetch(apiUrl + '/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-API-Key': apiKey
+        },
+        body: JSON.stringify({
+          body: searchQuery,
+          sources: selectedSources
+        })
+      });
     })
     .then(response => {
       if (!response.ok) {

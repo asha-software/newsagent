@@ -104,6 +104,9 @@ def create_agent(
     # Handle builtin tools
     builtins = [import_builtin(module, function) for module,
                 functions in builtin_tools.items() for function in functions]
+    
+    # Filter out None values (failed imports)
+    builtins = [tool for tool in builtins if tool is not None]
 
     # Handle user-defined tools
     user_defined_tools = render_user_defined_tools(
@@ -114,8 +117,8 @@ def create_agent(
     llm = ChatOllama(
         model=model,
         temperature=0,
-        # base_url="http://host.docker.internal:11434", # if running in the studio
-    ).bind_tools(builtins + user_defined_tools)
+        base_url="http://host.docker.internal:11434", # if running in the studio
+    ).bind_tools(tools)  # Use the filtered tools list
 
     class State(TypedDict):
         messages: Annotated[list[BaseMessage], add_messages]

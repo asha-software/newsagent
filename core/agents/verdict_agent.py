@@ -26,9 +26,11 @@ BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 
-llm = ChatOllama(model=MODEL, temperature=TEMPERATURE,
-                 format=LLM_OUTPUT_FORMAT)
-
+llm = ChatOllama(
+    model=MODEL, 
+    temperature=TEMPERATURE,
+    base_url="http://host.docker.internal:11434"  # when running in Docker
+)
 
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]

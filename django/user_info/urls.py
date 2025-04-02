@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import register, signin, home, search, logout_view, forgot_password_view
-from .views import tool_list, tool_create, tool_edit, tool_delete, get_session_id
+from .views import tool_list, tool_create, tool_edit, tool_delete
+from .views import get_api_key
 
 urlpatterns = [
     path('', home, name='home'),
@@ -17,5 +18,5 @@ urlpatterns = [
     path('tools/<int:tool_id>/delete/', tool_delete, name='tool_delete'),
     
     # API endpoints
-    path('api/session-id/', get_session_id, name='get_session_id'),
+    path('api/api-keys/', get_api_key, name='get_api_key'),
 ]
