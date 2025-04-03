@@ -2,8 +2,9 @@
 name = "newsagent"
 version = "0.1.0"
 description = "Agentic, multitool claim verification system"
-authors = ["Benjamin Basseri <bbasseri@fas.harvard.edu>"]
+authors = [{ name = "Benjamin Basseri", email = "bbasseri@fas.harvard.edu" }]
 dependencies = []
+
 
 [tool.pytest.ini_options]
 pythonpath = [

@@ -17,6 +17,8 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict, Callable
 
+from core.agents.common_types import Evidence
+
 # Absolute path to this dir. For relative paths like prompts
 BASE_DIR = Path(__file__).parent.resolve()
 
@@ -26,7 +28,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 # fmt: off
-from core.agents.common_types import Evidence
+# from core.agents.common_types import Evidence
 # fmt: on
 
 # Path prefix for builtin tools
@@ -104,7 +106,7 @@ def create_agent(
     # Handle builtin tools
     builtins = [import_builtin(module, function) for module,
                 functions in builtin_tools.items() for function in functions]
-    
+
     # Filter out None values (failed imports)
     builtins = [tool for tool in builtins if tool is not None]
 
@@ -117,7 +119,7 @@ def create_agent(
     llm = ChatOllama(
         model=model,
         temperature=0,
-        base_url="http://host.docker.internal:11434", # if running in the studio
+        # base_url="http://host.docker.internal:11434",  # if running in the studio
     ).bind_tools(tools)  # Use the filtered tools list
 
     class State(TypedDict):
