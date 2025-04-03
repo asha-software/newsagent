@@ -8,12 +8,28 @@ WOLFRAM_APP_ID_NAME = "WOLFRAM_APP_ID"
 @langchain.tools.tool()
 def query(query_input: str) -> str:
     """
-    Query Wolfram Alpha to ask questions it can answer.
-    Args:
-        query_input (str): The string query you want to ask.
+    Query Wolfram Alpha to ask questions it can answer, returning the best textual result.
 
-    Returns:
-        A string output with the result.
+    This function relies on the Wolfram Alpha API to parse and evaluate queries in natural language,
+    mathematical expressions, or other compatible formats.
+
+    **Args**:
+        query_input (str):
+            A string containing the query or question you wish to ask Wolfram Alpha. Examples include:
+            - Natural language queries (e.g., "What is the population of France?")
+            - Mathematical expressions or equations (e.g., "solve x^2 + 2x + 1 = 0")
+            - General knowledge queries (e.g., "Who was the 16th President of the United States?")
+
+    **Returns**:
+        str:
+            A human-readable string containing the Wolfram Alpha response if successful.
+            - The text of a Wolfram Alpha result pod (e.g., "Abraham Lincoln").
+
+    **Usage Example**:
+         query("What is the derivative of x^2?")
+         2x
+    **Notes**:
+        - The function only returns short textual answers from the primary result pods.
     """
     if WOLFRAM_APP_ID_NAME not in os.environ:
         return "Wolfram Alpha API key not set up!"
