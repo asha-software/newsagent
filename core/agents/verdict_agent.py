@@ -27,10 +27,11 @@ MODEL = "mistral-nemo"
 TEMPERATURE = 0
 
 llm = ChatOllama(
-    model=MODEL, 
+    model=MODEL,
     temperature=TEMPERATURE,
-    base_url="http://host.docker.internal:11434"  # when running in Docker
+    # base_url="http://host.docker.internal:11434"  # when running in Docker
 )
+
 
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]

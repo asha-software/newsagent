@@ -2,7 +2,7 @@
 import langchain.tools
 import wikipedia
 from typeguard import check_type
-import tool_registry_globals
+from core.agents.tools.builtins import tool_registry_globals
 
 
 @langchain.tools.tool()

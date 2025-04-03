@@ -16,7 +16,8 @@ async def process_query(text: str, selected_sources: list) -> dict:
         model="mistral-nemo",
         builtin_tools={
             'calculator': ['multiply', 'add'],
-            'wikipedia': ['query']
+            'wikipedia_tool': ['query'],
+            'web_search': ['web_search_tavily'],
         },
         user_tool_kwargs=[]
     )
@@ -43,5 +44,19 @@ async def process_query(text: str, selected_sources: list) -> dict:
     })
 
     # Clean up messages in verdict_results
-    delete_messages([verdict_results]) 
+    delete_messages([verdict_results])
     return verdict_results
+
+
+def main():
+    # Example usage
+    text = "Python was created by Guido van Rossum"
+    selected_sources = []
+
+    import asyncio
+    result = asyncio.run(process_query(text, selected_sources))
+    print(result)
+
+
+if __name__ == "__main__":
+    main()
