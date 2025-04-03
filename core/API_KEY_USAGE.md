@@ -1,6 +1,6 @@
 # API Key Authentication
 
-This document explains how to get and use an API key from web UI.
+This document explains how to get and use an API key for the NewsAgent API.
 
 ## Obtaining an API Key
 
@@ -23,7 +23,7 @@ X-API-Key: your-api-key
 Example using curl:
 ```bash
 curl -X POST \
-  http://localhost:8000/query \
+  http://localhost:8001/query \
   -H 'Content-Type: application/json' \
   -H 'X-API-Key: your-api-key' \
   -d '{"body": "Your query text here"}'
@@ -50,7 +50,7 @@ You can also manage your API keys programmatically:
 To create a new API key:
 
 ```
-POST /api-keys
+POST http://localhost:8001/api-keys
 ```
 
 Request body:
@@ -58,6 +58,15 @@ Request body:
 {
   "name": "My New API Key"
 }
+```
+
+Example using curl:
+```bash
+curl -X POST \
+  http://localhost:8001/api-keys \
+  -H 'Content-Type: application/json' \
+  -H 'X-API-Key: your-existing-api-key' \
+  -d '{"name": "My New API Key"}'
 ```
 
 Response:
@@ -72,14 +81,21 @@ Response:
 }
 ```
 
-Note: This endpoint requires authentication with an existing API key.
+Note: This endpoint requires authentication with an existing API key. You must include your existing API key in the `X-API-Key` header.
 
 #### Listing API Keys
 
 To list all your API keys:
 
 ```
-GET /api-keys
+GET http://localhost:8001/api-keys
+```
+
+Example using curl:
+```bash
+curl -X GET \
+  http://localhost:8001/api-keys \
+  -H 'X-API-Key: your-existing-api-key'
 ```
 
 Response:
@@ -96,12 +112,21 @@ Response:
 ]
 ```
 
+Note: This endpoint requires authentication with an existing API key.
+
 #### Deleting an API Key
 
 To delete an API key:
 
 ```
-DELETE /api-keys/{api_key_id}
+DELETE http://localhost:8001/api-keys/{api_key_id}
+```
+
+Example using curl:
+```bash
+curl -X DELETE \
+  http://localhost:8001/api-keys/2 \
+  -H 'X-API-Key: your-existing-api-key'
 ```
 
 Response:
@@ -110,6 +135,8 @@ Response:
   "message": "API key deleted successfully"
 }
 ```
+
+Note: This endpoint requires authentication with an existing API key. Replace `{api_key_id}` with the ID of the API key you want to delete.
 
 ## Security Considerations
 
