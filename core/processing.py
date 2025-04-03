@@ -17,22 +17,29 @@ async def process_query(text: str, selected_sources: list) -> dict:
         builtin_tools={
             'calculator': ['multiply', 'add'],
             'wikipedia_tool': ['query'],
-            'web_search': ['web_search_tavily'],
+            # 'web_search': ['web_search_tavily'],
         },
         user_tool_kwargs=[]
     )
 
     # Claims decomposer
     initial_state = {"text": text}
-    result = claim_decomposer.invoke(initial_state)
+    result = claim_decomposer.invoke(
+        initial_state,
+        config={"run_name": "claim_decomposer", }
+    )
     claims = result["claims"]
 
     research_results = [research_agent.invoke(
-        {"claim": claim}) for claim in claims]
+        {"claim": claim},
+        config={"run_name": "research_agent"}
+    ) for claim in claims]
     delete_messages(research_results)
 
     reasoning_results = [reasoning_agent.invoke(
-        state) for state in research_results]
+        state,
+        config={"run_name": "reasoning_agent"}
+    ) for state in research_results]
     delete_messages(reasoning_results)
 
     # Process reasoning results with verdict_agent
@@ -41,7 +48,7 @@ async def process_query(text: str, selected_sources: list) -> dict:
         "labels": [r["label"] for r in reasoning_results],
         "justifications": [r["justification"] for r in reasoning_results],
         "messages": []
-    })
+    }, config={"run_name": "verdict_agent"})
 
     # Clean up messages in verdict_results
     delete_messages([verdict_results])
