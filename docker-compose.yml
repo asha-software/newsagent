@@ -11,11 +11,11 @@ services:
       MYSQL_USER: ${MYSQL_USER:-fakenews_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-password}
     ports:
-      - "3306:3306"
+      - '3306:3306'
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ['CMD', 'mysqladmin', 'ping', '-h', 'localhost']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -36,7 +36,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-password}
       - API_URL=${API_URL:-http://api:8000}
     ports:
-      - "8000:8000"
+      - '8000:8000'
     volumes:
       - ./django:/app
     command: >
@@ -46,8 +46,8 @@ services:
   # FastAPI Application
   api:
     build:
-      context: ./core
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: core/Dockerfile
     restart: always
     depends_on:
       db:
@@ -58,10 +58,9 @@ services:
       - DB_USER=${DB_USER:-fakenews_user}
       - DB_PASSWORD=${DB_PASSWORD:-password}
     ports:
-      - "8001:8000"
+      - '8001:8000'
     volumes:
-      - ./core:/app
-    command: sh -c "pip install -r requirements.txt && python app.py"
+      - ./core:/app/core
 
 volumes:
   mysql_data:

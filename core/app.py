@@ -6,9 +6,10 @@ from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from agents.claim_decomposer import claim_decomposer
-from agents.research_agent import create_agent as create_research_agent
-from agents.reasoning_agent import reasoning_agent
+# from agents.claim_decomposer import claim_decomposer
+# from agents.research_agent import create_agent as create_research_agent
+# from agents.reasoning_agent import reasoning_agent
+from processing import process_query
 
 # Database connection settings - directly configured without Django dependency
 DB_CONFIG = {
@@ -20,21 +21,23 @@ DB_CONFIG = {
 }
 
 # API Key authentication middleware
+
+
 class APIKeyMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         # Get the API key from the header
         api_key = request.headers.get("X-API-Key")
         request.state.user = None
-        
+
         if api_key:
             # Get the user from the API key
             user = await self.get_user_from_api_key(api_key)
             if user:
                 request.state.user = user
-        
+
         response = await call_next(request)
         return response
-    
+
     async def get_user_from_api_key(self, api_key: str) -> Optional[Dict[str, Any]]:
         try:
             # Connect directly to MySQL database
@@ -52,14 +55,14 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                     (api_key,)
                 )
                 user_row = cursor.fetchone()
-                
+
                 if user_row:
                     return {
                         "id": user_row[0],
                         "username": user_row[1],
                         "email": user_row[2]
                     }
-                
+
                 return None
         except Exception as e:
             print(f"Error getting user from API key: {e}")
@@ -67,6 +70,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
         finally:
             if 'connection' in locals() and connection:
                 connection.close()
+
 
 # Create FastAPI app
 app = FastAPI()
@@ -84,6 +88,8 @@ app.add_middleware(
 app.add_middleware(APIKeyMiddleware)
 
 # Helper function to get the current user
+
+
 async def get_current_user(request: Request) -> Dict[str, Any]:
     user = request.state.user
     if not user:
@@ -91,6 +97,8 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
     return user
 
 # API Key models
+
+
 class APIKeyCreate(BaseModel):
     name: str
 
@@ -117,14 +125,15 @@ async def health():
 @app.post("/query")
 async def query(request: Request, user: Dict[str, Any] = Depends(get_current_user)):
     # User is authenticated at this point
-    
+
     # Parse the request body
     req = await request.json()
 
     text = req.get('body')
-    
+
     # Extract the sources array from the request
-    selected_sources = req.get('sources', [])  # Default to empty list if not provided
+    # Default to empty list if not provided
+    selected_sources = req.get('sources', [])
     print(f"Selected sources: {selected_sources}")
 
     if not text:
@@ -132,36 +141,33 @@ async def query(request: Request, user: Dict[str, Any] = Depends(get_current_use
             status_code=400, detail="Input {'body': str} is required.")
 
     # Try constructing research agent
-    research_agent = create_research_agent(
-        model="mistral-nemo",
-        builtin_tools={
-            'calculator': ['multiply', 'add'],
-            'wikipedia': ['query']
-        },
-        user_tool_kwargs=[]
-    )
+    # research_agent = create_research_agent(
+    #     model="mistral-nemo",
+    #     builtin_tools={
+    #         'calculator': ['multiply', 'add'],
+    #         'wikipedia': ['query']
+    #     },
+    #     user_tool_kwargs=[]
+    # )
 
-    # Claims decomposer
-    initial_state = {"text": text}
-    result = claim_decomposer.invoke(initial_state)
-    claims = result["claims"]
+    # # Claims decomposer
+    # initial_state = {"text": text}
+    # result = claim_decomposer.invoke(initial_state)
+    # claims = result["claims"]
 
-    research_results = [research_agent.invoke(
-        {"claim": claim, "selected_sources": selected_sources}) for claim in claims]
-    delete_messages(research_results)
+    # research_results = [research_agent.invoke(
+    #     {"claim": claim, "selected_sources": selected_sources}) for claim in claims]
+    # delete_messages(research_results)
 
-    # Drop the 'args' from the research results evidence, leaving only tool name and result content
-    evidence_for_reasoning = [{'name': evidence['name'], 
-                              'content': evidence['content']}
-                              for evidence in research_results['evidence']]
-    
-    
+    # reasoning_results = [reasoning_agent.invoke(
+    #     state) for state in research_results]
+    # delete_messages(reasoning_results)
 
-    reasoning_results = [reasoning_agent.invoke(
-        state) for state in research_results]
-    delete_messages(reasoning_results)
+    # return reasoning_results
 
+    reasoning_results = await process_query(text, selected_sources)
     return reasoning_results
+
 
 @app.get("/user")
 async def get_user(user: Dict[str, Any] = Depends(get_current_user)):
@@ -199,7 +205,7 @@ async def list_api_keys(user: Dict[str, Any] = Depends(get_current_user)):
                 (user["id"],)
             )
             rows = cursor.fetchall()
-            
+
             return [
                 {
                     "id": row[0],
@@ -212,10 +218,12 @@ async def list_api_keys(user: Dict[str, Any] = Depends(get_current_user)):
                 for row in rows
             ]
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error listing API keys: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error listing API keys: {str(e)}")
     finally:
         if 'connection' in locals() and connection:
             connection.close()
+
 
 @app.delete("/api-keys/{api_key_id}")
 async def delete_api_key(api_key_id: int, user: Dict[str, Any] = Depends(get_current_user)):
@@ -235,20 +243,22 @@ async def delete_api_key(api_key_id: int, user: Dict[str, Any] = Depends(get_cur
                 (api_key_id, user["id"])
             )
             if not cursor.fetchone():
-                raise HTTPException(status_code=404, detail="API key not found")
-            
+                raise HTTPException(
+                    status_code=404, detail="API key not found")
+
             # Delete the API key
             cursor.execute(
                 "DELETE FROM user_info_apikey WHERE id = %s",
                 (api_key_id,)
             )
             connection.commit()
-            
+
             return {"message": "API key deleted successfully"}
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error deleting API key: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error deleting API key: {str(e)}")
     finally:
         if 'connection' in locals() and connection:
             connection.close()
