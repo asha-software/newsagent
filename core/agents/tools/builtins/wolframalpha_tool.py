@@ -1,7 +1,6 @@
 import os
 import wolframalpha
 import langchain.tools
-import typeguard
 
 WOLFRAM_APP_ID_NAME = "WOLFRAM_APP_ID"
 
@@ -16,11 +15,6 @@ def query(query_input: str) -> str:
     Returns:
         A string output with the result.
     """
-    try:
-        # Type check inputs
-        typeguard.check_type(query_input, str)
-    except TypeError:
-        return "Invalid input type!"
     if WOLFRAM_APP_ID_NAME not in os.environ:
         return "Wolfram Alpha API key not set up!"
         # Create an APP ID here https://developer.wolframalpha.com/access for the full results API and set as an env var
