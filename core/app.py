@@ -165,8 +165,8 @@ async def query(request: Request, user: Dict[str, Any] = Depends(get_current_use
 
     # return reasoning_results
 
-    reasoning_results = await process_query(text, selected_sources)
-    return reasoning_results
+    verdict_results = await process_query(text, selected_sources)
+    return verdict_results
 
 
 @app.get("/user")

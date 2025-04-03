@@ -1,6 +1,7 @@
 from core.agents.claim_decomposer import claim_decomposer
 from core.agents.research_agent import create_agent as create_research_agent
 from core.agents.reasoning_agent import reasoning_agent
+from core.agents.verdict_agent import verdict_agent
 
 
 def delete_messages(states: list[dict]):
@@ -33,4 +34,14 @@ async def process_query(text: str, selected_sources: list) -> dict:
         state) for state in research_results]
     delete_messages(reasoning_results)
 
-    return reasoning_results
+    # Process reasoning results with verdict_agent
+    verdict_results = verdict_agent.invoke({
+        "claims": claims,
+        "labels": [r["label"] for r in reasoning_results],
+        "justifications": [r["justification"] for r in reasoning_results],
+        "messages": []
+    })
+
+    # Clean up messages in verdict_results
+    delete_messages([verdict_results]) 
+    return verdict_results
