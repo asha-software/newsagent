@@ -182,9 +182,55 @@ async def get_user(user: Dict[str, Any] = Depends(get_current_user)):
     }
 
 
-# create_api_key endpoint removed to prevent users from creating unlimited API keys
-# API keys should now be created only through the Django admin interface or
-# automatically when using the web interface
+@app.post("/api-keys")
+async def create_api_key(api_key: APIKeyCreate, user: Dict[str, Any] = Depends(get_current_user)):
+    """
+    Creates a new API key for the authenticated user.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Generate a new API key
+            import uuid
+            key = uuid.uuid4().hex
+            
+            # Insert the new API key
+            cursor.execute(
+                """
+                INSERT INTO user_info_apikey (user_id, name, `key`, created_at, is_active) 
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (user["id"], api_key.name, key, datetime.datetime.now(), True)
+            )
+            api_key_id = cursor.lastrowid
+            connection.commit()
+            
+            # Get the newly created API key
+            cursor.execute(
+                """
+                SELECT id, name, `key`, created_at, last_used_at, is_active 
+                FROM user_info_apikey 
+                WHERE id = %s
+                """,
+                (api_key_id,)
+            )
+            row = cursor.fetchone()
+            
+            return {
+                "id": row[0],
+                "name": row[1],
+                "key": row[2],
+                "created_at": row[3],
+                "last_used_at": row[4],
+                "is_active": bool(row[5])
+            }
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error creating API key: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
 
 @app.get("/api-keys")
 async def list_api_keys(user: Dict[str, Any] = Depends(get_current_user)):
