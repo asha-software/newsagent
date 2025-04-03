@@ -127,10 +127,10 @@
         </div>
         <div class="menu-items">
             <a href="{% url 'search' %}">Search</a>
-            <a href="{% url 'tool_list' %}">My Tools</a>
-            <a href="{% url 'apikey_list' %}">My API Keys</a>
+            <a href="{% url 'tool_list' %}">Tools</a>
+            <a href="{% url 'apikey_list' %}">API Keys</a>
             <a href="{% url 'logout' %}">Logout</a>
-            <button class="menu-close-btn">Close Menu</button>
+            <button class="menu-close-btn">Close</button>
         </div>
         <div class="menu-overlay"></div>
         
@@ -140,10 +140,10 @@
                     <span>Search</span>
                 </a>
                 <a href="{% url 'tool_list' %}" class="nav-link active">
-                    <span>My Tools</span>
+                    <span>Tools</span>
                 </a>
                 <a href="{% url 'apikey_list' %}" class="nav-link">
-                    <span>My API Keys</span>
+                    <span>API Keys</span>
                 </a>
             </div>
 
@@ -195,6 +195,8 @@
                     <p>You haven't created any tools yet. <a href="{% url 'tool_create' %}">Create your first tool</a> to get started!</p>
                 </div>
             {% endif %}
+            
+            <a href="{% url 'tool_create' %}" class="btn btn-create" style="margin-top: 20px;">Create New Tool</a>
         </div>
     </div>
 

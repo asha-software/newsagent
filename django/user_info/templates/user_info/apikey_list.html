@@ -26,9 +26,6 @@
             border-top-right-radius: 8px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .apikey-body {
-            padding: 15px;
-        }
         .apikey-actions {
             display: flex;
             gap: 10px;
@@ -52,7 +49,10 @@
             background-color: rgba(114, 28, 36, 0.7);
             color: #fff;
         }
-        .apikeys-container {
+        .tool-body {
+            padding: 15px;
+        }
+        .tools-container {
             width: 100%;
             max-width: 1000px;
             z-index: 1;
@@ -65,7 +65,6 @@
             border-radius: 5px;
             padding: 8px 16px;
             transition: all 0.3s ease-in-out;
-            margin-bottom: 20px;
         }
         .btn-create:hover {
             background-color: white;
@@ -126,23 +125,23 @@
         </div>
         <div class="menu-items">
             <a href="{% url 'search' %}">Search</a>
-            <a href="{% url 'tool_list' %}">My Tools</a>
-            <a href="{% url 'apikey_list' %}">My API Keys</a>
+            <a href="{% url 'tool_list' %}">Tools</a>
+            <a href="{% url 'apikey_list' %}">API Keys</a>
             <a href="{% url 'logout' %}">Logout</a>
-            <button class="menu-close-btn">Close Menu</button>
+            <button class="menu-close-btn">Close</button>
         </div>
         <div class="menu-overlay"></div>
         
-        <div class="apikeys-container">
+        <div class="tools-container">
             <div class="nav-links">
                 <a href="{% url 'search' %}" class="nav-link">
                     <span>Search</span>
                 </a>
                 <a href="{% url 'tool_list' %}" class="nav-link">
-                    <span>My Tools</span>
+                    <span>Tools</span>
                 </a>
                 <a href="{% url 'apikey_list' %}" class="nav-link active">
-                    <span>My API Keys</span>
+                    <span>API Keys</span>
                 </a>
             </div>
 
@@ -153,11 +152,6 @@
                     </div>
                 {% endfor %}
             {% endif %}
-
-            <form method="post" action="{% url 'apikey_create' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-create">Create New API Key</button>
-            </form>
 
             {% if apikeys %}
                 <div class="row">
@@ -172,7 +166,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <div class="apikey-body">
+                                <div class="tool-body">
                                     <div class="key-value mb-3">{{ apikey.key }}</div>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
@@ -193,9 +187,14 @@
                 </div>
             {% else %}
                 <div class="alert alert-info">
-                    <p>You haven't created any API keys yet. Click the "Create New API Key" button above to get started!</p>
+                    <p>You haven't created any API keys yet. <a href="{% url 'apikey_create' %}">Create your first API key</a> to get started!</p>
                 </div>
             {% endif %}
+            
+            <form method="post" action="{% url 'apikey_create' %}" style="margin-top: 20px;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-create">Create New API Key</button>
+            </form>
         </div>
     </div>
 

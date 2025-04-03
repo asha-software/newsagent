@@ -59,6 +59,7 @@
             max-width: 1000px;
             z-index: 1;
             position: relative;
+            padding-top: 140px;
         }
         .form-control {
             background-color: rgba(30, 30, 30, 0.9) !important;
@@ -120,9 +121,9 @@
         <div class="menu-items">
             <a href="{% url 'tool_list' %}">Back to Tools</a>
             <a href="{% url 'search' %}">Search</a>
-            <a href="{% url 'apikey_list' %}">My API Keys</a>
+            <a href="{% url 'apikey_list' %}">API Keys</a>
             <a href="{% url 'logout' %}">Logout</a>
-            <button class="menu-close-btn">Close Menu</button>
+            <button class="menu-close-btn">Close</button>
         </div>
         <div class="menu-overlay"></div>
         
