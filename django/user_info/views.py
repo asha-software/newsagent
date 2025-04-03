@@ -8,6 +8,7 @@ from django.http import JsonResponse
 from .models import UserTool, APIKey
 from .forms import UserToolForm
 import json
+import uuid
 
 def signin(request): 
     if request.user.is_authenticated:
@@ -153,6 +154,42 @@ def tool_delete(request, tool_id):
         return redirect('tool_list')
     
     return render(request, 'user_info/tool_confirm_delete.html', {'tool': tool})
+
+# API Key views
+@login_required
+def apikey_list(request):
+    apikeys = APIKey.objects.filter(user=request.user).order_by('-created_at')
+    return render(request, 'user_info/apikey_list.html', {'apikeys': apikeys})
+
+@login_required
+def apikey_create(request):
+    if request.method == 'POST':
+        # Generate a name with a timestamp to make it unique
+        import datetime
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        name = f"API Key - {timestamp}"
+        
+        # Create a new API key
+        apikey = APIKey(user=request.user, name=name)
+        apikey.save()
+        
+        messages.success(request, f"API key created successfully!")
+        return redirect('apikey_list')
+    
+    # If not a POST request, redirect to the list view
+    return redirect('apikey_list')
+
+@login_required
+def apikey_delete(request, apikey_id):
+    apikey = get_object_or_404(APIKey, id=apikey_id, user=request.user)
+    
+    if request.method == 'POST':
+        apikey_name = apikey.name
+        apikey.delete()
+        messages.success(request, f"API key '{apikey_name}' deleted successfully!")
+        return redirect('apikey_list')
+    
+    return render(request, 'user_info/apikey_confirm_delete.html', {'apikey': apikey})
 
 @login_required
 def get_api_key(request):

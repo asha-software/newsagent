@@ -1,0 +1,100 @@
+/* Hamburger Menu Styles */
+.hamburger-menu {
+  position: absolute;
+  top: 85px;
+  right: 85px;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.hamburger-icon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 30px;
+  height: 21px;
+  transition: all 0.3s ease-in-out;
+}
+
+.hamburger-icon span {
+  display: block;
+  height: 3px;
+  width: 100%;
+  background-color: white;
+  border-radius: 3px;
+  transition: all 0.3s ease-in-out;
+}
+
+.menu-items {
+  position: fixed;
+  top: 0;
+  right: -250px;
+  width: 250px;
+  height: 100vh;
+  background-color: rgba(40, 40, 40, 0.95);
+  padding-top: 60px;
+  transition: right 0.3s ease-in-out;
+  z-index: 999;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.menu-items.active {
+  right: 0;
+}
+
+.menu-items a {
+  display: block;
+  padding: 15px 25px;
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+  transition: background-color 0.3s;
+}
+
+.menu-items a:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Close button at bottom of menu */
+.menu-close-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  padding: 10px;
+  margin: 0 25px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.menu-close-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Hide hamburger icon when menu is active */
+.hamburger-icon.active {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Overlay when menu is active */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  display: none;
+}
+
+.menu-overlay.active {
+  display: block;
+}
