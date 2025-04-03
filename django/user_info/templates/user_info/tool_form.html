@@ -10,6 +10,22 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
     <link rel="stylesheet" href="{% static 'css/hamburger-menu.css' %}">
     <style>
+        .nav-links {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            margin-right: 20px;
+        }
+        .nav-link span {
+            border-bottom: 2px solid transparent;
+            padding-bottom: 5px;
+        }
+        .nav-link.active span {
+            border-bottom: 2px solid white;
+        }
         .form-section {
             margin-bottom: 30px;
             padding: 20px;
@@ -104,18 +120,22 @@
         <div class="menu-items">
             <a href="{% url 'tool_list' %}">Back to Tools</a>
             <a href="{% url 'search' %}">Search</a>
+            <a href="{% url 'apikey_list' %}">My API Keys</a>
             <a href="{% url 'logout' %}">Logout</a>
             <button class="menu-close-btn">Close Menu</button>
         </div>
         <div class="menu-overlay"></div>
         
         <div class="form-container">
-            <div style="margin-bottom: 20px;">
-                <a href="{% url 'search' %}" style="color: white; text-decoration: none; margin-right: 20px;">
-                    <span style="border-bottom: 2px solid transparent; padding-bottom: 5px;">Search</span>
+            <div class="nav-links">
+                <a href="{% url 'search' %}" class="nav-link">
+                    <span>Search</span>
                 </a>
-                <a href="{% url 'tool_list' %}" style="color: white; text-decoration: none;">
-                    <span style="border-bottom: 2px solid white; padding-bottom: 5px;">My Tools</span>
+                <a href="{% url 'tool_list' %}" class="nav-link active">
+                    <span>My Tools</span>
+                </a>
+                <a href="{% url 'apikey_list' %}" class="nav-link">
+                    <span>My API Keys</span>
                 </a>
             </div>
 

@@ -4,9 +4,13 @@ This document explains how to get and use an API key from web UI.
 
 ## Obtaining an API Key
 
-API keys are automatically generated when you use the web interface to search for news claims. The system will create an API key for your account if you don't already have one.
+There are several ways to obtain an API key:
 
-Alternatively, administrators can create API keys for users through the Django admin interface.
+1. **Automatic Generation**: API keys are automatically generated when you use the web interface to search for news claims. The system will create an API key for your account if you don't already have one.
+
+2. **User-Created Keys**: You can create your own API keys through the "My API Keys" page. This allows you to create multiple keys for different applications or services.
+
+3. **Admin Creation**: Administrators can create API keys for users through the Django admin interface.
 
 ## Using an API Key
 
@@ -29,7 +33,19 @@ When you use an API key, the system tracks its usage by updating the `last_used_
 
 ## Managing API Keys
 
-### Listing API Keys
+### Web Interface
+
+You can manage your API keys through the web interface:
+
+1. **Viewing Keys**: Navigate to the "My API Keys" page to see all your API keys.
+2. **Creating Keys**: Click the "Create New API Key" button to generate a new API key.
+3. **Deleting Keys**: Click the "Delete" button next to an API key to remove it.
+
+### API Endpoints
+
+You can also manage your API keys programmatically:
+
+#### Listing API Keys
 
 To list all your API keys:
 
@@ -51,7 +67,7 @@ Response:
 ]
 ```
 
-### Deleting an API Key
+#### Deleting an API Key
 
 To delete an API key:
 
