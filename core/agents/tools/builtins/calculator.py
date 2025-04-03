@@ -1,4 +1,5 @@
 import math
+import numpy
 import numexpr
 from langchain_core.tools import tool
 
@@ -12,7 +13,7 @@ def calculator(expression: str) -> str:
         "37593 * 67" for "37593 times 67"
         "37593**(1/5)" for "37593^(1/5)"
     """
-    local_dict: dict[str, float] = {"pi": math.pi, "e": math.e, "tau": math.tau}
+    local_dict: dict[str, float] = {"pi": math.pi, "e": math.e, "tau": math.tau, "euler_gamma": float(numpy.euler_gamma)}
     try:
         return str(
             numexpr.evaluate(
