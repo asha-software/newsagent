@@ -8,4 +8,4 @@ python-dotenv==1.0.1
 pymysql==1.1.1
 django==5.1.7
 uvicorn==0.34.0
-wikipedia-api==0.8.1
+wikipedia==1.4.0

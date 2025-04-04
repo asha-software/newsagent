@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import importlib
 import os
 from pathlib import Path
-import sys
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage, SystemMessage
 from langchain_ollama import ChatOllama
@@ -20,28 +19,17 @@ from typing import Annotated, TypedDict, Callable
 from core.agents.common_types import Evidence
 
 # Absolute path to this dir. For relative paths like prompts
-BASE_DIR = Path(__file__).parent.resolve()
+THIS_DIR = Path(__file__).parent.resolve()
 
 # Absolute path to repo root. This will be used to import builtin tools and Evidence from common_types
-ROOT_DIR = BASE_DIR.parent.parent
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
-
-# fmt: off
-# from core.agents.common_types import Evidence
-# fmt: on
+ROOT_DIR = THIS_DIR.parent.parent
 
 # Path prefix for builtin tools
-PACKAGE_PREFIX = "core.agents.tools"
+PACKAGE_PREFIX = "core.agents.tools.builtins."
 
 load_dotenv(ROOT_DIR / 'core/.env', override=True)
 PATH_TO_FILE = os.path.abspath(__file__)
 
-
-TOOL_REGISTRY = {
-    'core.agents.tools.calculator': ['multiply', 'add', 'divide'],
-    'core.agents.tools.wikipedia': ['query']
-}
 
 
 def import_builtin(module_name, function_name):
@@ -54,18 +42,21 @@ def import_builtin(module_name, function_name):
     Returns:
         The imported function, or None if the module or function is not found.
     """
+    import_path = PACKAGE_PREFIX + module_name
     try:
-        module = importlib.import_module(
-            f"{PACKAGE_PREFIX}.builtins.{module_name}")
+        module = importlib.import_module(import_path)
         function = getattr(module, function_name)
         return function
     except (ImportError, AttributeError) as e:
         print(
-            f"Error: Could not import function '{function_name}' from module '{module_name}'.")
+            f"Error: Could not find module '{import_path}'.")
         print(f"cwd: {os.getcwd()}")
-        print(f"Available modules: {os.listdir(os.getcwd())}")
         print(f"Exception: {e}")
-        return None
+    except AttributeError as e:
+        print(
+            f"Error: Function '{function_name}' not found in module '{import_path}'.")
+        print(f"Exception: {e}")
+    return None
 
 
 def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
@@ -96,7 +87,10 @@ def create_agent(
     Args:
         model (str): The model to use for the agent.
         builtin_tools (dict[str, str]): A dictionary of builtin tools to use.
-            Keys are module names, values are lists of function names.
+            Keys are package names, which will be prepending with PACKAGE_PREFIX, 
+            values are lists of function names.
+            E.g. {'wikipedia': ['query']} will attempt to import PACKAGE_PREFIX + 'wikipedia' and
+            use the 'query' function from that module. (core.agents.tools.builtins.wikipedia.query)
         user_tools (list[dict]): A list of user-defined tools to use.
             each dict should be kwargs needed for tool_registry.create_tool
     Returns:
@@ -119,7 +113,7 @@ def create_agent(
     llm = ChatOllama(
         model=model,
         temperature=0,
-        # base_url="http://host.docker.internal:11434",  # if running in the studio
+        base_url="http://host.docker.internal:11434",  # if running in the studio
     ).bind_tools(tools)  # Use the filtered tools list
 
     class State(TypedDict):
@@ -127,7 +121,7 @@ def create_agent(
         claim: str
         evidence: list[dict]
 
-    with open(BASE_DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
+    with open(THIS_DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
         sys_msg = SystemMessage(content=f.read())
 
     def preprocessing(state: State):

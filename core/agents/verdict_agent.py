@@ -29,7 +29,7 @@ TEMPERATURE = 0
 llm = ChatOllama(
     model=MODEL,
     temperature=TEMPERATURE,
-    # base_url="http://host.docker.internal:11434"  # when running in Docker
+    base_url="http://host.docker.internal:11434"  # when running in Docker
 )
 
 
