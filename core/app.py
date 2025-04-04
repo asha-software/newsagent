@@ -1,7 +1,7 @@
 import os
 import datetime
 import pymysql
-from typing import Dict, Any, Optional
+from typing import Any, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -29,7 +29,7 @@ app.add_middleware(APIKeyMiddleware)
 app.add_middleware(RateLimitMiddleware)
 
 # Helper function to get the current user
-async def get_current_user(request: Request) -> Dict[str, Any]:
+async def get_current_user(request: Request) -> dict[str, Any]:
     user = request.state.user
     if not user:
         raise HTTPException(status_code=401, detail="Not authenticated")
@@ -60,7 +60,7 @@ async def health():
 
 
 @app.post("/query")
-async def query(request: Request, user: Dict[str, Any] = Depends(get_current_user)):
+async def query(request: Request, user: dict[str, Any] = Depends(get_current_user)):
     # User is authenticated at this point
 
     # Parse the request body
@@ -82,7 +82,7 @@ async def query(request: Request, user: Dict[str, Any] = Depends(get_current_use
 
 
 @app.get("/user")
-async def get_user(user: Dict[str, Any] = Depends(get_current_user)):
+async def get_user(user: dict[str, Any] = Depends(get_current_user)):
     """
     Returns information about the authenticated user.
     This endpoint can be used to test if authentication is working.
@@ -95,7 +95,7 @@ async def get_user(user: Dict[str, Any] = Depends(get_current_user)):
 
 
 @app.post("/api-keys")
-async def create_api_key(api_key: APIKeyCreate, user: Dict[str, Any] = Depends(get_current_user)):
+async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(get_current_user)):
     """
     Creates a new API key for the authenticated user.
     Limited to 3 API keys per user.
@@ -162,7 +162,7 @@ async def create_api_key(api_key: APIKeyCreate, user: Dict[str, Any] = Depends(g
             connection.close()
 
 @app.get("/api-keys")
-async def list_api_keys(user: Dict[str, Any] = Depends(get_current_user)):
+async def list_api_keys(user: dict[str, Any] = Depends(get_current_user)):
     """
     Lists all API keys for the authenticated user.
     """
@@ -201,7 +201,7 @@ async def list_api_keys(user: Dict[str, Any] = Depends(get_current_user)):
 
 
 @app.delete("/api-keys/{api_key_id}")
-async def delete_api_key(api_key_id: int, user: Dict[str, Any] = Depends(get_current_user)):
+async def delete_api_key(api_key_id: int, user: dict[str, Any] = Depends(get_current_user)):
     """
     Deletes an API key for the authenticated user.
     """
