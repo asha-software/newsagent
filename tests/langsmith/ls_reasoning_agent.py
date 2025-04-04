@@ -38,11 +38,12 @@ def target_function(inputs) -> dict:
     from core.agents.reasoning_agent import reasoning_agent
     result = reasoning_agent.invoke(inputs)
     return {
-    "output": {
-        "label": result["label"],
-        "justification": result["justification"]
+        "output": {
+            "label": result["label"],
+            "justification": result["justification"]
         }
     }
+
 
 
 def label_match(outputs: dict, reference_outputs: dict) -> dict:
@@ -100,7 +101,7 @@ def main():
     ls_client = Client()
     experiment_results = ls_client.evaluate(
         target_function,
-        data="reasoning_agent_evaluation",
+        data="my_dataset11",
         evaluators=[label_match, justification_coherence],
         experiment_prefix=args.experiment_prefix
     )
