@@ -113,7 +113,8 @@ def create_agent(
     llm = ChatOllama(
         model=model,
         temperature=0,
-        base_url="http://host.docker.internal:11434",  # if running in the studio
+        # base_url="http://host.docker.internal:11434",  # if running in the studio
+        base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
     ).bind_tools(tools)  # Use the filtered tools list
 
     class State(TypedDict):

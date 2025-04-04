@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import json
+import os
 from pathlib import Path
 import sys
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
@@ -51,7 +52,9 @@ llm = ChatOllama(
     model=MODEL,
     temperature=TEMPERATURE,
     format=LLM_OUTPUT_FORMAT,
-    base_url="http://host.docker.internal:11434"  # when running in Docker
+    # base_url="http://host.docker.internal:11434"  # when running in Docker
+    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
+
 )
 
 """

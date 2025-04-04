@@ -7,6 +7,7 @@ EXPOSE 8000
 
 # Add project root to PYTHONPATH
 ENV PYTHONPATH=/app
+ENV OLLAMA_BASE_URL=http://host.docker.internal:11434
 
 # Copy setup.py pyproject.toml from the project root
 COPY setup.py pyproject.toml /app/
