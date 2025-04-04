@@ -1,15 +1,18 @@
 import os
 import datetime
 import pymysql
+import time
 from typing import Optional, Dict, Any
 from fastapi import FastAPI, HTTPException, Request, Depends, Header
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 # from agents.claim_decomposer import claim_decomposer
 # from agents.research_agent import create_agent as create_research_agent
 # from agents.reasoning_agent import reasoning_agent
 from processing import process_query
+from collections import defaultdict
 
 # Database connection settings - directly configured without Django dependency
 DB_CONFIG = {
@@ -84,8 +87,63 @@ app.add_middleware(
     allow_headers=["*"],  # Allow all headers
 )
 
+# Rate limiting middleware
+class RateLimitMiddleware(BaseHTTPMiddleware):
+    def __init__(self, app, requests_per_minute=10):
+        super().__init__(app)
+        self.requests_per_minute = requests_per_minute
+        self.request_history = defaultdict(list)
+        
+    async def dispatch(self, request: Request, call_next):
+        # Skip rate limiting for non-query endpoints
+        if not request.url.path.endswith('/query'):
+            return await call_next(request)
+        
+        # Get the API key from the header
+        api_key = request.headers.get("X-API-Key")
+        if not api_key:
+            return await call_next(request)
+        
+        # Check rate limit
+        current_time = time.time()
+        # Remove requests older than 1 minute
+        self.request_history[api_key] = [
+            timestamp for timestamp in self.request_history[api_key]
+            if current_time - timestamp < 60
+        ]
+        
+        # Check if the user has exceeded the rate limit
+        if len(self.request_history[api_key]) >= self.requests_per_minute:
+            # Calculate time until reset
+            oldest_request = self.request_history[api_key][0]
+            seconds_until_reset = 60 - (current_time - oldest_request)
+            
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "detail": f"Rate limit exceeded. Try again in {int(seconds_until_reset)} seconds.",
+                    "rate_limit": {
+                        "limit": self.requests_per_minute,
+                        "remaining": 0,
+                        "reset_after_seconds": int(seconds_until_reset)
+                    }
+                }
+            )
+        
+        # Add the current request to the history
+        self.request_history[api_key].append(current_time)
+        
+        # Add rate limit headers to the response
+        response = await call_next(request)
+        response.headers["X-Rate-Limit-Limit"] = str(self.requests_per_minute)
+        response.headers["X-Rate-Limit-Remaining"] = str(self.requests_per_minute - len(self.request_history[api_key]))
+        
+        return response
+
 # Add the API key middleware
 app.add_middleware(APIKeyMiddleware)
+# Add the rate limit middleware
+app.add_middleware(RateLimitMiddleware)
 
 # Helper function to get the current user
 

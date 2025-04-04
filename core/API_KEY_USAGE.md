@@ -31,6 +31,33 @@ curl -X POST \
 
 When you use an API key, the system tracks its usage by updating the `last_used_at` timestamp in the database. This provides an audit trail of API key usage and helps identify inactive keys.
 
+## Rate Limiting
+
+To ensure fair usage of the API, rate limiting is enforced on the `/query` endpoint:
+
+- **Limit**: 10 requests per minute per API key
+- **Reset**: The rate limit window resets 60 seconds after your first request in the current window
+- **Headers**: The API includes rate limit information in the response headers:
+  - `X-Rate-Limit-Limit`: The maximum number of requests allowed per minute
+  - `X-Rate-Limit-Remaining`: The number of requests remaining in the current window
+
+If you exceed the rate limit, the API will return a `429 Too Many Requests` response with the following body:
+
+```json
+{
+  "detail": "Rate limit exceeded. Try again in X seconds.",
+  "rate_limit": {
+    "limit": 2,
+    "remaining": 0,
+    "reset_after_seconds": X
+  }
+}
+```
+
+Where `X` is the number of seconds until the rate limit resets.
+
+Note: This rate limit is currently set to 2 requests per minute for testing purposes and may be adjusted in the future.
+
 ## Managing API Keys
 
 ### Web Interface
