@@ -7,8 +7,8 @@ from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, System
 from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
-from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict
+from core.agents.utils.llm_factory import get_chat_model
 
 BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
@@ -33,13 +33,12 @@ LLM_OUTPUT_FORMAT = {
     }
 }
 
-llm = ChatOllama(
-    model=MODEL,
-    temperature=TEMPERATURE,
-    format=LLM_OUTPUT_FORMAT,
-    # base_url="http://host.docker.internal:11434"  # when running in Docker
-    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434") 
+
+llm = get_chat_model(
+    model_name=MODEL,
+    format_output=LLM_OUTPUT_FORMAT,
 )
+
 
 """
 Build the graph

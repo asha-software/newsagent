@@ -7,6 +7,7 @@ from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
+from core.agents.utils.llm_factory import get_chat_model
 
 # Load environment variables
 load_dotenv('.env', override=True)
@@ -27,13 +28,7 @@ BASE_DIR = Path(__file__).parent.resolve()
 MODEL = "mistral-nemo"
 TEMPERATURE = 0
 
-llm = ChatOllama(
-    model=MODEL,
-    temperature=TEMPERATURE,
-    # base_url="http://host.docker.internal:11434"  # when running in Docker
-    base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-
-)
+llm = get_chat_model(model_name=MODEL, format_output=LLM_OUTPUT_FORMAT)
 
 
 class State(TypedDict):

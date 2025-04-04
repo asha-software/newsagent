@@ -15,7 +15,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict, Callable
-
+from core.agents.utils.llm_factory import get_chat_model
 from core.agents.common_types import Evidence
 
 # Absolute path to this dir. For relative paths like prompts
@@ -110,12 +110,8 @@ def create_agent(
 
     tools = builtins + user_defined_tools
 
-    llm = ChatOllama(
-        model=model,
-        temperature=0,
-        # base_url="http://host.docker.internal:11434",  # if running in the studio
-        base_url=os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    ).bind_tools(tools)  # Use the filtered tools list
+    llm = get_chat_model(model_name=model).bind_tools(tools)
+
 
     class State(TypedDict):
         messages: Annotated[list[BaseMessage], add_messages]
