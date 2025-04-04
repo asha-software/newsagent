@@ -161,11 +161,28 @@ async def get_user(user: Dict[str, Any] = Depends(get_current_user)):
 async def create_api_key(api_key: APIKeyCreate, user: Dict[str, Any] = Depends(get_current_user)):
     """
     Creates a new API key for the authenticated user.
+    Limited to 3 API keys per user.
     """
     try:
         # Connect directly to MySQL database
         connection = pymysql.connect(**DB_CONFIG)
         with connection.cursor() as cursor:
+            # Check if the user already has 3 or more API keys
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM user_info_apikey 
+                WHERE user_id = %s
+                """,
+                (user["id"],)
+            )
+            key_count = cursor.fetchone()[0]
+            
+            if key_count >= 3:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="You can only have a maximum of 3 API keys per account."
+                )
+            
             # Generate a new API key
             import uuid
             key = uuid.uuid4().hex

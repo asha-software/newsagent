@@ -41,6 +41,8 @@ You can manage your API keys through the web interface:
 2. **Creating Keys**: Click the "Create New API Key" button to generate a new API key.
 3. **Deleting Keys**: Click the "Delete" button next to an API key to remove it.
 
+**Note**: There is a limit of 3 API keys per user account. If you need to create a new API key but have reached the limit, you must delete an existing key first.
+
 ### API Endpoints
 
 You can also manage your API keys programmatically:
@@ -81,7 +83,14 @@ Response:
 }
 ```
 
-Note: This endpoint requires authentication with an existing API key. You must include your existing API key in the `X-API-Key` header.
+Error response (when limit is reached):
+```json
+{
+  "detail": "You can only have a maximum of 3 API keys per account."
+}
+```
+
+Note: This endpoint requires authentication with an existing API key. You must include your existing API key in the `X-API-Key` header. There is a limit of 3 API keys per user account.
 
 #### Listing API Keys
 
@@ -125,7 +134,7 @@ DELETE http://localhost:8001/api-keys/{api_key_id}
 Example using curl:
 ```bash
 curl -X DELETE \
-  http://localhost:8001/api-keys/2 \
+  http://localhost:8001/api-keys/<id> \
   -H 'X-API-Key: your-existing-api-key'
 ```
 
