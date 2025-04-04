@@ -11,10 +11,10 @@ from typing import Annotated, Literal, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
 
 # Absolute path to this dir. For relative paths like prompts
-BASE_DIR = Path(__file__).parent.resolve()
+DIR = Path(__file__).parent.resolve()
 
 # Absolute path to repo root. This will be used to import Evidence from common_types
-ROOT_DIR = BASE_DIR.parent.parent
+ROOT_DIR = DIR.parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
@@ -22,9 +22,10 @@ if str(ROOT_DIR) not in sys.path:
 from core.agents.common_types import Evidence
 # fmt: on
 
-MODEL = "mistral-nemo"
-TEMPERATURE = 0
-load_dotenv('.env', override=True)
+# MODEL = "mistral-nemo"
+# TEMPERATURE = 0
+load_dotenv(DIR.parent / ".env", override=True)
+assert "REASONING_AGENT_MODEL" in os.environ, "Please set the REASONING_AGENT_MODEL environment variable"
 
 
 class State(TypedDict):
@@ -49,12 +50,13 @@ LLM_OUTPUT_FORMAT = {
     "required": ["label", "justification"]
 }
 
-llm = get_chat_model(model_name=MODEL, format_output=LLM_OUTPUT_FORMAT)
+llm = get_chat_model(model_name=os.getenv(
+    "REASONING_AGENT_MODEL"), format_output=LLM_OUTPUT_FORMAT)
 
 """
 Define agent
 """
-with open(BASE_DIR / "prompts/reasoning_agent_system_prompt.txt", "r") as f:
+with open(DIR / "prompts/reasoning_agent_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 
 

@@ -4,16 +4,18 @@ import json
 import os
 from pathlib import Path
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
 
-BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "mistral-nemo"
-TEMPERATURE = 0
-load_dotenv('.env', override=True)
+DIR = Path(__file__).parent.resolve()
+# MODEL = "mistral-nemo"
+# TEMPERATURE = 0
+
+# Load env variables from core/.env
+load_dotenv(DIR.parent / ".env", override=True)
+assert "CLAIM_DECOMPOSER_MODEL" in os.environ, "Please set the CLAIM_DECOMPOSER_MODEL environment variable"
 
 """
 Define State, LLM output schema, and LLM
@@ -35,7 +37,7 @@ LLM_OUTPUT_FORMAT = {
 
 
 llm = get_chat_model(
-    model_name=MODEL,
+    model_name=os.getenv("CLAIM_DECOMPOSER_MODEL"),
     format_output=LLM_OUTPUT_FORMAT,
 )
 
@@ -44,7 +46,7 @@ llm = get_chat_model(
 Build the graph
 """
 
-with open(BASE_DIR / "prompts/claim_decomposer_system_prompt.txt", "r") as f:
+with open(DIR / "prompts/claim_decomposer_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 system_message = SystemMessage(content=system_prompt)
 

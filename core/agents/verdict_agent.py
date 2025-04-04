@@ -3,14 +3,17 @@ import json
 import os
 from pathlib import Path
 from langchain_core.messages import SystemMessage, BaseMessage, AIMessage
-from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
 
 # Load environment variables
-load_dotenv('.env', override=True)
+DIR = Path(__file__).parent.resolve()
+load_dotenv(DIR.parent / ".env", override=True)
+assert "VERDICT_AGENT_MODEL" in os.environ, "Please set the VERDICT_AGENT_MODEL environment variable"
+
+
 LLM_OUTPUT_FORMAT = {
     "type": "object",
     "properties": {
@@ -24,11 +27,9 @@ LLM_OUTPUT_FORMAT = {
     },
     "required": ["final_label", "final_justification"]
 }
-BASE_DIR = Path(__file__).parent.resolve()
-MODEL = "mistral-nemo"
-TEMPERATURE = 0
 
-llm = get_chat_model(model_name=MODEL, format_output=LLM_OUTPUT_FORMAT)
+llm = get_chat_model(model_name=os.getenv(
+    "VERDICT_AGENT_MODEL"), format_output=LLM_OUTPUT_FORMAT)
 
 
 class State(TypedDict):
@@ -40,7 +41,7 @@ class State(TypedDict):
     final_justification: str | None
 
 
-with open(BASE_DIR / "prompts/claim_decomposer_system_prompt.txt", "r") as f:
+with open(DIR / "prompts/claim_decomposer_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 system_message = SystemMessage(content=system_prompt)
 
