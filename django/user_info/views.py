@@ -164,6 +164,12 @@ def apikey_list(request):
 @login_required
 def apikey_create(request):
     if request.method == 'POST':
+        # Check if the user already has 3 or more API keys
+        existing_keys_count = APIKey.objects.filter(user=request.user).count()
+        if existing_keys_count >= 3:
+            messages.error(request, "You can only have a maximum of 3 API keys per account.")
+            return redirect('apikey_list')
+            
         # Generate a name with a timestamp to make it unique
         import datetime
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -197,10 +203,18 @@ def get_api_key(request):
     Returns the current user's API key.
     This endpoint is used by the FastAPI backend to authenticate users.
     """
-    # Get the user's first active API key, or create one if none exists
+    # Get the user's first active API key
     api_key = APIKey.objects.filter(user=request.user, is_active=True).first()
     
     if not api_key:
+        # Check if the user already has 3 or more API keys (including inactive ones)
+        existing_keys_count = APIKey.objects.filter(user=request.user).count()
+        if existing_keys_count >= 3:
+            # If the user has reached the limit, return an error
+            return JsonResponse({
+                'error': 'You have reached the maximum limit of 3 API keys. Please delete an existing key before creating a new one.'
+            }, status=400)
+        
         # Create a new API key
         api_key = APIKey(user=request.user, name="Auto-generated API Key")
         api_key.save()
