@@ -5,7 +5,7 @@ import os
 
 
 @tool("web_search", parse_docstring=True)
-def web_search_tavily(query: str, topic: Literal["general", "news", "finance"]) -> list[dict]:
+def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> list[dict]:
     """
     A search engine optimized for comprehensive, accurate, and trusted results. Useful for when you need to answer questions about current events.
 
@@ -47,7 +47,7 @@ def web_search_tavily(query: str, topic: Literal["general", "news", "finance"]) 
 
 if __name__ == "__main__":
     # Test the function
-    results = web_search_tavily.invoke(
+    results = tool_function.invoke(
         {"query": "Who lives in Gracie Mansion?", "topic": "general"})
     for result in results:
         print(f"Content: {result['content']}")

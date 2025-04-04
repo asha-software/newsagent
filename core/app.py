@@ -29,6 +29,8 @@ app.add_middleware(APIKeyMiddleware)
 app.add_middleware(RateLimitMiddleware)
 
 # Helper function to get the current user
+
+
 async def get_current_user(request: Request) -> dict[str, Any]:
     user = request.state.user
     if not user:
@@ -36,6 +38,8 @@ async def get_current_user(request: Request) -> dict[str, Any]:
     return user
 
 # API Key models
+
+
 class APIKeyCreate(BaseModel):
     name: str
 
@@ -69,15 +73,16 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     text = req.get('body')
 
     # Extract the sources array from the request
-    # Default to empty list if not provided
-    selected_sources = req.get('sources', [])
-    print(f"Selected sources: {selected_sources}")
+
+    selected_builtin_tools = req.get(
+        'sources', ['web_search', 'wikipedia', 'wolframalpha'])
+    print(f"Selected sources: {selected_builtin_tools}")
 
     if not text:
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
 
-    verdict_results = await process_query(text, selected_sources)
+    verdict_results = await process_query(text, builtin_tools=selected_builtin_tools)
     return verdict_results
 
 
@@ -113,17 +118,17 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
                 (user["id"],)
             )
             key_count = cursor.fetchone()[0]
-            
+
             if key_count >= 3:
                 raise HTTPException(
-                    status_code=400, 
+                    status_code=400,
                     detail="You can only have a maximum of 3 API keys per account."
                 )
-            
+
             # Generate a new API key
             import uuid
             key = uuid.uuid4().hex
-            
+
             # Insert the new API key
             cursor.execute(
                 """
@@ -134,7 +139,7 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
             )
             api_key_id = cursor.lastrowid
             connection.commit()
-            
+
             # Get the newly created API key
             cursor.execute(
                 """
@@ -145,7 +150,7 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
                 (api_key_id,)
             )
             row = cursor.fetchone()
-            
+
             return {
                 "id": row[0],
                 "name": row[1],
@@ -160,6 +165,7 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
     finally:
         if 'connection' in locals() and connection:
             connection.close()
+
 
 @app.get("/api-keys")
 async def list_api_keys(user: dict[str, Any] = Depends(get_current_user)):

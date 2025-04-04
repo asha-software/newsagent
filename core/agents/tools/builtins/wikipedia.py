@@ -6,7 +6,7 @@ from core.agents.tools.builtins import tool_registry_globals
 
 
 @tool("wikipedia", parse_docstring=True)
-def query(query_str: str) -> str:
+def tool_function(query_str: str) -> str:
     """
     This function queries Wikipedia. Use it to retrieve information about historical events or common knowledge.
 
@@ -48,4 +48,4 @@ def query(query_str: str) -> str:
 
 
 if __name__ == "__main__":
-    print(query("Apple Podcasts"))
+    print(tool_function("Apple Podcasts"))
