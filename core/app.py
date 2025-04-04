@@ -1,76 +1,15 @@
 import os
 import datetime
 import pymysql
-from typing import Optional, Dict, Any
-from fastapi import FastAPI, HTTPException, Request, Depends, Header
-from starlette.middleware.base import BaseHTTPMiddleware
+from typing import Dict, Any, Optional
+from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-# from agents.claim_decomposer import claim_decomposer
-# from agents.research_agent import create_agent as create_research_agent
-# from agents.reasoning_agent import reasoning_agent
 from processing import process_query
 
-# Database connection settings - directly configured without Django dependency
-DB_CONFIG = {
-    "host": os.getenv("DB_HOST", "localhost"),
-    "user": os.getenv("DB_USER", "fakenews_user"),
-    "password": os.getenv("DB_PASSWORD", "password"),
-    "database": os.getenv("DB_NAME", "fakenews_db"),
-    "port": int(os.getenv("DB_PORT", "3306")),
-}
-
-# API Key authentication middleware
-
-
-class APIKeyMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        # Get the API key from the header
-        api_key = request.headers.get("X-API-Key")
-        request.state.user = None
-
-        if api_key:
-            # Get the user from the API key
-            user = await self.get_user_from_api_key(api_key)
-            if user:
-                request.state.user = user
-
-        response = await call_next(request)
-        return response
-
-    async def get_user_from_api_key(self, api_key: str) -> Optional[Dict[str, Any]]:
-        try:
-            # Connect directly to MySQL database
-            connection = pymysql.connect(**DB_CONFIG)
-            with connection.cursor() as cursor:
-                # Get the user associated with the API key
-                # Same query as before, just with a clearer comment
-                cursor.execute(
-                    """
-                    SELECT au.id, au.username, au.email 
-                    FROM auth_user au
-                    JOIN user_info_apikey uak ON uak.user_id = au.id
-                    WHERE uak.key = %s AND uak.is_active = 1
-                    """,
-                    (api_key,)
-                )
-                user_row = cursor.fetchone()
-
-                if user_row:
-                    return {
-                        "id": user_row[0],
-                        "username": user_row[1],
-                        "email": user_row[2]
-                    }
-
-                return None
-        except Exception as e:
-            print(f"Error getting user from API key: {e}")
-            return None
-        finally:
-            if 'connection' in locals() and connection:
-                connection.close()
-
+# Import middlewares from the new location
+from core.middlewares.auth import APIKeyMiddleware, DB_CONFIG
+from core.middlewares.rate_limit import RateLimitMiddleware
 
 # Create FastAPI app
 app = FastAPI()
@@ -86,10 +25,10 @@ app.add_middleware(
 
 # Add the API key middleware
 app.add_middleware(APIKeyMiddleware)
+# Add the rate limit middleware
+app.add_middleware(RateLimitMiddleware)
 
 # Helper function to get the current user
-
-
 async def get_current_user(request: Request) -> Dict[str, Any]:
     user = request.state.user
     if not user:
@@ -97,8 +36,6 @@ async def get_current_user(request: Request) -> Dict[str, Any]:
     return user
 
 # API Key models
-
-
 class APIKeyCreate(BaseModel):
     name: str
 
@@ -161,11 +98,28 @@ async def get_user(user: Dict[str, Any] = Depends(get_current_user)):
 async def create_api_key(api_key: APIKeyCreate, user: Dict[str, Any] = Depends(get_current_user)):
     """
     Creates a new API key for the authenticated user.
+    Limited to 3 API keys per user.
     """
     try:
         # Connect directly to MySQL database
         connection = pymysql.connect(**DB_CONFIG)
         with connection.cursor() as cursor:
+            # Check if the user already has 3 or more API keys
+            cursor.execute(
+                """
+                SELECT COUNT(*) FROM user_info_apikey 
+                WHERE user_id = %s
+                """,
+                (user["id"],)
+            )
+            key_count = cursor.fetchone()[0]
+            
+            if key_count >= 3:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="You can only have a maximum of 3 API keys per account."
+                )
+            
             # Generate a new API key
             import uuid
             key = uuid.uuid4().hex

@@ -56,7 +56,10 @@
             width: 100%;
             max-width: 1000px;
             z-index: 1;
-            position: relative;
+            position: absolute;
+            top: 150px;
+            left: 50%;
+            transform: translateX(-50%);
         }
         .btn-create {
             background: transparent;
@@ -96,6 +99,10 @@
             color: white;
             text-decoration: none;
             margin-right: 20px;
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #4da6ff;
         }
         .nav-link span {
             border-bottom: 2px solid transparent;
@@ -191,9 +198,13 @@
                 </div>
             {% endif %}
             
+            <div class="alert alert-info" style="margin-top: 20px;">
+                <p>You can have a maximum of 3 API keys per account. {% if apikeys|length < 3 %}You currently have {{ apikeys|length }} key{{ apikeys|length|pluralize }}.{% else %}You have reached the maximum limit.{% endif %}</p>
+            </div>
+            
             <form method="post" action="{% url 'apikey_create' %}" style="margin-top: 20px;">
                 {% csrf_token %}
-                <button type="submit" class="btn btn-create">Create New API Key</button>
+                <button type="submit" class="btn btn-create" {% if apikeys|length >= 3 %}disabled{% endif %}>Create New API Key</button>
             </form>
         </div>
     </div>
