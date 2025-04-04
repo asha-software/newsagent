@@ -140,33 +140,8 @@ async def query(request: Request, user: Dict[str, Any] = Depends(get_current_use
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
 
-    # Try constructing research agent
-    # research_agent = create_research_agent(
-    #     model="mistral-nemo",
-    #     builtin_tools={
-    #         'calculator': ['multiply', 'add'],
-    #         'wikipedia': ['query']
-    #     },
-    #     user_tool_kwargs=[]
-    # )
-
-    # # Claims decomposer
-    # initial_state = {"text": text}
-    # result = claim_decomposer.invoke(initial_state)
-    # claims = result["claims"]
-
-    # research_results = [research_agent.invoke(
-    #     {"claim": claim, "selected_sources": selected_sources}) for claim in claims]
-    # delete_messages(research_results)
-
-    # reasoning_results = [reasoning_agent.invoke(
-    #     state) for state in research_results]
-    # delete_messages(reasoning_results)
-
-    # return reasoning_results
-
-    reasoning_results = await process_query(text, selected_sources)
-    return reasoning_results
+    verdict_results = await process_query(text, selected_sources)
+    return verdict_results
 
 
 @app.get("/user")
