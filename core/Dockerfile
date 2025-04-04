@@ -5,8 +5,13 @@ WORKDIR /app
 # Expose port
 EXPOSE 8000
 
+# NOTE: docker-compose.yml api is going to set core/.env vars in the environment as well
+
 # Add project root to PYTHONPATH
 ENV PYTHONPATH=/app
+
+# Set base url for Ollama running in docker
+ENV OLLAMA_BASE_URL=http://host.docker.internal:11434
 
 # Copy setup.py pyproject.toml from the project root
 COPY setup.py pyproject.toml /app/

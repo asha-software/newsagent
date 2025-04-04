@@ -15,19 +15,20 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict, Callable
-
+from core.agents.utils.llm_factory import get_chat_model
 from core.agents.common_types import Evidence
 
 # Absolute path to this dir. For relative paths like prompts
-THIS_DIR = Path(__file__).parent.resolve()
+DIR = Path(__file__).parent.resolve()
 
 # Absolute path to repo root. This will be used to import builtin tools and Evidence from common_types
-ROOT_DIR = THIS_DIR.parent.parent
+ROOT_DIR = DIR.parent.parent
 
 # Path prefix for builtin tools
 PACKAGE_PREFIX = "core.agents.tools.builtins."
 
-load_dotenv(ROOT_DIR / 'core/.env', override=True)
+load_dotenv(DIR.parent / '.env', override=True)
+assert "RESEARCH_AGENT_MODEL" in os.environ, "Please set the RESEARCH_AGENT_MODEL environment variable"
 PATH_TO_FILE = os.path.abspath(__file__)
 
 
@@ -79,7 +80,7 @@ def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
 
 
 def create_agent(
-        model: str = 'mistral-nemo',
+        model: str,
         builtin_tools: dict[str, str] = None,
         user_tool_kwargs: list[dict] = None) -> StateGraph:
     """
@@ -109,19 +110,18 @@ def create_agent(
         tool_kwargs=user_tool_kwargs)
 
     tools = builtins + user_defined_tools
+    if not model:
+        model = os.getenv("RESEARCH_AGENT_MODEL")
 
-    llm = ChatOllama(
-        model=model,
-        temperature=0,
-        base_url="http://host.docker.internal:11434",  # if running in the studio
-    ).bind_tools(tools)  # Use the filtered tools list
+    llm = get_chat_model(model_name=model).bind_tools(tools)
+
 
     class State(TypedDict):
         messages: Annotated[list[BaseMessage], add_messages]
         claim: str
         evidence: list[dict]
 
-    with open(THIS_DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
+    with open(DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
         sys_msg = SystemMessage(content=f.read())
 
     def preprocessing(state: State):

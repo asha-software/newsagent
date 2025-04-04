@@ -39,8 +39,10 @@ def test_api_response_structure(api_endpoint, api_key):
     # Verify response is valid JSON
     try:
         result = response.json()
+        print(f"Response JSON: {result}")
     except json.JSONDecodeError as e:
         pytest.fail(f"Response is not valid JSON: {str(e)}")
+        print(f"Raw response content: {response}")
 
     # Check that required keys are present
     expected_keys = ["claims", "evidence", "labels",
