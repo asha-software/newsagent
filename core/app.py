@@ -145,6 +145,10 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     tools = req.get('sources')
     print(f"Selected sources: {tools}")
 
+    # Convert string to list if needed
+    if isinstance(tools, str):
+        tools = [tools]
+    
     # If no tools are selected, use the default built-in tools
     if not tools:
         # Get the default built-in tools
@@ -155,7 +159,52 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     if not text:
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
+    
+    # Check if any of the selected tools are user-defined tools
+    user_tool_params = {}
+    if tools and user:
+        try:
+            # Connect directly to MySQL database
+            connection = pymysql.connect(**DB_CONFIG)
+            with connection.cursor() as cursor:
+                # Get all user tools that match the selected tools
+                placeholders = ', '.join(['%s'] * len(tools))
+                cursor.execute(
+                    f"""
+                    SELECT name, description, method, url_template, headers, default_params, 
+                           data, json_payload, docstring, target_fields, param_mapping, is_preferred
+                    FROM user_info_usertool 
+                    WHERE user_id = %s AND name IN ({placeholders}) AND is_active = 1
+                    """,
+                    (user["id"], *tools)
+                )
+                rows = cursor.fetchall()
+                
+                # Store the parameters for each user tool
+                for row in rows:
+                    tool_name = row[0]
+                    user_tool_params[tool_name] = {
+                        'name': row[0],
+                        'description': row[1],
+                        'method': row[2],
+                        'url_template': row[3],
+                        'headers': row[4],
+                        'default_params': row[5],
+                        'data': row[6],
+                        'json_payload': row[7],
+                        'docstring': row[8],
+                        'target_fields': row[9],
+                        'param_mapping': row[10],
+                        'is_preferred': bool(row[11])
+                    }
+        except Exception as e:
+            print(f"Error retrieving user tool parameters: {e}")
+        finally:
+            if 'connection' in locals() and connection:
+                connection.close()
 
+    print(f"User tool parameters: {user_tool_params}")
+    
     verdict_results = await process_query(text, builtin_tools=tools)
     return verdict_results
 
