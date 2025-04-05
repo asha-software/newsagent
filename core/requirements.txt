@@ -9,4 +9,6 @@ pymysql==1.1.1
 django==5.1.7
 tavily-python==0.5.4
 uvicorn==0.34.0
-wikipedia==1.4.0
+numexpr~=2.10.2
+wikipedia~=1.4.0
+numpy~=2.2.4
