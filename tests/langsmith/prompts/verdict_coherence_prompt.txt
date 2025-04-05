@@ -1,0 +1,19 @@
+You are a critical thinking expert. Review the final justification provided for a verdict.
+
+## Instructions
+- Use the verdict label and the list of individual claim labels to judge whether the final justification is logically sound.
+- The justification should be coherent with the mix of labels: "true", "false", "unknown".
+- Respond with a JSON object like this:
+
+{{
+  "coherent": true or false,
+  "reason": "A short explanation"
+}}
+
+## Input
+Verdict: '{predicted_label}'
+
+Individual Claim Labels: '{claim_labels}'
+
+Final Justification:
+'{justification}'
