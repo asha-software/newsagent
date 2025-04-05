@@ -1,15 +1,29 @@
+import math
+
+import numexpr
 from langchain_core.tools import tool
 
 
-@tool("calculator", parse_docstring=True)
-def add(a: float, b: float) -> float:
-    """Add `a` and `b`
+@tool
+def calculator(expression: str) -> str:
+    """Calculate expression.
+    Expression should be a single line mathematical expression.
 
-    Args:
-        a: First number
-        b: Second number
-
-    Returns:
-        The sum of `a` and `b`
+    Examples:
+        "37593 * 67" for "37593 times 67"
+        "37593**(1/5)" for "37593^(1/5)"
     """
-    return a + b
+    local_dict = {"pi": math.pi, "e": math.e, "tau": math.tau}
+    try:
+        return str(
+            numexpr.evaluate(
+                expression.strip(),
+                global_dict={},  # restrict access to globals
+                local_dict=local_dict,  # add common mathematical functions
+            )
+        )
+    except SyntaxError:
+        return "Invalid expression!"
+
+if __name__ == "__main__":
+    print(calculator("37593 * 67"))
