@@ -142,16 +142,21 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     text = req.get('body')
 
     # Extract the sources array from the request
+    tools = req.get('sources')
+    print(f"Selected sources: {tools}")
 
-    selected_builtin_tools = req.get(
-        'sources', ['web_search', 'wikipedia', 'wolframalpha'])
-    print(f"Selected sources: {selected_builtin_tools}")
+    # If no tools are selected, use the default built-in tools
+    if not tools:
+        # Get the default built-in tools
+        builtin_tools_response = await get_builtin_tools()
+        tools = [tool['name'] for tool in builtin_tools_response['tools']]
+        print(f"No tools selected, using default tools: {tools}")
 
     if not text:
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
 
-    verdict_results = await process_query(text, builtin_tools=selected_builtin_tools)
+    verdict_results = await process_query(text, builtin_tools=tools)
     return verdict_results
 
 
