@@ -1,0 +1,11 @@
+Given the label '{predicted_label}' and the justification '{justification}', your task is to assess whether the justification logically and coherently supports the given label.
+
+Instructions:
+- Respond with a JSON object structured as follows:
+{{
+    "coherent": true or false,
+    "reason": "A short explanation justifying your evaluation"
+}}
+- "coherent" should be true if the justification clearly and logically supports the label.
+- "coherent" should be false if the justification does not logically support or contradicts the label.
+- Provide a concise but clear explanation in the "reason" field. 
