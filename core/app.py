@@ -62,6 +62,75 @@ def delete_messages(states: list[dict]):
 async def health():
     return {"status": "ok"}
 
+@app.get("/tools/builtins")
+async def get_builtin_tools():
+    """
+    Returns a list of available built-in tools.
+    This endpoint is used by the Django container to get the list of built-in tools.
+    """
+    import os
+    import glob
+    
+    # Get the absolute path to the core/agents/tools/builtins directory
+    builtins_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+                               'core', 'agents', 'tools', 'builtins')
+    
+    # Check if the directory exists
+    if not os.path.exists(builtins_dir) or not os.path.isdir(builtins_dir):
+        # Return hardcoded tools as a fallback
+        return {
+            "tools": [
+                {"name": "calculator", "display_name": "Calculator"},
+                {"name": "wikipedia", "display_name": "Wikipedia"},
+                {"name": "web_search", "display_name": "Web Search"},
+                {"name": "wolfram_alpha", "display_name": "Wolfram Alpha"}
+            ]
+        }
+    
+    # List all Python files in the directory
+    try:
+        python_files = glob.glob(os.path.join(builtins_dir, "*.py"))
+        
+        # Extract tool names from file names
+        tools = []
+        for file_path in python_files:
+            # Skip __init__.py and tool_registry_globals.py
+            file_name = os.path.basename(file_path)
+            if file_name in ['__init__.py', 'tool_registry_globals.py', 'nb_tavali_demo.py']:
+                continue
+            
+            # Use the file name (without extension) as the tool name
+            tool_name = os.path.splitext(file_name)[0]
+            
+            # Get the display name (capitalize words and replace underscores with spaces)
+            display_name = ' '.join(word.capitalize() for word in tool_name.split('_'))
+            
+            tools.append({
+                'name': tool_name,
+                'display_name': display_name
+            })
+        
+        # If no tools were found, use hardcoded tools
+        if not tools:
+            tools = [
+                {"name": "calculator", "display_name": "Calculator"},
+                {"name": "wikipedia", "display_name": "Wikipedia"},
+                {"name": "web_search", "display_name": "Web Search"},
+                {"name": "wolfram_alpha", "display_name": "Wolfram Alpha"}
+            ]
+        
+        return {"tools": tools}
+    except Exception:
+        # Return hardcoded tools as a fallback
+        return {
+            "tools": [
+                {"name": "calculator", "display_name": "Calculator"},
+                {"name": "wikipedia", "display_name": "Wikipedia"},
+                {"name": "web_search", "display_name": "Web Search"},
+                {"name": "wolfram_alpha", "display_name": "Wolfram Alpha"}
+            ]
+        }
+
 
 @app.post("/query")
 async def query(request: Request, user: dict[str, Any] = Depends(get_current_user)):

@@ -50,14 +50,13 @@
               </div>
             </div>
             <div class="suggestion-wrap">
+              {% for tool in builtin_tools %}
               <label class="suggestion-item">
-                <input type="checkbox" name="source" value="calculator">
-                <span>AP News</span>
+                <input type="checkbox" name="source" value="{{ tool.name }}">
+                <span>{{ tool.display_name }}</span>
               </label>
-              <label class="suggestion-item">
-                <input type="checkbox" name="source" value="wikipedia">
-                <span>CNN</span>
-              </label>
+              {% endfor %}
+              
               {% if user_tools %}
                 {% for tool in user_tools %}
                 <label class="suggestion-item">
