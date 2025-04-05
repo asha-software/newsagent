@@ -164,66 +164,318 @@
         resultsContainer.style.display = 'block';
         resultsContainer.innerHTML = '';
 
-        data.forEach(result => {
-        const resultCard = document.createElement('div');
-        resultCard.className = 'result-card';
-        
-        const header = document.createElement('div');
-        header.className = 'result-header';
-        
-        const title = document.createElement('h2');
-        title.textContent = result.claim || 'Claim Analysis';
-        
-        const icon = document.createElement('img');
-        // Use label instead of verdict
-        icon.src = result.label === 'true' ? 
-          "{% static 'images/yes.png' %}" : 
-          "{% static 'images/no.png' %}";
-        icon.alt = result.label === 'true' ? 'True' : 'False';
-        icon.className = 'result-icon';
-        
-        header.appendChild(title);
-        header.appendChild(icon);
-        
-        const content = document.createElement('div');
-        content.className = 'result-content';
-        
-        const reasoning = document.createElement('p');
-        // Use justification instead of reasoning
-        reasoning.textContent = result.justification || 'No reasoning provided';
-        content.appendChild(reasoning);
-        
-        // Display evidence instead of sources
-        if (result.evidence && result.evidence.length > 0) {
-          const sourceDiv = document.createElement('div');
-          sourceDiv.className = 'result-source';
-          sourceDiv.textContent = 'Evidence: ';
+        // Check if data is an object with claims, labels, and justifications arrays
+        if (data.claims && Array.isArray(data.claims) && 
+            data.labels && Array.isArray(data.labels) && 
+            data.justifications && Array.isArray(data.justifications)) {
           
-          result.evidence.forEach((evidence, index) => {
-            const sourceText = document.createElement('span');
-            sourceText.textContent = evidence.name || `Evidence ${index + 1}`;
+          // Create a container for the entire response
+          const responseContainer = document.createElement('div');
+          responseContainer.className = 'response-container';
+          
+          // Add a title for the response
+          const responseTitle = document.createElement('h2');
+          responseTitle.textContent = 'Analysis Results';
+          responseTitle.className = 'response-title';
+          responseContainer.appendChild(responseTitle);
+          
+          // Create a table to display all claims, labels, and justifications
+          const claimsTable = document.createElement('table');
+          claimsTable.className = 'claims-table';
+          
+          // Create table header
+          const tableHeader = document.createElement('thead');
+          const headerRow = document.createElement('tr');
+          
+          const claimHeader = document.createElement('th');
+          claimHeader.textContent = 'Claim';
+          headerRow.appendChild(claimHeader);
+          
+          const verdictHeader = document.createElement('th');
+          verdictHeader.textContent = 'Verdict';
+          headerRow.appendChild(verdictHeader);
+          
+          const justificationHeader = document.createElement('th');
+          justificationHeader.textContent = 'Justification';
+          headerRow.appendChild(justificationHeader);
+          
+          tableHeader.appendChild(headerRow);
+          claimsTable.appendChild(tableHeader);
+          
+          // Create table body
+          const tableBody = document.createElement('tbody');
+          
+          // Add rows for each claim
+          for (let i = 0; i < data.claims.length; i++) {
+            const row = document.createElement('tr');
             
-            sourceDiv.appendChild(sourceText);
+            const claimCell = document.createElement('td');
+            claimCell.textContent = data.claims[i];
+            row.appendChild(claimCell);
             
-            if (index < result.evidence.length - 1) {
-              sourceDiv.appendChild(document.createTextNode(', '));
+            const verdictCell = document.createElement('td');
+            const verdictIcon = document.createElement('img');
+            verdictIcon.src = data.labels[i] === 'true' ? 
+              "{% static 'images/yes.png' %}" : 
+              "{% static 'images/no.png' %}";
+            verdictIcon.alt = data.labels[i] === 'true' ? 'True' : 'False';
+            verdictIcon.className = 'verdict-icon';
+            verdictCell.appendChild(verdictIcon);
+            verdictCell.appendChild(document.createTextNode(data.labels[i]));
+            row.appendChild(verdictCell);
+            
+            const justificationCell = document.createElement('td');
+            justificationCell.textContent = data.justifications[i] || 'No justification provided';
+            row.appendChild(justificationCell);
+            
+            tableBody.appendChild(row);
+          }
+          
+          claimsTable.appendChild(tableBody);
+          responseContainer.appendChild(claimsTable);
+          
+          // Add final verdict if available
+          if (data.final_label && data.final_justification) {
+            const finalVerdictContainer = document.createElement('div');
+            finalVerdictContainer.className = 'final-verdict-container';
+            
+            const finalVerdictTitle = document.createElement('h3');
+            finalVerdictTitle.textContent = 'Final Verdict';
+            finalVerdictContainer.appendChild(finalVerdictTitle);
+            
+            const finalVerdictContent = document.createElement('div');
+            finalVerdictContent.className = 'final-verdict-content';
+            
+            const finalVerdictLabel = document.createElement('div');
+            finalVerdictLabel.className = 'final-verdict-label';
+            
+            const finalVerdictIcon = document.createElement('img');
+            finalVerdictIcon.src = data.final_label === 'true' ? 
+              "{% static 'images/yes.png' %}" : 
+              "{% static 'images/no.png' %}";
+            finalVerdictIcon.alt = data.final_label === 'true' ? 'True' : 'False';
+            finalVerdictIcon.className = 'verdict-icon';
+            
+            finalVerdictLabel.appendChild(finalVerdictIcon);
+            finalVerdictLabel.appendChild(document.createTextNode(data.final_label));
+            finalVerdictContent.appendChild(finalVerdictLabel);
+            
+            const finalVerdictJustification = document.createElement('p');
+            finalVerdictJustification.className = 'final-verdict-justification';
+            finalVerdictJustification.textContent = data.final_justification || 'No final justification provided';
+            finalVerdictContent.appendChild(finalVerdictJustification);
+            
+            finalVerdictContainer.appendChild(finalVerdictContent);
+            responseContainer.appendChild(finalVerdictContainer);
+          }
+          
+          // Add the raw JSON data in a collapsible section
+          const rawDataContainer = document.createElement('div');
+          rawDataContainer.className = 'raw-data-container';
+          
+          const rawDataToggle = document.createElement('button');
+          rawDataToggle.className = 'raw-data-toggle';
+          rawDataToggle.textContent = 'Show Raw JSON Data';
+          rawDataToggle.onclick = function() {
+            const rawDataContent = document.getElementById('raw-data-content');
+            if (rawDataContent.style.display === 'none') {
+              rawDataContent.style.display = 'block';
+              this.textContent = 'Hide Raw JSON Data';
+            } else {
+              rawDataContent.style.display = 'none';
+              this.textContent = 'Show Raw JSON Data';
             }
+          };
+          rawDataContainer.appendChild(rawDataToggle);
+          
+          const rawDataContent = document.createElement('pre');
+          rawDataContent.id = 'raw-data-content';
+          rawDataContent.className = 'raw-data-content';
+          rawDataContent.style.display = 'none';
+          rawDataContent.textContent = JSON.stringify(data, null, 2);
+          rawDataContainer.appendChild(rawDataContent);
+          
+          responseContainer.appendChild(rawDataContainer);
+          
+          resultsContainer.appendChild(responseContainer);
+          
+          // Add some CSS styles for the table and other elements
+          const style = document.createElement('style');
+          style.textContent = `
+            .response-container {
+              background-color: #fff;
+              border-radius: 8px;
+              padding: 20px;
+              margin-top: 20px;
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            
+            .response-title {
+              color: #333;
+              margin-bottom: 20px;
+              text-align: center;
+            }
+            
+            .claims-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+            }
+            
+            .claims-table th, .claims-table td {
+              padding: 12px;
+              text-align: left;
+              border-bottom: 1px solid #ddd;
+            }
+            
+            .claims-table th {
+              background-color: #f2f2f2;
+              font-weight: bold;
+            }
+            
+            .claims-table tr:hover {
+              background-color: #f5f5f5;
+            }
+            
+            .verdict-icon {
+              width: 20px;
+              height: 20px;
+              margin-right: 8px;
+              vertical-align: middle;
+            }
+            
+            .final-verdict-container {
+              margin-top: 30px;
+              padding: 15px;
+              background-color: #f9f9f9;
+              border-radius: 8px;
+              border-left: 4px solid #4CAF50;
+            }
+            
+            .final-verdict-container h3 {
+              color: #333;
+              margin-top: 0;
+            }
+            
+            .final-verdict-content {
+              display: flex;
+              flex-direction: column;
+            }
+            
+            .final-verdict-label {
+              font-weight: bold;
+              margin-bottom: 10px;
+            }
+            
+            .final-verdict-justification {
+              margin-top: 0;
+              line-height: 1.5;
+            }
+            
+            .raw-data-container {
+              margin-top: 30px;
+            }
+            
+            .raw-data-toggle {
+              background-color: #f2f2f2;
+              border: none;
+              padding: 10px 15px;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 14px;
+            }
+            
+            .raw-data-toggle:hover {
+              background-color: #e0e0e0;
+            }
+            
+            .raw-data-content {
+              background-color: #f8f8f8;
+              padding: 15px;
+              border-radius: 4px;
+              overflow-x: auto;
+              margin-top: 10px;
+              border: 1px solid #ddd;
+              white-space: pre-wrap;
+            }
+          `;
+          document.head.appendChild(style);
+          
+          if (data.claims.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'no-results';
+            noResults.textContent = 'No results found for your query.';
+            resultsContainer.appendChild(noResults);
+          }
+        } else if (Array.isArray(data)) {
+          // Handle the case where data is already an array (for backward compatibility)
+          data.forEach(result => {
+            const resultCard = document.createElement('div');
+            resultCard.className = 'result-card';
+            
+            const header = document.createElement('div');
+            header.className = 'result-header';
+            
+            const title = document.createElement('h2');
+            title.textContent = result.claim || 'Claim Analysis';
+            
+            const icon = document.createElement('img');
+            // Use label instead of verdict
+            icon.src = result.label === 'true' ? 
+              "{% static 'images/yes.png' %}" : 
+              "{% static 'images/no.png' %}";
+            icon.alt = result.label === 'true' ? 'True' : 'False';
+            icon.className = 'result-icon';
+            
+            header.appendChild(title);
+            header.appendChild(icon);
+            
+            const content = document.createElement('div');
+            content.className = 'result-content';
+            
+            const reasoning = document.createElement('p');
+            // Use justification instead of reasoning
+            reasoning.textContent = result.justification || 'No reasoning provided';
+            content.appendChild(reasoning);
+            
+            // Display evidence instead of sources
+            if (result.evidence && result.evidence.length > 0) {
+              const sourceDiv = document.createElement('div');
+              sourceDiv.className = 'result-source';
+              sourceDiv.textContent = 'Evidence: ';
+              
+              result.evidence.forEach((evidence, index) => {
+                const sourceText = document.createElement('span');
+                sourceText.textContent = evidence.name || `Evidence ${index + 1}`;
+                
+                sourceDiv.appendChild(sourceText);
+                
+                if (index < result.evidence.length - 1) {
+                  sourceDiv.appendChild(document.createTextNode(', '));
+                }
+              });
+              
+              content.appendChild(sourceDiv);
+            }
+            
+            resultCard.appendChild(header);
+            resultCard.appendChild(content);
+            
+            resultsContainer.appendChild(resultCard);
           });
           
-          content.appendChild(sourceDiv);
-        }
-        
-        resultCard.appendChild(header);
-        resultCard.appendChild(content);
-        
-          resultsContainer.appendChild(resultCard);
-        });
-        
-        if (data.length === 0) {
-          const noResults = document.createElement('div');
-          noResults.className = 'no-results';
-          noResults.textContent = 'No results found for your query.';
-          resultsContainer.appendChild(noResults);
+          if (data.length === 0) {
+            const noResults = document.createElement('div');
+            noResults.className = 'no-results';
+            noResults.textContent = 'No results found for your query.';
+            resultsContainer.appendChild(noResults);
+          }
+        } else {
+          // If data is neither an object with arrays nor an array itself
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'error';
+          errorDiv.textContent = 'Unexpected response format from the server.';
+          resultsContainer.appendChild(errorDiv);
         }
       }
     })
