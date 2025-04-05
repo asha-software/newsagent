@@ -62,6 +62,75 @@ def delete_messages(states: list[dict]):
 async def health():
     return {"status": "ok"}
 
+@app.get("/tools/builtins")
+async def get_builtin_tools():
+    """
+    Returns a list of available built-in tools.
+    This endpoint is used by the Django container to get the list of built-in tools.
+    """
+    import os
+    import glob
+    
+    # Get the absolute path to the core/agents/tools/builtins directory
+    builtins_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+                               'core', 'agents', 'tools', 'builtins')
+    
+    # Check if the directory exists
+    if not os.path.exists(builtins_dir) or not os.path.isdir(builtins_dir):
+        # Return hardcoded tools as a fallback
+        return {
+            "tools": [
+                {"name": "calculator", "display_name": "Calculator"},
+                {"name": "wikipedia", "display_name": "Wikipedia"},
+                {"name": "web_search", "display_name": "Web Search"},
+                {"name": "wolfram_alpha", "display_name": "Wolfram Alpha"}
+            ]
+        }
+    
+    # List all Python files in the directory
+    try:
+        python_files = glob.glob(os.path.join(builtins_dir, "*.py"))
+        
+        # Extract tool names from file names
+        tools = []
+        for file_path in python_files:
+            # Skip __init__.py and tool_registry_globals.py
+            file_name = os.path.basename(file_path)
+            if file_name in ['__init__.py', 'tool_registry_globals.py', 'nb_tavali_demo.py']:
+                continue
+            
+            # Use the file name (without extension) as the tool name
+            tool_name = os.path.splitext(file_name)[0]
+            
+            # Get the display name (capitalize words and replace underscores with spaces)
+            display_name = ' '.join(word.capitalize() for word in tool_name.split('_'))
+            
+            tools.append({
+                'name': tool_name,
+                'display_name': display_name
+            })
+        
+        # If no tools were found, use hardcoded tools
+        if not tools:
+            tools = [
+                {"name": "calculator", "display_name": "Calculator"},
+                {"name": "wikipedia", "display_name": "Wikipedia"},
+                {"name": "web_search", "display_name": "Web Search"},
+                {"name": "wolfram_alpha", "display_name": "Wolfram Alpha"}
+            ]
+        
+        return {"tools": tools}
+    except Exception:
+        # Return hardcoded tools as a fallback
+        return {
+            "tools": [
+                {"name": "calculator", "display_name": "Calculator"},
+                {"name": "wikipedia", "display_name": "Wikipedia"},
+                {"name": "web_search", "display_name": "Web Search"},
+                {"name": "wolfram_alpha", "display_name": "Wolfram Alpha"}
+            ]
+        }
+
 
 @app.post("/query")
 async def query(request: Request, user: dict[str, Any] = Depends(get_current_user)):
@@ -73,16 +142,70 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     text = req.get('body')
 
     # Extract the sources array from the request
+    tools = req.get('sources')
+    print(f"Selected sources: {tools}")
 
-    selected_builtin_tools = req.get(
-        'sources', ['web_search', 'wikipedia', 'wolframalpha'])
-    print(f"Selected sources: {selected_builtin_tools}")
+    # Convert string to list if needed
+    if isinstance(tools, str):
+        tools = [tools]
+    
+    # If no tools are selected, use the default built-in tools
+    if not tools:
+        # Get the default built-in tools
+        builtin_tools_response = await get_builtin_tools()
+        tools = [tool['name'] for tool in builtin_tools_response['tools']]
+        print(f"No tools selected, using default tools: {tools}")
 
     if not text:
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
+    
+    # Check if any of the selected tools are user-defined tools
+    user_tool_params = {}
+    if tools and user:
+        try:
+            # Connect directly to MySQL database
+            connection = pymysql.connect(**DB_CONFIG)
+            with connection.cursor() as cursor:
+                # Get all user tools that match the selected tools
+                placeholders = ', '.join(['%s'] * len(tools))
+                cursor.execute(
+                    f"""
+                    SELECT name, description, method, url_template, headers, default_params, 
+                           data, json_payload, docstring, target_fields, param_mapping, is_preferred
+                    FROM user_info_usertool 
+                    WHERE user_id = %s AND name IN ({placeholders}) AND is_active = 1
+                    """,
+                    (user["id"], *tools)
+                )
+                rows = cursor.fetchall()
+                
+                # Store the parameters for each user tool
+                for row in rows:
+                    tool_name = row[0]
+                    user_tool_params[tool_name] = {
+                        'name': row[0],
+                        'description': row[1],
+                        'method': row[2],
+                        'url_template': row[3],
+                        'headers': row[4],
+                        'default_params': row[5],
+                        'data': row[6],
+                        'json_payload': row[7],
+                        'docstring': row[8],
+                        'target_fields': row[9],
+                        'param_mapping': row[10],
+                        'is_preferred': bool(row[11])
+                    }
+        except Exception as e:
+            print(f"Error retrieving user tool parameters: {e}")
+        finally:
+            if 'connection' in locals() and connection:
+                connection.close()
 
-    verdict_results = await process_query(text, builtin_tools=selected_builtin_tools)
+    print(f"User tool parameters: {user_tool_params}")
+    
+    verdict_results = await process_query(text, builtin_tools=tools)
     return verdict_results
 
 

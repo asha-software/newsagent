@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.http import JsonResponse
 from .models import UserTool, APIKey
 from .forms import UserToolForm
+from .utils import get_builtin_tools
 import json
 import uuid
 
@@ -17,16 +18,12 @@ def signin(request):
         username = request.POST.get('user_name')
         password = request.POST.get('password')
 
-        print(f"Attempting to authenticate user: {username} with password: {password}")
-
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-            print("User authenticated successfully!")
             return redirect('search')  # Redirect to search page after login
         else:
-            print("Authentication failed: Invalid credentials")
             return render(request, 'signin.html', {'error': 'Invalid username or password.'})
 
     return render(request, 'signin.html')
@@ -80,14 +77,16 @@ def search(request):
     # Get the user's active tools
     user_tools = UserTool.objects.filter(user=request.user, is_active=True).order_by('name')
     
-    # Debug: Print the user tools to the console
-    print(f"Active tools for {request.user.username}: {[tool.name for tool in user_tools]}")
+    # Get the built-in tools
+    builtin_tools = get_builtin_tools()
+    
     
     # Pass API_URL from settings to the template
     context = {
         'show_results': show_results,
         'API_URL': settings.API_URL,
-        'user_tools': user_tools
+        'user_tools': user_tools,
+        'builtin_tools': builtin_tools
     }
         
     return render(request, 'search.html', context)  # Render the search page with context
