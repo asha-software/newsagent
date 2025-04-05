@@ -1,7 +1,10 @@
 import pytest
+from unittest.mock import patch, MagicMock
 from langsmith import testing as t
+from pathlib import Path
 # Project root added to pythonpath in pyproject.toml, allowing this import:
 from core.agents.research_agent import agent, State
+from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from tests.test_data.research_agent_test_cases import TOOL_USAGE_TEST_CASES
 
 
