@@ -5,7 +5,7 @@ from typing import Any, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from processing import process_query
+from processing import process_query, get_user_tool_params
 
 # Import middlewares from the new location
 from core.middlewares.auth import APIKeyMiddleware, DB_CONFIG
@@ -58,6 +58,23 @@ class APIKeyResponse(BaseModel):
 async def health():
     return {"status": "ok"}
 
+@app.get("/tools/builtins")
+async def get_builtin_tools():
+    """
+    Returns a list of available built-in tools.
+    This endpoint is used by the Django container to get the list of built-in tools.
+    """
+    # Hardcoded list of built-in tools
+    # This is a simpler approach that ensures all tools are included
+    tools = [
+        {"name": "calculator", "display_name": "Calculator"},
+        {"name": "wikipedia", "display_name": "Wikipedia"},
+        {"name": "web_search", "display_name": "Web Search"},
+        {"name": "wolframalpha", "display_name": "Wolfram Alpha"}
+    ]
+    
+    return {"tools": tools}
+
 
 @app.post("/query")
 async def query(request: Request, user: dict[str, Any] = Depends(get_current_user)):
@@ -69,16 +86,30 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     text = req.get('body')
 
     # Extract the sources array from the request
+    tools = req.get('sources')
+    print(f"Selected sources: {tools}")
 
-    selected_builtin_tools = req.get(
-        'sources', ['web_search', 'wikipedia', 'wolframalpha'])
-    print(f"Selected sources: {selected_builtin_tools}")
+    # Reject the query if tools is not properly formatted (should be a list)
+    if tools is not None and not isinstance(tools, list):
+        raise HTTPException(
+            status_code=400, detail="'sources' must be a list of tool names.")
+    
+    # If no tools are selected, use the default built-in tools
+    if not tools:
+        # Get the default built-in tools
+        builtin_tools_response = await get_builtin_tools()
+        tools = [tool['name'] for tool in builtin_tools_response['tools']]
+        print(f"No tools selected, using default tools: {tools}")
 
     if not text:
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
-
-    verdict_results = await process_query(text, builtin_tools=selected_builtin_tools)
+    
+    user_tool_kwargs = await get_user_tool_params(user["id"], tools) if user else []
+    
+    print(f"User tool parameters: {user_tool_kwargs}")
+    
+    verdict_results = await process_query(text, builtin_tools=tools, user_tool_kwargs=user_tool_kwargs)
     return verdict_results
 
 
