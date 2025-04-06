@@ -247,58 +247,54 @@ async def delete_api_key(api_key_id: int, user: dict[str, Any] = Depends(get_cur
 @app.post("/tools/preferences")
 async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(get_current_user)):
     """
-    Endpoint to specify tool preferences for a query.
-    Users can specify both built-in tools and user-defined preferred tools.
+    Endpoint to update tool preferences for a user.
+    Tools passed in the request will be marked as preferred, and all others will be unmarked.
     """
     req = await request.json()
 
-    # Extract built-in and user-defined tool names from the request
-    builtin_tools = req.get("builtin_tools", [])
-    user_tool_names = req.get("user_tools", [])
+    # Extract tool names from the request
+    preferred_tool_names = req.get("tools", [])
 
     # Validate input
-    if not isinstance(builtin_tools, list) or not isinstance(user_tool_names, list):
-        raise HTTPException(status_code=400, detail="Both 'builtin_tools' and 'user_tools' must be lists.")
+    if not isinstance(preferred_tool_names, list):
+        raise HTTPException(status_code=400, detail="'tools' must be a list.")
 
-    # Query the database for user-defined preferred tools
-    user_defined_tools = []
-    if user_tool_names:
+    try:
         # Connect directly to MySQL database
         connection = pymysql.connect(**DB_CONFIG)
         with connection.cursor() as cursor:
+            # Set is_preferred to True for the specified tools
+            if preferred_tool_names:
+                cursor.execute(
+                    """
+                    UPDATE user_info_usertool
+                    SET is_preferred = TRUE
+                    WHERE user_id = %s AND name IN %s
+                    """,
+                    [user["id"], tuple(preferred_tool_names)]
+                )
+
+            # Set is_preferred to False for all other tools
             cursor.execute(
-            """
-            SELECT name, method, url_template, headers, default_params, data, json_payload, docstring, target_fields, param_mapping
-            FROM user_info_usertool
-            WHERE user_id = %s AND name IN %s AND is_active = TRUE AND is_preferred = TRUE
-            """,
-            [user["id"], tuple(user_tool_names)]
+                """
+                UPDATE user_info_usertool
+                SET is_preferred = FALSE
+                WHERE user_id = %s AND name NOT IN %s
+                """,
+                [user["id"], tuple(preferred_tool_names)]
             )
-            rows = cursor.fetchall()
 
-            # Convert database rows to tool definitions
-            for row in rows:
-                tool = {
-                    "name": row[0],
-                    "method": row[1],
-                    "url_template": row[2],
-                    "headers": row[3],
-                    "default_params": row[4],
-                    "data": row[5],
-                    "json_payload": row[6],
-                    "docstring": row[7],
-                    "target_fields": row[8],
-                    "param_mapping": row[9],
-                }
-                user_defined_tools.append(tool)
+            connection.commit()
 
-    # Combine built-in tools and user-defined tools
-    tool_preferences = {
-        "builtin_tools": builtin_tools,
-        "user_defined_tools": user_defined_tools,
-    }
+        return {"message": "Tool preferences updated successfully."}
 
-    return tool_preferences
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error updating tool preferences: {str(e)}"
+        )
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
 
 if __name__ == "__main__":
     import uvicorn
