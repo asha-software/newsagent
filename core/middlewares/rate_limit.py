@@ -18,7 +18,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     number of requests per minute per API key.
     """
 
-    def __init__(self, app, requests_per_minute=20):
+    def __init__(self, app, requests_per_minute=40):
         """
         Initialize the rate limit middleware.
 
