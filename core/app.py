@@ -5,7 +5,7 @@ from typing import Any, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from processing import process_query
+from processing import process_query, get_user_tool_params
 
 # Import middlewares from the new location
 from core.middlewares.auth import APIKeyMiddleware, DB_CONFIG
@@ -93,9 +93,10 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     tools = req.get('sources')
     print(f"Selected sources: {tools}")
 
-    # Convert string to list if needed
-    if isinstance(tools, str):
-        tools = [tools]
+    # Reject the query if tools is not properly formatted (should be a list)
+    if tools is not None and not isinstance(tools, list):
+        raise HTTPException(
+            status_code=400, detail="'sources' must be a list of tool names.")
     
     # If no tools are selected, use the default built-in tools
     if not tools:
@@ -107,9 +108,6 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     if not text:
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
-    
-    # Get user-defined tools if the user is authenticated
-    from processing import get_user_tool_params
     
     user_tool_kwargs = await get_user_tool_params(user["id"], tools) if user else []
     

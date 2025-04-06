@@ -1,5 +1,5 @@
 import pymysql
-from typing import Any, Dict, List, Optional
+from typing import Any
 from core.middlewares.auth import DB_CONFIG
 from core.agents.claim_decomposer import claim_decomposer
 from core.agents.research_agent import create_agent as create_research_agent
@@ -8,7 +8,7 @@ from core.agents.verdict_agent import verdict_agent
 from core.agents.utils.common_types import Analysis, Evidence
 
 
-async def get_user_tool_params(user_id: int, tools: List[str]) -> List[Dict[str, Any]]:
+async def get_user_tool_params(user_id: int, tools: list[str]) -> list[dict[str, Any]]:
     """
     Retrieves user-defined tool parameters from the database.
     
