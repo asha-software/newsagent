@@ -1,0 +1,66 @@
+@startuml NewsAgent Core Architecture
+
+' Main components
+package "API Layer" {
+  [FastAPI App] as app
+  [Middleware] as middleware
+  note right of app: app.py - HTTP API endpoints
+}
+
+package "Processing" {
+  [Processing Pipeline] as processing
+  note right of processing: processing.py - Orchestrates workflow
+}
+
+package "Agents" {
+  [Claim Decomposer] as decomposer
+  [Research Agent] as research
+  [Reasoning Agent] as reasoning
+  [Verdict Agent] as verdict
+  
+  note right of decomposer: Breaks down complex claims
+  note right of research: Gathers evidence using tools
+  note right of reasoning: Evaluates claims based on evidence
+  note right of verdict: Produces final verdict
+}
+
+package "Tools System" {
+  [Tool Registry] as registry
+  [Built-in Tools] as builtins
+  [Create Tool Utility] as createTool
+  
+  note bottom of registry: Centralized tool management
+  note bottom of builtins: Wikipedia, Web Search, etc.
+  note bottom of createTool: Dynamic API tool creation
+}
+
+package "Utilities" {
+  [LLM Factory] as llmFactory
+  [Common Types] as commonTypes
+  
+  note bottom of llmFactory: Creates LLM instances
+  note bottom of commonTypes: Shared data types (Evidence, Analysis)
+}
+
+' Relationships
+app --> processing : forwards requests
+middleware --> app : auth & rate limiting
+processing --> decomposer : sends text
+decomposer --> research : provides atomic claims
+research --> builtins : uses
+research --> registry : loads tools
+research --> reasoning : provides evidence
+reasoning --> verdict : sends evaluations
+registry --> createTool : registers tools
+llmFactory --> decomposer : provides LLM
+llmFactory --> research : provides LLM
+llmFactory --> reasoning : provides LLM
+llmFactory --> verdict : provides LLM
+commonTypes --> Agents : shared data structures
+
+' Data flow
+actor Client
+Client --> app : submit claim
+app --> Client : return verdict
+
+@enduml
