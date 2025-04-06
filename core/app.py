@@ -53,10 +53,6 @@ class APIKeyResponse(BaseModel):
     is_active: bool
 
 
-def delete_messages(states: list[dict]):
-    for state in states:
-        del state['messages']
-
 
 @app.get("/health")
 async def health():
