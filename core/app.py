@@ -240,6 +240,58 @@ async def delete_api_key(api_key_id: int, user: dict[str, Any] = Depends(get_cur
         if 'connection' in locals() and connection:
             connection.close()
 
+@app.post("/tools/preferences")
+async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Endpoint to update tool preferences for a user.
+    Tools passed in the request will be marked as preferred, and all others will be unmarked.
+    """
+    req = await request.json()
+
+    # Extract tool names from the request
+    preferred_tool_names = req.get("tools", [])
+
+    # Validate input
+    if not isinstance(preferred_tool_names, list):
+        raise HTTPException(status_code=400, detail="'tools' must be a list.")
+
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Set is_preferred to True for the specified tools
+            if preferred_tool_names:
+                cursor.execute(
+                    """
+                    UPDATE user_info_usertool
+                    SET is_preferred = TRUE
+                    WHERE user_id = %s AND name IN %s
+                    """,
+                    [user["id"], tuple(preferred_tool_names)]
+                )
+
+            # Set is_preferred to False for all other tools
+            cursor.execute(
+                """
+                UPDATE user_info_usertool
+                SET is_preferred = FALSE
+                WHERE user_id = %s AND name NOT IN %s
+                """,
+                [user["id"], tuple(preferred_tool_names)]
+            )
+
+            connection.commit()
+
+        return {"message": "Tool preferences updated successfully."}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error updating tool preferences: {str(e)}"
+        )
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
