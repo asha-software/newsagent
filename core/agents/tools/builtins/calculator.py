@@ -6,11 +6,19 @@ from langchain_core.tools import tool
 
 @tool("calculator", parse_docstring=True)
 def tool_function(expression: str) -> str:
-    """Calculate a math a single line mathematical expression.
+    """A calculator tool for evaluating single-line mathematical expressions. Useful for performing quick calculations.
+
+    Args:
+        expression (str): A valid mathematical expression in string format. Supports basic operators (+, -, *, /),
+                          exponentiation (**), and constants like "pi", "e", "tau", and "euler_gamma".
+
+    Returns:
+        str: The result of the calculation as a string, or "Invalid expression!" if the input is invalid.
 
     Examples:
-        "37593 * 67" for "37593 times 67"
-        "37593**(1/5)" for "37593^(1/5)"
+        - "37593 * 67" (multiplication)
+        - "37593**(1/5)" (exponentiation)
+        - "pi * 2" (using constants)
     """
     local_dict: dict[str, float] = {
         "pi": math.pi, "e": math.e, "tau": math.tau, "euler_gamma": float(numpy.euler_gamma)}
@@ -27,4 +35,4 @@ def tool_function(expression: str) -> str:
 
 
 if __name__ == "__main__":
-    print(calculator("37593 * 67"))
+    print(tool_function("37593 * 67"))

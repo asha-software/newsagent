@@ -7,14 +7,19 @@ import os
 @tool("web_search", parse_docstring=True)
 def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> list[dict]:
     """
-    A search engine optimized for comprehensive, accurate, and trusted results. Useful for when you need to answer questions about current events.
+    A search engine optimized for comprehensive, accurate, and trusted results. Useful for answering questions about current events or specific topics.
 
     Args:
-        query (str): The search term to query.
-        topic (str): Use "news" for current events, "finance" for financial information. Otherwise, use "general". 
+        query (str): The search term to query. Example: "latest technology trends" or "stock market updates".
+        topic (Literal["general", "news", "finance"]): The category of the search. Use "general" for broad or miscellaneous topics, "news" for current events or breaking news, or "finance" for financial information or market insights.
 
     Returns:
         list: A list of dictionaries containing the content and source URL of the search results.
+
+    Example Usage:
+        web_search("are cellphones always listening", topic="general")
+        web_search("Tesla stock price", topic="finance")
+        web_search("Ukraine war updates", topic="news")
     """
     # Set up Tavily client
     api_key = os.getenv("TAVILY_API_KEY")
