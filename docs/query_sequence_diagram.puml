@@ -9,11 +9,11 @@ participant "verdict_agent" as Verdict
 
 title NewsAgent Fact-Checking Pipeline
 
-Client -> Process: process_query(text, builtin_tools)
+Client -> Process: process_query(text, builtin_tools, user_tool_kwargs)
 activate Process
 
-Process -> Process: create_research_agent(model, builtin_tools)
-note right: Sets up tools like Wikipedia,\nweb search, etc.
+Process -> Process: create_research_agent(model, builtin_tools, user_tool_kwargs)
+note right: Dynamically creates the ResearchAgent\nbased on tool preferences (built-in and user-defined)
 
 Process -> Decomposer: invoke({"text": text})
 activate Decomposer
@@ -37,13 +37,11 @@ loop for each research result
     deactivate Reasoning
 end
 
-
 Process -> Verdict: invoke({claims, labels, justifications})
 activate Verdict
 note right of Verdict: Synthesizes overall verdict
 Verdict --> Process: verdict_results
 deactivate Verdict
-
 
 Process -> Process: create_analyses(claims, labels, justifications, evidence)
 

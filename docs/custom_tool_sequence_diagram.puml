@@ -1,0 +1,41 @@
+@startuml User Tool Specification Sequence
+
+actor User
+participant "process_query" as Process
+participant "get_user_tool_params" as ToolParams
+participant "tool_registry.create_tool" as ToolRegistry
+participant "research_agent.create_agent" as ResearchAgent
+participant "LLM" as LLM
+
+title User Tool Specification and Binding Sequence
+
+User -> Process: Submit query with desired tools
+activate Process
+
+Process -> ToolParams: get_user_tool_params(user_id, tools)
+activate ToolParams
+note right of ToolParams: Fetch user tool parameters\nfrom the database
+ToolParams --> Process: user_tool_kwargs
+deactivate ToolParams
+
+loop for each user tool
+    Process -> ToolRegistry: create_tool(**kwargs)
+    activate ToolRegistry
+    note right of ToolRegistry: Dynamically create a callable\nfunction for the tool
+    ToolRegistry --> Process: tool_function
+    deactivate ToolRegistry
+end
+
+Process -> ResearchAgent: create_agent(model, builtin_tools, user_tool_kwargs)
+activate ResearchAgent
+note right of ResearchAgent: Combine built-in and user-defined tools
+
+ResearchAgent -> LLM: bind_tools(tools)
+note right of LLM: Bind all tools (built-in and user-defined)\nto the LLM for use during query processing
+LLM --> ResearchAgent: tools bound
+deactivate ResearchAgent
+
+Process --> User: Processed query results
+deactivate Process
+
+@enduml
