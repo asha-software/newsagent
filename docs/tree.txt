@@ -1,0 +1,50 @@
+.
+├── core
+│   ├── agents
+│   │   ├── prompts
+│   │   │   ├── claim_decomposer_system_prompt.txt
+│   │   │   ├── reasoning_agent_system_prompt.txt
+│   │   │   ├── research_agent_system_prompt.txt
+│   │   │   └── verdict_agent_system_prompt.txt
+│   │   ├── reasoning_agent.py
+│   │   ├── research_agent.py
+│   │   ├── tools
+│   │   │   ├── builtins
+│   │   │   │   ├── calculator.py
+│   │   │   │   ├── web_search.py
+│   │   │   │   ├── wikipedia.py
+│   │   │   │   └── wolframalpha.py
+│   │   │   └── tool_registry.py
+│   │   ├── utils
+│   │   │   ├── common_types.py
+│   │   │   └── llm_factory.py
+│   │   └── verdict_agent.py
+│   ├── app.py
+│   ├── middlewares
+│   ├── processing.py
+├── django
+├── docker-compose.yml
+├── docs
+└── tests
+    ├── evaluation
+    ├── langsmith
+    │   ├── ls_claim_decomposer.py
+    │   ├── ls_reasoning_agent.py
+    │   ├── ls_verdict_agent.py
+    │   ├── prompts
+    │   │   ├── claims_match_prompt.txt
+    │   │   ├── reasoning_coherence_prompt.txt
+    │   │   └── verdict_coherence_prompt.txt
+    │   ├── setup_langsmith_dataset.py
+    │   └── test_data
+    │       ├── claim_decomposer_multiple_statements.json
+    │       ├── claim_decomposer_single_statemens.json
+    │       ├── reasoning_agent_statements.json
+    │       ├── research_agent_web_search_usage.json
+    │       └── verdict_agent_statements.json
+    ├── test_data
+    │   └── research_agent_test_cases.py
+    ├── test_docker_integration.py
+    ├── test_research_agent.py
+    └── test_tool_registry.py
+

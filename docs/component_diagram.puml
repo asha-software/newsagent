@@ -2,6 +2,7 @@
 
 ' Positioning: top-to-bottom flow
 top to bottom direction
+' skinparam linetype ortho
 
 ' 1. Define the Client actor at the top-left
 actor Client
@@ -44,10 +45,8 @@ package "Agents" {
 package "Tools System" {
   [Tool Registry] as registry
   [Built-in Tools] as builtins
-  [Custom Tools] as customTools
   note bottom of registry: For user-defined tools
   note bottom of builtins: Predefined tools like Wikipedia & Web Search
-  note bottom of customTools: Tools for specific external APIs
 }
 
 ' 7. Utilities
