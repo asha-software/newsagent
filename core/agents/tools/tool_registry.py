@@ -202,74 +202,29 @@ def main():
                           ['abilities', 1, 'ability', 'name']],
     }
     # Create a tool for querying Pokémon
-    get_pokemon = create_tool(
-        name=name,
-        param_mapping=param_mapping,
-        method=method,
-        url_template=url_template,
-        headers=headers,
-        docstring=docstring,
-        target_fields=[['abilities', 0, 'ability', 'name'],
-                       ['abilities', 1, 'ability', 'name']],
-    )
+    try:
+        get_pokemon = create_tool(**kwargs)
+    except Exception as e:
+        print(f"Error creating tool: {e}")
+        return
 
+    """
+    BIND CUSTOM TOOL TO RESEARCH AGENT & USE IT
+    """
     # fmt: off
-    from langchain_core.messages import AIMessage, HumanMessage, ToolMessage, SystemMessage
-    from langchain_ollama import ChatOllama
-    from langgraph.graph import StateGraph, START, END
-    from langgraph.graph.message import add_messages
-    from langgraph.prebuilt import ToolNode, tools_condition
-    from typing import Annotated, TypedDict
+    import os
+    from core.agents.research_agent import create_agent
     # fmt: on
 
-    def create_agent(tools: list, system_prompt: str) -> StateGraph:
-        """
-        Build a simple agent that routes to a ToolNode when the LLM requests it.
-        """
-        # Simple ChatOllama config (binds the provided tools).
-        llm = ChatOllama(model="mistral-nemo", temperature=0).bind_tools(tools)
-
-        class State(TypedDict):
-            messages: Annotated[list, add_messages]
-
-        sys_msg = SystemMessage(content=system_prompt)
-
-        def preprocessing(state: State) -> State:
-            # Put the user’s question into the messages.
-            content = state['messages'][-1].content if state['messages'] else "No user input"
-            state['messages'] = [sys_msg, HumanMessage(content=content)]
-            return state
-
-        def assistant(state: State) -> State:
-            # Let the LLM respond, possibly with a tool call
-            response = llm.invoke(state['messages'])
-            return {"messages": response}
-
-        # Build a graph with a Tools node
-        sg = StateGraph(State)
-        sg.add_node("preprocessing", preprocessing)
-        sg.add_node("assistant", assistant)
-        # Invokes the tools automatically
-        sg.add_node("tools", ToolNode(tools))
-
-        sg.add_edge(START, "preprocessing")
-        sg.add_edge("preprocessing", "assistant")
-        sg.add_conditional_edges(
-            source="assistant",
-            path=tools_condition,   # <— checks if AI’s message has tool_calls
-            path_map={'tools': 'tools', '__end__': END}
-        )
-        sg.add_edge("tools", "assistant")
-
-        return sg.compile()
-
-    agent = create_agent(
-        tools=[get_pokemon],
-        system_prompt="You are a helpful assistant. You can query the PokeAPI to get information about Pokémon."
+    research_agent = create_agent(
+        model=os.getenv('RESEARCH_AGENT_MODEL'),
+        builtin_tools=['wikipedia', 'web_search'],
+        user_tool_kwargs=[kwargs]
     )
-    final_state = agent.invoke(
-        {"messages": [HumanMessage(content="What are the abilities of Pikachu?")]})
-    for message in final_state["messages"]:
+
+    claim = "Pikachu has electric abilities"
+    results = research_agent.invoke({"claim": claim})
+    for message in results['messages']:
         message.pretty_print()
 
 
