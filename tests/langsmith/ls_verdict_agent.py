@@ -70,7 +70,7 @@ def justification_coherence(outputs: dict, reference_outputs: dict, example) -> 
         )
 
         llm_eval = ChatOllama(
-            model="llama3.2",
+            model="llama3",
             temperature=0,
             format={
                 "type": "object",
@@ -108,7 +108,7 @@ def main():
     ls_client = Client()
     ls_client.evaluate(
         target_function,
-        data="verdict_agent_evaluation4",
+        data="test",
         evaluators=[label_match, justification_coherence],
         experiment_prefix=args.experiment_prefix
     )
