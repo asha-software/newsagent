@@ -46,7 +46,7 @@
         ]
       },
       "outputs": {
-        "final_label": "mixed",
+        "final_label": "unknown",
         "final_justification": "One claim is verified true, the other lacks sufficient evidence."
       }
     },
@@ -102,7 +102,7 @@
         ]
       },
       "outputs": {
-        "final_label": "mixed",
+        "final_label": "unknown",
         "final_justification": "One claim is well supported, while the other lacks strong evidence."
       }
     },
