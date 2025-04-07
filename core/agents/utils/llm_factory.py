@@ -19,6 +19,7 @@ MODEL_PROVIDERS = {
 
     # Ollama models
     "llama3": "ollama",
+    "llama3.2": "ollama",
     "llama3:8b": "ollama",
     "llama3:70b": "ollama",
     "mistral-nemo": "ollama",
