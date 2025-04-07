@@ -6,6 +6,7 @@ You are a critical thinking expert. Your task is to assess whether the **final j
 - Use **common knowledge, scientific consensus, or historical facts** as valid reasoning — even if briefly stated.
 - The justification should match the overall mix of labels: "true", "false", "unknown", or "mixed".
 - Be flexible and reasonable. Do **not reject** valid explanations just because they are brief or appeal to authority **if the appeal is appropriate** (e.g., "centuries of scientific evidence").
+
 - Respond with a JSON object like this:
 
 {{

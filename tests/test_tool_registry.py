@@ -1,5 +1,7 @@
+from typing import Dict, Any
+
 import pytest
-from core.agents.tools.tool_registry import create_tool
+from core.agents.tools.tool_registry import create_tool, extract_fields
 
 
 def test_create_tool_handles_non_json_response(monkeypatch):
@@ -20,7 +22,7 @@ def test_create_tool_handles_non_json_response(monkeypatch):
         method="GET",
         url_template="https://example.com/data",
         docstring="Test tool that may return non-JSON.",
-        param_mapping={}
+        param_mapping={},
     )
 
     result = my_tool.invoke({})
@@ -43,9 +45,7 @@ def test_create_tool_basic_get(monkeypatch):
         name="basic_get_tool",
         method="GET",
         url_template="https://api.com/item/{id}",
-        param_mapping={
-            "id": {"type": "int", "for": "url_params"}
-        }
+        param_mapping={"id": {"type": "int", "for": "url_params"}},
     )
 
     result = tool.invoke({"id": 42})
@@ -68,7 +68,7 @@ def test_create_tool_with_default_params(monkeypatch):
         method="GET",
         url_template="https://api.com/search",
         default_params={"q": "news"},
-        param_mapping={}
+        param_mapping={},
     )
 
     result = tool.invoke({})
@@ -91,9 +91,7 @@ def test_create_tool_merges_headers(monkeypatch):
         method="GET",
         url_template="https://api.com/test",
         headers={"x_test": "default"},
-        param_mapping={
-            "x_test": {"type": "str", "for": "headers"}
-        }
+        param_mapping={"x_test": {"type": "str", "for": "headers"}},
     )
 
     result = tool.invoke({"x_test": "override"})
@@ -115,7 +113,7 @@ def test_create_tool_with_target_fields(monkeypatch):
         method="GET",
         url_template="https://api.com/user",
         target_fields=[["data", "name"]],
-        param_mapping={}
+        param_mapping={},
     )
 
     result = tool.invoke({})
@@ -137,7 +135,7 @@ def test_create_tool_with_multiple_target_fields(monkeypatch):
         method="GET",
         url_template="https://api.com/complex",
         target_fields=[["a", "b"], ["x", "y"]],
-        param_mapping={}
+        param_mapping={},
     )
 
     result = tool.invoke({})
@@ -160,9 +158,7 @@ def test_create_tool_with_post_and_json_payload(monkeypatch):
         name="post_json_tool",
         method="POST",
         url_template="https://api.com/create",
-        param_mapping={
-            "name": {"type": "str", "for": "json"}
-        }
+        param_mapping={"name": {"type": "str", "for": "json"}},
     )
 
     result = tool.invoke({"name": "test"})
@@ -184,9 +180,7 @@ def test_create_tool_custom_signature(monkeypatch):
         name="custom_signature_tool",
         method="GET",
         url_template="https://api.com/query",
-        param_mapping={
-            "query": {"type": "str", "for": "params"}
-        }
+        param_mapping={"query": {"type": "str", "for": "params"}},
     )
 
     result = tool.invoke({"query": "climate"})
@@ -210,7 +204,7 @@ def test_create_tool_returns_full_response(monkeypatch):
         name="full_response_tool",
         method="GET",
         url_template="https://api.com/full",
-        param_mapping={}
+        param_mapping={},
     )
 
     response = tool.invoke({})
@@ -222,6 +216,7 @@ def test_create_tool_with_query_and_headers(monkeypatch):
     class MockResponse:
         def json(self):
             return {"results": [1, 2, 3]}
+
 
 def test_create_tool_with_json_and_data_conflict(monkeypatch):
     class MockResponse:
@@ -239,9 +234,7 @@ def test_create_tool_with_json_and_data_conflict(monkeypatch):
         name="json_vs_data_tool",
         method="POST",
         url_template="https://api.com/register",
-        param_mapping={
-            "username": {"type": "str", "for": "json"}
-        }
+        param_mapping={"username": {"type": "str", "for": "json"}},
     )
 
     result = tool.invoke({"username": "alice"})
@@ -263,7 +256,7 @@ def test_create_tool_with_nested_json_path(monkeypatch):
         method="GET",
         url_template="https://api.com/data",
         target_fields=[["outer", "middle", "inner"]],
-        param_mapping={}
+        param_mapping={},
     )
 
     result = tool.invoke({})
@@ -276,8 +269,86 @@ def test_create_tool_invalid_type(monkeypatch):
             name="invalid_type_tool",
             method="GET",
             url_template="https://api.com/data",
-            param_mapping={
-                "count": {"type": "int", "for": "params"}
-            }
+            param_mapping={"count": {"type": "int", "for": "params"}},
         )
         tool.invoke({"count": "not_an_int"})
+
+
+@pytest.mark.parametrize(
+    "input_obj, listpath, expected",
+    [
+        ({"a": {"b": 1}}, ["a", "b"], 1),
+        ({"x": [10, 20, 30]}, ["x", 1], 20),
+        ({"nested": {"array": [{"value": 42}]}}, ["nested", "array", 0, "value"], 42),
+    ],
+)
+def test_extract_fields_basic(input_obj: Dict[str, Any], listpath: list, expected: Any):
+    result = extract_fields(input_obj, listpath[:])  # pass a copy so we don't mutate
+    assert result == expected
+
+
+def test_extract_fields_empty_listpath():
+    data = {"key": "value"}
+    # If listpath is empty, the function returns the object itself
+    assert extract_fields(data, []) == data
+
+
+def test_extract_fields_int_index_on_non_list():
+    data = {"key": "value"}
+    with pytest.raises(KeyError):
+        _ = extract_fields(data, [0])
+
+
+def test_extract_fields_invalid_key():
+    data = {"a": 1, "b": 2}
+    with pytest.raises(KeyError):
+        _ = extract_fields(data, ["c"])
+
+
+def test_extract_fields_list_vs_non_list():
+    non_list_data = {"key": "value"}
+    with pytest.raises(KeyError):
+        _ = extract_fields(non_list_data, [0])
+
+
+def test_extract_fields_with_object_attribute():
+    class SomeObject:
+        def __init__(self):
+            self.my_attr = "hello"
+
+    obj = SomeObject()
+    assert extract_fields(obj, ["my_attr"]) == "hello"
+
+
+def test_create_tool_with_data_payload(monkeypatch):
+
+    class MockResponse:
+        def __init__(self):
+            self.status_code = 200
+
+        def json(self):
+            return {"received_data": True}
+
+    def mock_request(method, url, data=None, **kwargs):
+        assert method == "POST"
+        # We expect 'data' to be a dict with the parameter we set
+        assert data == {"foo": "bar"}
+        return MockResponse()
+
+    monkeypatch.setattr("requests.request", mock_request)
+
+    param_mapping = {
+        "foo": {"type": "str", "for": "data"},
+    }
+
+    tool = create_tool(
+        name="post_data_tool",
+        method="POST",
+        url_template="https://example.com/test-data-endpoint",
+        param_mapping=param_mapping,
+    )
+
+    # Invoke the tool with foo="bar", which should go into the 'data' field
+    result = tool.invoke({"foo": "bar"})
+    assert result.status_code == 200
+    assert result.json()["received_data"] is True

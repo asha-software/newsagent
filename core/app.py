@@ -5,7 +5,7 @@ from typing import Any, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from processing import process_query
+from processing import process_query, get_user_tool_params
 
 # Import middlewares from the new location
 from core.middlewares.auth import APIKeyMiddleware, DB_CONFIG
@@ -29,6 +29,8 @@ app.add_middleware(APIKeyMiddleware)
 app.add_middleware(RateLimitMiddleware)
 
 # Helper function to get the current user
+
+
 async def get_current_user(request: Request) -> dict[str, Any]:
     user = request.state.user
     if not user:
@@ -36,6 +38,8 @@ async def get_current_user(request: Request) -> dict[str, Any]:
     return user
 
 # API Key models
+
+
 class APIKeyCreate(BaseModel):
     name: str
 
@@ -49,14 +53,27 @@ class APIKeyResponse(BaseModel):
     is_active: bool
 
 
-def delete_messages(states: list[dict]):
-    for state in states:
-        del state['messages']
-
 
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+@app.get("/tools/builtins")
+async def get_builtin_tools():
+    """
+    Returns a list of available built-in tools.
+    This endpoint is used by the Django container to get the list of built-in tools.
+    """
+    # Hardcoded list of built-in tools
+    # This is a simpler approach that ensures all tools are included
+    tools = [
+        {"name": "calculator", "display_name": "Calculator"},
+        {"name": "wikipedia", "display_name": "Wikipedia"},
+        {"name": "web_search", "display_name": "Web Search"},
+        {"name": "wolframalpha", "display_name": "Wolfram Alpha"}
+    ]
+    
+    return {"tools": tools}
 
 
 @app.post("/query")
@@ -69,15 +86,30 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     text = req.get('body')
 
     # Extract the sources array from the request
-    # Default to empty list if not provided
-    selected_sources = req.get('sources', [])
-    print(f"Selected sources: {selected_sources}")
+    tools = req.get('sources')
+    print(f"Selected sources: {tools}")
+
+    # Reject the query if tools is not properly formatted (should be a list)
+    if tools is not None and not isinstance(tools, list):
+        raise HTTPException(
+            status_code=400, detail="'sources' must be a list of tool names.")
+    
+    # If no tools are selected, use the default built-in tools
+    if not tools:
+        # Get the default built-in tools
+        builtin_tools_response = await get_builtin_tools()
+        tools = [tool['name'] for tool in builtin_tools_response['tools']]
+        print(f"No tools selected, using default tools: {tools}")
 
     if not text:
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
-
-    verdict_results = await process_query(text, selected_sources)
+    
+    user_tool_kwargs = await get_user_tool_params(user["id"], tools) if user else []
+    
+    print(f"User tool parameters: {user_tool_kwargs}")
+    
+    verdict_results = await process_query(text, builtin_tools=tools, user_tool_kwargs=user_tool_kwargs)
     return verdict_results
 
 
@@ -113,17 +145,17 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
                 (user["id"],)
             )
             key_count = cursor.fetchone()[0]
-            
+
             if key_count >= 3:
                 raise HTTPException(
-                    status_code=400, 
+                    status_code=400,
                     detail="You can only have a maximum of 3 API keys per account."
                 )
-            
+
             # Generate a new API key
             import uuid
             key = uuid.uuid4().hex
-            
+
             # Insert the new API key
             cursor.execute(
                 """
@@ -134,7 +166,7 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
             )
             api_key_id = cursor.lastrowid
             connection.commit()
-            
+
             # Get the newly created API key
             cursor.execute(
                 """
@@ -145,7 +177,7 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
                 (api_key_id,)
             )
             row = cursor.fetchone()
-            
+
             return {
                 "id": row[0],
                 "name": row[1],
@@ -160,6 +192,7 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
     finally:
         if 'connection' in locals() and connection:
             connection.close()
+
 
 @app.get("/api-keys")
 async def list_api_keys(user: dict[str, Any] = Depends(get_current_user)):
@@ -234,6 +267,58 @@ async def delete_api_key(api_key_id: int, user: dict[str, Any] = Depends(get_cur
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error deleting API key: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+@app.post("/tools/preferences")
+async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Endpoint to update tool preferences for a user.
+    Tools passed in the request will be marked as preferred, and all others will be unmarked.
+    """
+    req = await request.json()
+
+    # Extract tool names from the request
+    preferred_tool_names = req.get("tools", [])
+
+    # Validate input
+    if not isinstance(preferred_tool_names, list):
+        raise HTTPException(status_code=400, detail="'tools' must be a list.")
+
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Set is_preferred to True for the specified tools
+            if preferred_tool_names:
+                cursor.execute(
+                    """
+                    UPDATE user_info_usertool
+                    SET is_preferred = TRUE
+                    WHERE user_id = %s AND name IN %s
+                    """,
+                    [user["id"], tuple(preferred_tool_names)]
+                )
+
+            # Set is_preferred to False for all other tools
+            cursor.execute(
+                """
+                UPDATE user_info_usertool
+                SET is_preferred = FALSE
+                WHERE user_id = %s AND name NOT IN %s
+                """,
+                [user["id"], tuple(preferred_tool_names)]
+            )
+
+            connection.commit()
+
+        return {"message": "Tool preferences updated successfully."}
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error updating tool preferences: {str(e)}"
+        )
     finally:
         if 'connection' in locals() and connection:
             connection.close()

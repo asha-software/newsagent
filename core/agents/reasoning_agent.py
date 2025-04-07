@@ -4,10 +4,10 @@ import os
 from pathlib import Path
 import sys
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
-from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, Literal, TypedDict
+from core.agents.utils.common_types import Evidence
 from core.agents.utils.llm_factory import get_chat_model
 
 # Absolute path to this dir. For relative paths like prompts
@@ -19,7 +19,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 # fmt: off
-from core.agents.common_types import Evidence
+from core.agents.utils.common_types import Evidence
 # fmt: on
 
 # MODEL = "mistral-nemo"

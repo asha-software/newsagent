@@ -1,0 +1,70 @@
+@startuml AgentStatesClassDiagram
+
+' Force left-to-right layout and orthogonal connectors
+' left to right direction
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+title NewsAgent Query Class Diagram
+
+' Agent states from left to right
+class "ClaimDecomposerState" as ClaimDecomposerState {
+  + messages: List[BaseMessage]
+  + text: str
+  + claims: List[str]
+}
+
+class "ResearchAgentState" as ResearchAgentState {
+  + messages: List[BaseMessage]
+  + claim: str
+  + evidence: List[Evidence]
+}
+
+class "ReasoningAgentState" as ReasoningAgentState {
+  + messages: List[BaseMessage]
+  + claim: str
+  + evidence: List[Evidence]
+  + label: Literal["true", "false", "unknown"] | None
+  + justification: str | None
+}
+
+class "VerdictAgentState" as VerdictAgentState {
+  + messages: List[BaseMessage]
+  + analyses: List[Analysis]
+  + labels: List[str]
+  + justifications: List[str]
+  + final_label: str | None
+  + final_justification: str | None
+}
+
+' Explicitly enforce horizontal positioning using hidden links
+ClaimDecomposerState -[hidden]right- ResearchAgentState
+ResearchAgentState -[hidden]right- ReasoningAgentState
+ReasoningAgentState -[hidden]right- VerdictAgentState
+
+' Common Types below agents
+class "Evidence" as Evidence {
+  + name: str
+  + args: dict
+  + result: str | dict | list
+}
+
+class "Analysis" as Analysis {
+  + claim: str
+  + label: str
+  + justification: str
+  + evidence: list[Evidence]
+}
+
+ResearchAgentState -[hidden]down- Evidence
+VerdictAgentState -[hidden]down- Analysis
+
+' Associations
+ResearchAgentState "1" -- "0..*" Evidence : has
+ReasoningAgentState "1" -- "0..*" Evidence : has
+VerdictAgentState "1" -- "0..*" Analysis : has
+Analysis "1" -- "0..*" Evidence : has
+
+
+
+@enduml

@@ -26,7 +26,7 @@ def api_key():
 def test_api_response_structure(api_endpoint, api_key):
     """Test that API response has the expected structure"""
     # Prepare test data
-    test_claim = "Philadelphia was the capital of the US"
+    test_claim = "Philadelphia was the capital of the US. It's population today is about 1.6 million."
     payload = {"body": test_claim}
 
     # Make request to API
@@ -39,13 +39,18 @@ def test_api_response_structure(api_endpoint, api_key):
     # Verify response is valid JSON
     try:
         result = response.json()
-        print(f"Response JSON: {result}")
     except json.JSONDecodeError as e:
         pytest.fail(f"Response is not valid JSON: {str(e)}")
         print(f"Raw response content: {response}")
 
+    for key, value in result.items():
+        print(f"{key}: {str(value)[:100]}")
     # Check that required keys are present
-    expected_keys = ["claims", "evidence", "labels",
-                     "justifications", "final_label", "final_justification"]
+    expected_keys = ["analyses", "final_label", "final_justification"]
     for key in expected_keys:
         assert key in result, f"Response missing '{key}' key"
+    for analysis in result["analyses"]:
+        assert "claim" in analysis, f"Analysis missing 'claim' key"
+        assert "evidence" in analysis, f"Analysis missing 'evidence' key"
+        assert "label" in analysis, f"Analysis missing 'label' key"
+        assert "justification" in analysis, f"Analysis missing 'justification' key"

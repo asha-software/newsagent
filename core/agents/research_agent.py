@@ -16,7 +16,7 @@ from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict, Callable
 from core.agents.utils.llm_factory import get_chat_model
-from core.agents.common_types import Evidence
+from core.agents.utils.common_types import Evidence
 
 # Absolute path to this dir. For relative paths like prompts
 DIR = Path(__file__).parent.resolve()
@@ -32,8 +32,7 @@ assert "RESEARCH_AGENT_MODEL" in os.environ, "Please set the RESEARCH_AGENT_MODE
 PATH_TO_FILE = os.path.abspath(__file__)
 
 
-
-def import_builtin(module_name, function_name):
+def import_builtin(module_name):
     """Dynamically imports a function from a module.
 
     Args:
@@ -44,6 +43,8 @@ def import_builtin(module_name, function_name):
         The imported function, or None if the module or function is not found.
     """
     import_path = PACKAGE_PREFIX + module_name
+    # Standard interface for builtin tool: each module has a function called tool_function
+    function_name = 'tool_function'
     try:
         module = importlib.import_module(import_path)
         function = getattr(module, function_name)
@@ -72,11 +73,16 @@ def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
     if not tool_kwargs:
         return []
 
-    create_tool = getattr(importlib.import_module(
-        f"{PACKAGE_PREFIX}.tool_registry"), "create_tool")
+    from core.agents.tools.tool_registry import create_tool
 
-    return [
-        create_tool(**kwargs) for kwargs in tool_kwargs]
+    tools = []
+    for kwargs in tool_kwargs:
+        try:
+            tool = create_tool(**kwargs)
+            tools.append(tool)
+        except Exception as e:
+            print(f"Error creating tool with kwargs {kwargs}:\n{e}")
+    return tools
 
 
 def create_agent(
@@ -98,12 +104,9 @@ def create_agent(
         StateGraph: The compiled state graph for the research agent.
     """
 
-    # Handle builtin tools
-    builtins = [import_builtin(module, function) for module,
-                functions in builtin_tools.items() for function in functions]
-
-    # Filter out None values (failed imports)
-    builtins = [tool for tool in builtins if tool is not None]
+    # Get builtin tools, filter out None values
+    builtins = [tool for module in builtin_tools if (
+        tool := import_builtin(module))]
 
     # Handle user-defined tools
     user_defined_tools = render_user_defined_tools(
@@ -115,11 +118,10 @@ def create_agent(
 
     llm = get_chat_model(model_name=model).bind_tools(tools)
 
-
     class State(TypedDict):
         messages: Annotated[list[BaseMessage], add_messages]
         claim: str
-        evidence: list[dict]
+        evidence: list[Evidence]
 
     with open(DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
         sys_msg = SystemMessage(content=f.read())
@@ -185,10 +187,7 @@ def create_agent(
 
 
 def main():
-    builtin_tools_wanted = {
-        'calculator': ['add', 'multiply'],
-        # 'wikipedia': ['query']
-    }
+    builtin_tools_wanted = ['wikipedia', 'web_search']
 
     pokemon_kwargs = {
         'name': 'pokeapi',
