@@ -1,161 +1,160 @@
 [
-    {
-      "inputs": {
-        "claims": [
-          "Water boils at 100°C",
-          "Ice melts at 0°C"
-        ],
-        "labels": ["true", "true"],
-        "justifications": [
-          "Standard boiling point at sea level",
-          "Scientific consensus"
-        ]
-      },
-      "outputs": {
-        "final_label": "true",
-        "final_justification": "All claims are supported by reliable scientific evidence and are labeled true."
-      }
+  {
+    "inputs": {
+      "claims": [
+        "Water boils at 100°C",
+        "Ice melts at 0°C"
+      ],
+      "labels": ["true", "true"],
+      "justifications": [
+        "Standard boiling point at sea level",
+        "Scientific consensus"
+      ]
     },
-    {
-      "inputs": {
-        "claims": [
-          "The Earth is flat",
-          "The Moon landing was faked"
-        ],
-        "labels": ["false", "false"],
-        "justifications": [
-          "Contradicted by all modern astronomical data",
-          "Proven historical event with overwhelming evidence"
-        ]
-      },
-      "outputs": {
-        "final_label": "false",
-        "final_justification": "All claims are clearly false and unsupported by evidence."
-      }
-    },
-    {
-      "inputs": {
-        "claims": [
-          "Aliens visited Earth",
-          "Area 51 is a secret base"
-        ],
-        "labels": ["unknown", "true"],
-        "justifications": [
-          "No verifiable proof exists",
-          "Confirmed via public documents and satellite imagery"
-        ]
-      },
-      "outputs": {
-        "final_label": "mixed",
-        "final_justification": "One claim is verified true, the other lacks sufficient evidence."
-      }
-    },
-    {
-      "inputs": {
-        "claims": [
-          "COVID-19 vaccines contain microchips",
-          "COVID-19 vaccines reduce severe illness"
-        ],
-        "labels": ["false", "true"],
-        "justifications": [
-          "False conspiracy debunked by all medical authorities",
-          "Supported by global clinical trial data"
-        ]
-      },
-      "outputs": {
-        "final_label": "mixed",
-        "final_justification": "The first claim is false, while the second is strongly supported by evidence."
-      }
-    },
-    {
-      "inputs": {
-        "claims": ["Paris is the capital of France"],
-        "labels": ["true"],
-        "justifications": ["Established geopolitical fact"]
-      },
-      "outputs": {
-        "final_label": "true",
-        "final_justification": "The single claim is accurate and supported by basic knowledge."
-      }
-    },
-    {
-      "inputs": {
-        "claims": ["The sun revolves around the Earth"],
-        "labels": ["false"],
-        "justifications": ["Contradicted by centuries of astronomical observation"]
-      },
-      "outputs": {
-        "final_label": "false",
-        "final_justification": "This claim is demonstrably false based on known scientific principles."
-      }
-    },
-    {
-      "inputs": {
-        "claims": [
-          "Drinking lemon water boosts immunity",
-          "Regular exercise benefits cardiovascular health"
-        ],
-        "labels": ["unknown", "true"],
-        "justifications": [
-          "Limited evidence exists; not conclusive",
-          "Widely documented in medical literature"
-        ]
-      },
-      "outputs": {
-        "final_label": "mixed",
-        "final_justification": "One claim is well supported, while the other lacks strong evidence."
-      }
-    },
-    {
-      "inputs": {
-        "claims": [
-          "Eating carrots significantly improves night vision",
-          "Vitamin A is essential for vision"
-        ],
-        "labels": ["false", "true"],
-        "justifications": [
-          "Myth propagated during WWII",
-          "Supported by nutritional science"
-        ]
-      },
-      "outputs": {
-        "final_label": "mixed",
-        "final_justification": "One claim is misleading folklore, the other is scientifically correct."
-      }
-    },
-    {
-      "inputs": {
-        "claims": [
-          "5G causes cancer",
-          "5G increases internet speed"
-        ],
-        "labels": ["false", "true"],
-        "justifications": [
-          "No scientific evidence supports this claim",
-          "Confirmed by telecom standards and user experience"
-        ]
-      },
-      "outputs": {
-        "final_label": "mixed",
-        "final_justification": "There is no evidence for harm, but clear evidence of technical improvement."
-      }
-    },
-    {
-      "inputs": {
-        "claims": [
-          "Elvis Presley is still alive",
-          "Elvis had a major influence on rock and roll"
-        ],
-        "labels": ["false", "true"],
-        "justifications": [
-          "No credible evidence; confirmed death in 1977",
-          "Supported by historical and cultural data"
-        ]
-      },
-      "outputs": {
-        "final_label": "mixed",
-        "final_justification": "One claim is historically verified, the other is an unsupported conspiracy theory."
-      }
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "All claims are supported by reliable scientific evidence and are labeled true."
     }
-  ]
-  
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Earth is flat",
+        "The Moon landing was faked"
+      ],
+      "labels": ["false", "false"],
+      "justifications": [
+        "Contradicted by all modern astronomical data",
+        "Proven historical event with overwhelming evidence"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "All claims are clearly false and unsupported by evidence."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Aliens visited Earth",
+        "Area 51 is a secret base"
+      ],
+      "labels": ["unknown", "true"],
+      "justifications": [
+        "No verifiable proof exists",
+        "Confirmed via public documents and satellite imagery"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "One claim is verified true, the other lacks sufficient evidence."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "COVID-19 vaccines contain microchips",
+        "COVID-19 vaccines reduce severe illness"
+      ],
+      "labels": ["false", "true"],
+      "justifications": [
+        "False conspiracy debunked by all medical authorities",
+        "Supported by global clinical trial data"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The first claim is false, while the second is strongly supported by evidence."
+    }
+  },
+  {
+    "inputs": {
+      "claims": ["Paris is the capital of France"],
+      "labels": ["true"],
+      "justifications": ["Established geopolitical fact"]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "The single claim is accurate and supported by basic knowledge."
+    }
+  },
+  {
+    "inputs": {
+      "claims": ["The sun revolves around the Earth"],
+      "labels": ["false"],
+      "justifications": ["Contradicted by centuries of astronomical observation"]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "This claim is demonstrably false based on known scientific principles."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Drinking lemon water boosts immunity",
+        "Regular exercise benefits cardiovascular health"
+      ],
+      "labels": ["unknown", "true"],
+      "justifications": [
+        "Limited evidence exists; not conclusive",
+        "Widely documented in medical literature"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "One claim is well supported, while the other lacks strong evidence."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Eating carrots significantly improves night vision",
+        "Vitamin A is essential for vision"
+      ],
+      "labels": ["false", "true"],
+      "justifications": [
+        "Myth propagated during WWII",
+        "Supported by nutritional science"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "One claim is misleading folklore, the other is scientifically correct."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "5G causes cancer",
+        "5G increases internet speed"
+      ],
+      "labels": ["false", "true"],
+      "justifications": [
+        "No scientific evidence supports this claim",
+        "Confirmed by telecom standards and user experience"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "There is no evidence for harm, but clear evidence of technical improvement."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Elvis Presley is still alive",
+        "Elvis had a major influence on rock and roll"
+      ],
+      "labels": ["false", "true"],
+      "justifications": [
+        "No credible evidence; confirmed death in 1977",
+        "Supported by historical and cultural data"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "One claim is historically verified, the other is an unsupported conspiracy theory."
+    }
+  }
+]

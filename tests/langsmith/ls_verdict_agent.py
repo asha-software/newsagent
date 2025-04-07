@@ -108,7 +108,7 @@ def main():
     ls_client = Client()
     ls_client.evaluate(
         target_function,
-        data="verdict_agent_evaluation",
+        data="test",
         evaluators=[label_match, justification_coherence],
         experiment_prefix=args.experiment_prefix
     )

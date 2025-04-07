@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 import json
 import os
 from pathlib import Path
-from langchain_core.messages import SystemMessage, BaseMessage, AIMessage
+from langchain_core.messages import SystemMessage, BaseMessage, AIMessage, HumanMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
@@ -48,13 +48,21 @@ system_message = SystemMessage(content=system_prompt)
 
 
 # Nodes definitions
-def prompt_prep_node(state: State) -> dict:
 
-    claim_analysis = "### Claims Analysis\n" + "\n".join(
-        f"Claim: {state['claims'][i]}\nVerdict: {state['labels'][i]}\nJustification: {state['justifications'][i]}"
-        for i in range(len(state["claims"]))
+def prompt_prep_node(state: State) -> dict:
+    claim_analysis = "### Claims Analysis\n\n"
+    for i, (claim, label, justification) in enumerate(
+        zip(state['claims'], state['labels'], state['justifications'])
+    ):
+        claim_analysis += f"Claim {i+1}:\n - Statement: {claim}\n - Verdict: {label}\n - Justification: {justification}\n\n"
+
+    user_message_content = (
+        f"{claim_analysis}"
+        "Please apply the Evaluation Guidelines and produce a single JSON response "
+        "with `final_label` and `final_justification` for the entire document."
     )
-    return {"messages": [system_message, AIMessage(content=claim_analysis)]}
+
+    return {"messages": [system_message, HumanMessage(content=user_message_content)]}
 
 
 def verdict_node(state: State) -> dict:
