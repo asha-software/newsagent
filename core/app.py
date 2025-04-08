@@ -5,7 +5,7 @@ from typing import Any, Optional
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from processing import process_query, get_user_tool_params
+from core.processing import process_query, get_user_tool_params
 
 # Import middlewares from the new location
 from core.middlewares.auth import APIKeyMiddleware, DB_CONFIG
