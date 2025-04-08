@@ -4,37 +4,62 @@
 top to bottom direction
 ' skinparam linetype ortho
 
+' --- Global Rectangle Styling ---
+skinparam rectangle {
+  RoundCorner 20
+  FontSize 24
+  Padding 25
+  Shadowing true
+}
+
+' --- Package Colors ---
+skinparam package {
+  RoundCorner 20
+  FontSize 20
+  Padding 10
+  Shadowing true
+}
+
+skinparam packageStyle rect
+
+' Define colors for each package
+!define API_COLOR LightBlue
+!define STORAGE_COLOR LightYellow
+!define PROCESSING_COLOR LightGreen
+!define AGENTS_COLOR LightSalmon
+!define TOOLS_COLOR LightCyan
+!define UTILITIES_COLOR LightGray
+
 ' 1. Define the Client actor at the top-left
 actor Client
 
 ' 2. API Layer
-package "API Layer" {
-  [FastAPI App] as app
-  [Middleware] as middleware
+package "API Layer" #API_COLOR {
+  rectangle "FastAPI App" as app
+  rectangle "Middleware" as middleware
   note right of app: Handles HTTP requests & routes them to the processing pipeline
 }
 
 ' 3. Storage (immediately after the API Layer, so it appears below)
-package "Storage" {
-  [MySQL Database] as database
+package "Storage" #STORAGE_COLOR {
+  rectangle "MySQL Database" as database
   note bottom of database: Stores user data, API keys, and logs
 }
 
 middleware -[hidden]- database
 
-
 ' 4. Processing Pipeline
-package "Processing Pipeline" {
-  [Processing] as processing
+package "Processing Pipeline" #PROCESSING_COLOR {
+  rectangle "Processing" as processing
   note right of processing: Orchestrates the workflow between agents
 }
 
 ' 5. Agents
-package "Agents" {
-  [Claim Decomposer] as decomposer
-  [Research Agent] as research
-  [Reasoning Agent] as reasoning
-  [Verdict Agent] as verdict
+package "Agents" #AGENTS_COLOR {
+  rectangle "Claim Decomposer" as decomposer
+  rectangle "Research Agent" as research
+  rectangle "Reasoning Agent" as reasoning
+  rectangle "Verdict Agent" as verdict
   note right of decomposer: Breaks down complex claims
   note right of research: Gathers evidence using tools
   note right of reasoning: Evaluates claims based on evidence
@@ -42,17 +67,17 @@ package "Agents" {
 }
 
 ' 6. Tools System
-package "Tools System" {
-  [Tool Registry] as registry
-  [Built-in Tools] as builtins
+package "Tools System" #TOOLS_COLOR {
+  rectangle "Tool Registry" as registry
+  rectangle "Built-in Tools" as builtins
   note bottom of registry: For user-defined tools
   note bottom of builtins: Predefined tools like Wikipedia & Web Search
 }
 
 ' 7. Utilities
-package "Utilities" {
-  [LLM Factory] as llmFactory
-  [Common Types] as commonTypes
+package "Utilities" #UTILITIES_COLOR {
+  rectangle "LLM Factory" as llmFactory
+  rectangle "Common Types" as commonTypes
   note bottom of llmFactory: Creates instances of ChatOllama, ChatOpenAI, etc.
   note bottom of commonTypes: Shared data structures (e.g., Evidence, Analysis)
 }
