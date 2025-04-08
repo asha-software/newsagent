@@ -10,7 +10,7 @@ def test_calculator_benchmark():
     """Benchmark the calculator tool."""
     expression = "37593 * 67"
     start_time = time.time()
-    result = calculator_tool(expression)
+    result = calculator_tool.invoke({"expression": expression})
     end_time = time.time()
 
     elapsed_time = end_time - start_time
@@ -25,7 +25,7 @@ def test_wikipedia_benchmark():
     """Benchmark the wikipedia tool."""
     query = "Apple Podcasts"
     start_time = time.time()
-    result = wikipedia_tool(query)
+    result = wikipedia_tool.invoke({"query_str": query})
     end_time = time.time()
 
     elapsed_time = end_time - start_time
@@ -56,7 +56,7 @@ def test_wolframalpha_benchmark():
     """Benchmark the Wolfram Alpha tool."""
     query = "What is the population of France?"
     start_time = time.time()
-    result = wolframalpha_tool(query)
+    result = wolframalpha_tool.invoke({"query_input": query})
     end_time = time.time()
 
     elapsed_time = end_time - start_time

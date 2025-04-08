@@ -24,4 +24,5 @@ async def test_process_query_benchmark():
         print(f"Verdict results: {verdict_results}")
 
         assert verdict_results is not None, "process_query returned no results"
+        assert "final_label" in verdict_results, "process_query did not return final_label"
         assert elapsed_time < 500, "process_query took too long"
