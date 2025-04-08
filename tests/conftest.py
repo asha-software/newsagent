@@ -3,6 +3,9 @@ from pathlib import Path
 import os
 import sys
 
+def pytest_configure(config):
+    config.addinivalue_line("markers", "benchmark: mark a test as a benchmark test")
+
 @pytest.fixture(autouse=True)
 def setup_environment():
     """
