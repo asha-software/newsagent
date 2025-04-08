@@ -8,7 +8,7 @@ import asyncio
 @pytest.mark.benchmark
 async def test_process_query_benchmark():
     """Benchmark the core logic of the process_query function."""
-    text = "The capitcal of France is Paris."
+    text = "The capital of France is Paris."
     tools = ["web_search","wikipedia"]
 
     # Mock external dependencies
