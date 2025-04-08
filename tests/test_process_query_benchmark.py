@@ -9,7 +9,7 @@ import asyncio
 async def test_process_query_benchmark():
     """Benchmark the core logic of the process_query function."""
     text = "The capitcal of France is Paris."
-    tools = [ "wikipedia"]
+    tools = ["web_search","wikipedia"]
 
     # Mock external dependencies
     with patch("core.processing.get_user_tool_params", new_callable=AsyncMock) as mock_get_user_tool_params:
