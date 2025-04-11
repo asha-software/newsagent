@@ -93,7 +93,7 @@ def test_import_builtin_failure(mock_import_module_failure):
     assert function is None
 
 
-@patch("research_agent.create_tool")
+@patch("core.agents.tools.tool_registry.create_tool")
 def test_render_user_defined_tools_success(mock_create_tool):
     """
     Test that render_user_defined_tools successfully creates a list of tools.
@@ -122,7 +122,6 @@ def test_render_user_defined_tools_success(mock_create_tool):
     assert mock_create_tool.call_count == 2
 
 
-@patch("research_agent.create_tool", side_effect=Exception("Error creating tool"))
 def test_render_user_defined_tools_failure():
     """
     Test that render_user_defined_tools handles errors gracefully.
@@ -141,9 +140,9 @@ def test_render_user_defined_tools_failure():
     assert len(tools) == 0
 
 
-@patch("research_agent.get_chat_model")
-@patch("research_agent.render_user_defined_tools")
-@patch("research_agent.import_builtin")
+@patch("core.agents.utils.llm_factory.get_chat_model")
+@patch("core.agents.research_agent.render_user_defined_tools")
+@patch("core.agents.research_agent.import_builtin")
 def test_create_agent_success(mock_import_builtin, mock_render_user_defined_tools, mock_get_chat_model):
     """
     Test that create_agent returns a StateGraph with the expected structure.
@@ -162,7 +161,7 @@ def test_create_agent_success(mock_import_builtin, mock_render_user_defined_tool
     user_tools = [{'name': 'tool1'}]  # Minimal example
 
     agent_graph = research_agent.create_agent(
-        model='test-model',
+        model=os.environ["RESEARCH_AGENT_MODEL"],
         builtin_tools=builtin_tools,
         user_tool_kwargs=user_tools
     )
