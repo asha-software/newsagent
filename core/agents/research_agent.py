@@ -10,7 +10,6 @@ import os
 from pathlib import Path
 
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage, SystemMessage
-from langchain_ollama import ChatOllama
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -94,7 +93,7 @@ def create_agent(
     Args:
         model (str): The model to use for the agent.
         builtin_tools (dict[str, str]): A dictionary of builtin tools to use.
-            Keys are package names, which will be prepending with PACKAGE_PREFIX, 
+            Keys are package names, which will be prepending with PACKAGE_PREFIX,
             values are lists of function names.
             E.g. {'wikipedia': ['query']} will attempt to import PACKAGE_PREFIX + 'wikipedia' and
             use the 'query' function from that module. (core.agents.tools.builtins.wikipedia.query)
