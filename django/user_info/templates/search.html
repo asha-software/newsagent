@@ -37,7 +37,7 @@
       </div>
       <div class="menu-overlay"></div>
       <div class="search-container">
-        <form action="{% url 'search' %}" method="POST">
+        <form action="{% url 'search' %}" method="POST" data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
           {% csrf_token %}
           <fieldset>
             <div class="inner-form">
@@ -80,8 +80,30 @@
             <p style="color: white;">Analyzing your query...</p>
             <div class="spinner"></div>
           </div>
-          <div id="results-container" style="display: none;">
+          <div id="results-container" style="display: none;" 
+               data-is-shared-view="{% if is_shared_view %}true{% else %}false{% endif %}"
+               {% if shared_result %}
+               data-shared-result="{{ shared_result.result_data }}"
+               data-shared-query="{{ shared_result.query }}"
+               {% endif %}>
           </div>
+          
+          {% if user.is_authenticated and not is_shared_view %}
+          <div id="share-container" class="share-container" style="display: none;">
+            <div class="share-options">
+              <label class="share-checkbox-label">
+                <input type="checkbox" id="make-public" name="make-public">
+                <span>Make this result public</span>
+              </label>
+              <button id="share-button" class="share-button">Generate Shareable Link</button>
+            </div>
+            <div id="share-link-container" class="share-link-container" style="display: none;">
+              <input type="text" id="share-link" class="share-link" readonly>
+              <button id="copy-link-button" class="copy-link-button">Copy</button>
+            </div>
+            <div id="share-message" class="share-message"></div>
+          </div>
+          {% endif %}
         </div>
       </div>
     </div>

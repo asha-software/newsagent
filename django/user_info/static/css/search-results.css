@@ -323,6 +323,117 @@
   font-style: italic;
 }
 
+/* Share container styles */
+.share-container {
+  margin-top: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.share-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.share-checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.share-checkbox-label input {
+  margin-right: 8px;
+}
+
+.share-button {
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.share-button:hover {
+  background-color: #3a7bc8;
+}
+
+.share-link-container {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.share-link {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px 0 0 4px;
+  font-size: 14px;
+}
+
+.copy-link-button {
+  background-color: #f2f2f2;
+  border: 1px solid #ddd;
+  border-left: none;
+  padding: 8px 15px;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.copy-link-button:hover {
+  background-color: #e0e0e0;
+}
+
+.share-message {
+  font-size: 14px;
+  margin-top: 10px;
+  color: #4CAF50;
+}
+
+.share-message.error {
+  color: #F44336;
+}
+
+/* Login required message styles */
+.login-required {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  border-left: 4px solid #4a90e2;
+}
+
+.login-required h3 {
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.login-required p {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.login-required a {
+  color: #4a90e2;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.login-required a:hover {
+  text-decoration: underline;
+}
+
 /* Result card styles for backward compatibility */
 .result-card {
   background-color: #fff;
