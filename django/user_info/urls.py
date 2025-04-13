@@ -2,6 +2,7 @@ from django.urls import path
 from .views import register, signin, home, search, logout_view, forgot_password_view
 from .views import tool_list, tool_create, tool_edit, tool_delete
 from .views import get_api_key, apikey_list, apikey_create, apikey_delete
+from .views import shared_search_result, save_shared_result
 
 urlpatterns = [
     path('', home, name='home'),
@@ -24,4 +25,8 @@ urlpatterns = [
     
     # API endpoints
     path('api/api-keys/', get_api_key, name='get_api_key'),
+    path('api/save-shared-result/', save_shared_result, name='save_shared_result'),
+    
+    # Shared search results
+    path('search/<uuid:result_id>/', shared_search_result, name='shared_search_result'),
 ]

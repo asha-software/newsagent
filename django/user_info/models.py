@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 class APIKey(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
@@ -55,3 +56,14 @@ class UserTool(models.Model):
     
     def __str__(self):
         return self.name
+
+class SharedSearchResult(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='shared_results')
+    query = models.TextField()
+    result_data = models.JSONField()
+    created_at = models.DateTimeField(default=timezone.now)
+    is_public = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return f"Shared result by {self.user.username} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
