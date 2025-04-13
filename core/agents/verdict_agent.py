@@ -42,7 +42,7 @@ class State(TypedDict):
     final_justification: str | None
 
 
-with open(DIR / "prompts/claim_decomposer_system_prompt.txt", "r") as f:
+with open(DIR / "prompts/verdict_agent_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 system_message = SystemMessage(content=system_prompt)
 

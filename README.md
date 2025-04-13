@@ -1,8 +1,9 @@
 # Newsagent - Fact Checking Application
 
-The project consists of two main components:
+The project consists of three main components:
 1. A Django web application for user authentication and search interface
-2. A FastAPI backend for processing and analyzing claims
+2. A backend for processing and analyzing claims accessible via API
+3. A MySQL database for storage
 
 ## Docker Compose Setup
 

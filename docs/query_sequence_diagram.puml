@@ -1,0 +1,57 @@
+@startuml Process Query Sequence
+
+actor Client
+participant "process_query" as Process
+participant "claim_decomposer" as Decomposer
+participant "research_agent" as Research
+participant "reasoning_agent" as Reasoning
+participant "verdict_agent" as Verdict
+
+title NewsAgent Fact-Checking Pipeline
+
+Client -> Process: process_query(text, builtin_tools, user_tool_kwargs)
+activate Process
+
+Process -> Process: create_research_agent(model, builtin_tools, user_tool_kwargs)
+note right: Dynamically creates the ResearchAgent\nbased on tool preferences (built-in and user-defined)
+
+Process -> Decomposer: invoke({"text": text})
+activate Decomposer
+note right of Decomposer: Decomposes into atomic claims
+Decomposer --> Process: result["claims"]
+deactivate Decomposer
+
+loop for each claim
+    Process -> Research: invoke({"claim": claim})
+    activate Research
+    note right of Research: Uses tools to gather evidence
+    Research --> Process: research_results[i]
+    deactivate Research
+end
+
+loop for each research result
+    Process -> Reasoning: invoke({"claim": claim, "evidence": evidence})
+    activate Reasoning
+    note right of Reasoning: Analyzes claim against evidence
+    Reasoning --> Process: reasoning_results[i]
+    deactivate Reasoning
+end
+
+Process -> Verdict: invoke({claims, labels, justifications})
+activate Verdict
+note right of Verdict: Synthesizes overall verdict
+Verdict --> Process: verdict_results
+deactivate Verdict
+
+Process -> Process: create_analyses(claims, labels, justifications, evidence)
+
+Process --> Client: {
+note right: Final response with\nverdict and detailed analyses
+Process --> Client: "final_label": "true/false/mixed/unknown",
+Process --> Client: "final_justification": "explanation...",
+Process --> Client: "analyses": [{claim, label, justification, evidence}, ...]
+Process --> Client: }
+
+deactivate Process
+
+@enduml
