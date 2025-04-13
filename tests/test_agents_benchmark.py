@@ -1,3 +1,6 @@
+# Note to developers: This benchmark specifically evaluates the agents using the 'mistral-nemo' model.
+# Using models of different sizes or configurations may yield significantly different results.
+
 import pytest
 from core.agents.claim_decomposer import claim_decomposer
 from core.agents.research_agent import create_agent

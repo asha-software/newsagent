@@ -1,3 +1,6 @@
+# Note to developers: This benchmark specifically evaluates the agents using the 'mistral-nemo' model.
+# Using models of different sizes or configurations may yield significantly different results.
+
 import pytest
 from unittest.mock import AsyncMock, patch
 from core.processing import process_query
