@@ -148,21 +148,40 @@ def save_shared_result(request):
             result_data = data.get('result_data', {})
             is_public = data.get('is_public', False)
             
-            # Create a new shared result
-            shared_result = SharedSearchResult(
+            # Check if a shared result already exists for this user and query
+            existing_result = SharedSearchResult.objects.filter(
                 user=request.user,
-                query=query,
-                result_data=result_data,
-                is_public=is_public
-            )
-            shared_result.save()
+                query=query
+            ).first()
             
-            # Return the URL for the shared result
-            return JsonResponse({
-                'success': True,
-                'shared_url': f"/search/{shared_result.id}",
-                'message': 'Result saved successfully!'
-            })
+            if existing_result:
+                # Update the existing result if needed
+                if existing_result.is_public != is_public:
+                    existing_result.is_public = is_public
+                    existing_result.save()
+                
+                # Return the URL for the existing shared result
+                return JsonResponse({
+                    'success': True,
+                    'shared_url': f"/search/{existing_result.id}",
+                    'message': 'Existing shared link retrieved!'
+                })
+            else:
+                # Create a new shared result
+                shared_result = SharedSearchResult(
+                    user=request.user,
+                    query=query,
+                    result_data=result_data,
+                    is_public=is_public
+                )
+                shared_result.save()
+                
+                # Return the URL for the new shared result
+                return JsonResponse({
+                    'success': True,
+                    'shared_url': f"/search/{shared_result.id}",
+                    'message': 'New shared link created!'
+                })
             
         except Exception as e:
             return JsonResponse({
