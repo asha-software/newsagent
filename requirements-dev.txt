@@ -1,3 +1,5 @@
 ipykernel
 notebook
 pytest==8.3.5
+pytest-asyncio
+pytest-benchmark
