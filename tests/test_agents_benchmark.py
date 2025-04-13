@@ -10,7 +10,7 @@ from core.agents.verdict_agent import verdict_agent
 @pytest.mark.benchmark
 def test_claim_decomposer_benchmark(benchmark):
     """Benchmark the claim decomposer agent."""
-    initial_state = {"text": "The sky is blue and the grass is green."}
+    initial_state = {"text": "The Eiffel Tower is one of the most visited monuments in the world, located in Paris, France."}
 
     def claim_decomposer_run():
         return claim_decomposer.invoke(initial_state)
