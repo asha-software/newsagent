@@ -4,8 +4,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import messages
-from django.http import JsonResponse
-from .models import UserTool, APIKey
+from django.http import JsonResponse, Http404
+from .models import UserTool, APIKey, SharedSearchResult
 from .forms import UserToolForm
 from .utils import get_builtin_tools
 import json
@@ -90,6 +90,109 @@ def search(request):
     }
         
     return render(request, 'search.html', context)  # Render the search page with context
+
+def shared_search_result(request, result_id):
+    try:
+        # Try to get the shared result by ID
+        shared_result = get_object_or_404(SharedSearchResult, id=result_id)
+        
+        # Check if the result is public or if the user is the owner
+        if not shared_result.is_public and (not request.user.is_authenticated or request.user != shared_result.user):
+            raise Http404("This shared result is not public")
+        
+        # Get the built-in tools (for the search form)
+        builtin_tools = get_builtin_tools()
+        
+        # If user is authenticated, get their tools
+        user_tools = None
+        if request.user.is_authenticated:
+            user_tools = UserTool.objects.filter(user=request.user, is_active=True).order_by('name')
+        
+        # Double serialize the result data to match the JavaScript's expectation
+        # The JavaScript code expects a JSON string containing another JSON string
+        serialized_result_data = json.dumps(json.dumps(shared_result.result_data))
+        
+        # Create a modified shared result object with the serialized data
+        shared_result_dict = {
+            'id': str(shared_result.id),
+            'query': shared_result.query,
+            'result_data': serialized_result_data,
+            'created_at': shared_result.created_at,
+            'is_public': shared_result.is_public
+        }
+        
+        # Prepare context for the template
+        context = {
+            'API_URL': settings.API_URL,
+            'shared_result': shared_result_dict,
+            'builtin_tools': builtin_tools,
+            'user_tools': user_tools,
+            'is_shared_view': True
+        }
+        
+        return render(request, 'search.html', context)
+    
+    except (ValueError, Http404):
+        # Handle invalid UUID or not found
+        if request.user.is_authenticated:
+            return redirect('search')
+        else:
+            return redirect('signin')
+
+@login_required
+def save_shared_result(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            query = data.get('query', '')
+            result_data = data.get('result_data', {})
+            is_public = data.get('is_public', False)
+            
+            # Check if a shared result already exists for this user and query
+            existing_result = SharedSearchResult.objects.filter(
+                user=request.user,
+                query=query
+            ).first()
+            
+            if existing_result:
+                # Update the existing result if needed
+                if existing_result.is_public != is_public:
+                    existing_result.is_public = is_public
+                    existing_result.save()
+                
+                # Return the URL for the existing shared result
+                return JsonResponse({
+                    'success': True,
+                    'shared_url': f"/search/{existing_result.id}",
+                    'message': 'Existing shared link retrieved!'
+                })
+            else:
+                # Create a new shared result
+                shared_result = SharedSearchResult(
+                    user=request.user,
+                    query=query,
+                    result_data=result_data,
+                    is_public=is_public
+                )
+                shared_result.save()
+                
+                # Return the URL for the new shared result
+                return JsonResponse({
+                    'success': True,
+                    'shared_url': f"/search/{shared_result.id}",
+                    'message': 'New shared link created!'
+                })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error saving result: {str(e)}'
+            }, status=400)
+    
+    return JsonResponse({
+        'success': False,
+        'message': 'Invalid request method'
+    }, status=405)
 
 def forgot_password_view(request):
     return render(request, 'forgot.html')  # Render the forgot password page
