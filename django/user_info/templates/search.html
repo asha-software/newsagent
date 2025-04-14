@@ -40,7 +40,7 @@
       </div>
       <div class="menu-overlay"></div>
       <div class="search-container">
-        <form action="{% url 'search' %}" method="POST" data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+        <form id="search-form" action="{% url 'search' %}" method="POST" data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
           {% csrf_token %}
           <fieldset>
             <div class="inner-form">
@@ -85,10 +85,8 @@
           </div>
           <div id="results-container" style="display: none;" 
                data-is-shared-view="{% if is_shared_view %}true{% else %}false{% endif %}"
-               {% if shared_result %}
-               data-shared-result="{{ shared_result.result_data }}"
-               data-shared-query="{{ shared_result.query }}"
-               {% endif %}>
+               data-shared-result="{% if shared_result %}{{ shared_result.result_data }}{% endif %}"
+               data-shared-query="{% if shared_result %}{{ shared_result.query }}{% endif %}">
           </div>
           
           {% if user.is_authenticated and not is_shared_view %}
@@ -116,6 +114,7 @@
     const API_URL = '{{ API_URL }}';
     const YES_ICON_URL = "{% static 'images/yes.png' %}";
     const NO_ICON_URL = "{% static 'images/no.png' %}";
+    const HAS_CACHED_RESULT = "{% if has_cached_result %}true{% else %}false{% endif %}";
   </script>
   <script src="{% static 'js/search-results.js' %}"></script>
 </body>

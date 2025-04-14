@@ -635,11 +635,16 @@ if (isSharedView) {
 }
 
 // When the form is submitted
-document.querySelector('form').addEventListener('submit', function(e) {
+document.getElementById('search-form').addEventListener('submit', function(e) {
+  // Always prevent the default form submission
   e.preventDefault();
   
   const searchQuery = document.getElementById('search').value.trim();
   if (!searchQuery) return;
+  
+  
+  // Get the CSRF token from the form
+  const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
   
   const loadingElement = document.getElementById('loading');
   const resultsContainer = document.getElementById('results-container');
@@ -682,87 +687,135 @@ document.querySelector('form').addEventListener('submit', function(e) {
   const selectedSources = Array.from(document.querySelectorAll('input[name="source"]:checked'))
     .map(checkbox => checkbox.value);
 
-  // Fix API URL for browser access
-  let apiUrl = API_URL;
-  if (apiUrl.includes('api:8000')) {
-    apiUrl = apiUrl.replace('api:8000', 'localhost:8001');
-  }
-  
-  // Get the API key
-  fetch('/api/api-keys/', {
-    method: 'GET',
+  // First check if we have a cached result for this query using AJAX
+  fetch(window.location.href, {
+    method: 'POST',
     headers: {
-      'X-Requested-With': 'XMLHttpRequest'
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': csrfToken
     },
-    credentials: 'include'
+    body: new URLSearchParams({
+      'search': searchQuery
+    })
   })
-  .then(response => {
-    // Check if the response is OK (status in the range 200-299)
-    if (!response.ok) {
-      // If we get a non-OK response, the user is likely not authenticated
-      // Show a message instead of redirecting
-      if (resultsContainer) {
-        resultsContainer.style.display = 'block';
-        resultsContainer.innerHTML = `
-          <div class="login-required">
-            <h3>Login Required</h3>
-            <p>You need to <a href="/signin/">log in</a> or <a href="/signup/">create an account</a> to perform searches.</p>
-            <p>You can still view this shared result, but you cannot perform new searches without logging in.</p>
-          </div>
-        `;
+  .then(response => response.json())
+  .then(data => {
+    if (data.success && data.has_cached_result) {
+      
+      // Hide loading indicator
+      if (loadingElement) {
+        loadingElement.style.display = 'none';
       }
-      throw new Error('Authentication required');
+      
+      // Parse the result data
+      const sharedResultData = data.shared_result.result_data;
+      const parsedData = JSON.parse(sharedResultData);
+      const resultData = JSON.parse(parsedData);
+      
+      // Update the results container with the cached data
+      resultsContainer.setAttribute('data-shared-query', data.shared_result.query);
+      resultsContainer.setAttribute('data-shared-result', sharedResultData);
+      
+      // Display the cached result
+      displaySearchResults(resultData, searchQuery);
+      
+      return;
+    } else {
+      // No cached result found, proceed with API call
+      makeApiCall();
     }
-    return response.json();
-  })
-  .then(data => {
-    const apiKey = data.api_key;
-    
-    // Use the API key to make the query
-    return fetch(apiUrl + '/query', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-        'X-API-Key': apiKey
-      },
-      body: JSON.stringify({
-        body: searchQuery,
-        sources: selectedSources
-      })
-    });
-  })
-  .then(response => {
-    if (!response.ok) {
-      return response.text().then(text => {
-        throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
-      });
-    }
-    return response.json();
-  })
-  .then(data => {
-    const loadingElement = document.getElementById('loading');
-    
-    if (loadingElement) {
-      loadingElement.style.display = 'none';
-    }
-    
-    // Display the search results
-    displaySearchResults(data, searchQuery);
   })
   .catch(error => {
-    const loadingElement = document.getElementById('loading');
-    const resultsContainer = document.getElementById('results-container');
-    
-    if (loadingElement) {
-      loadingElement.style.display = 'none';
-    }
-    
-    if (resultsContainer) {
-      resultsContainer.style.display = 'block';
-      resultsContainer.innerHTML = `<div class="error">Error processing your request: ${error.message}</div>`;
-    }
+    console.error('Error checking for cached result:', error);
+    // If there's an error checking for cached results, continue with the API call
+    makeApiCall();
   });
+
+  // Function to make the API call
+  function makeApiCall() {
+    // Fix API URL for browser access
+    let apiUrl = API_URL;
+    if (apiUrl.includes('api:8000')) {
+      apiUrl = apiUrl.replace('api:8000', 'localhost:8001');
+    }
+    
+    // Get the API key
+    fetch('/api/api-keys/', {
+      method: 'GET',
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      credentials: 'include'
+    })
+    .then(response => {
+      // Check if the response is OK (status in the range 200-299)
+      if (!response.ok) {
+        // If we get a non-OK response, the user is likely not authenticated
+        // Show a message instead of redirecting
+        if (resultsContainer) {
+          resultsContainer.style.display = 'block';
+          resultsContainer.innerHTML = `
+            <div class="login-required">
+              <h3>Login Required</h3>
+              <p>You need to <a href="/signin/">log in</a> or <a href="/signup/">create an account</a> to perform searches.</p>
+              <p>You can still view this shared result, but you cannot perform new searches without logging in.</p>
+            </div>
+          `;
+        }
+        throw new Error('Authentication required');
+      }
+      return response.json();
+    })
+    .then(data => {
+      const apiKey = data.api_key;
+      
+      // Use the API key to make the query
+      return fetch(apiUrl + '/query', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-API-Key': apiKey
+        },
+        body: JSON.stringify({
+          body: searchQuery,
+          sources: selectedSources
+        })
+      });
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.text().then(text => {
+          throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+        });
+      }
+      return response.json();
+    })
+    .then(data => {
+      const loadingElement = document.getElementById('loading');
+      
+      if (loadingElement) {
+        loadingElement.style.display = 'none';
+      }
+      
+      // Display the search results
+      displaySearchResults(data, searchQuery);
+    })
+    .catch(error => {
+      const loadingElement = document.getElementById('loading');
+      const resultsContainer = document.getElementById('results-container');
+      
+      if (loadingElement) {
+        loadingElement.style.display = 'none';
+      }
+      
+      if (resultsContainer) {
+        resultsContainer.style.display = 'block';
+        resultsContainer.innerHTML = `<div class="error">Error processing your request: ${error.message}</div>`;
+      }
+    });
+  }
 });
 
 // Add event listeners for the share functionality

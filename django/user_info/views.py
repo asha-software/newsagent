@@ -67,6 +67,7 @@ def register(request):
 def search(request):
     show_results = False
     shared_result = None
+    has_cached_result = False
     
     if request.method == 'POST':
         # Get the search query
@@ -94,6 +95,25 @@ def search(request):
                     'created_at': existing_result.created_at,
                     'is_public': existing_result.is_public
                 }
+                
+                # Set flag to indicate we have a cached result
+                has_cached_result = True
+                
+                
+                # If this is an AJAX request, return the cached result as JSON
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': True,
+                        'has_cached_result': True,
+                        'shared_result': shared_result
+                    })
+                
+    # If this is an AJAX request but no cached result was found, return a JSON response
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'has_cached_result': False
+        })
     
     # Get the user's active tools
     user_tools = UserTool.objects.filter(user=request.user, is_active=True).order_by('name')
@@ -106,7 +126,8 @@ def search(request):
         'show_results': show_results,
         'API_URL': settings.API_URL,
         'user_tools': user_tools,
-        'builtin_tools': builtin_tools
+        'builtin_tools': builtin_tools,
+        'has_cached_result': has_cached_result
     }
     
     # If we have a cached result, add it to the context
