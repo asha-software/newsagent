@@ -2,25 +2,16 @@ from dotenv import load_dotenv
 import json
 import os
 from pathlib import Path
-import sys
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, Literal, TypedDict
-from core.agents.utils.common_types import Evidence
 from core.agents.utils.llm_factory import get_chat_model
+from core.agents.utils.common_types import Evidence
 
 # Absolute path to this dir. For relative paths like prompts
 DIR = Path(__file__).parent.resolve()
 
-# Absolute path to repo root. This will be used to import Evidence from common_types
-ROOT_DIR = DIR.parent.parent
-if str(ROOT_DIR) not in sys.path:
-    sys.path.insert(0, str(ROOT_DIR))
-
-# fmt: off
-from core.agents.utils.common_types import Evidence
-# fmt: on
 
 # MODEL = "mistral-nemo"
 # TEMPERATURE = 0
@@ -85,9 +76,7 @@ def assistant(state: State) -> State:
 
 
 def postprocessing(state: State) -> State:
-    """
-    #TODO: migrate the postprocessing logic to Pydantic/Langchain
-    """
+
     reasoning = state['messages'][-1].content
 
     try:
