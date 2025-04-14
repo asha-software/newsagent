@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import messages
 from django.http import JsonResponse, Http404
+from django.core.exceptions import ValidationError
 from .models import UserTool, APIKey, SharedSearchResult
 from .forms import UserToolForm
 from .utils import get_builtin_tools
@@ -198,6 +199,16 @@ def forgot_password_view(request):
     return render(request, 'forgot.html')  # Render the forgot password page
 
 # Tool views
+def validate_tool_name(user, tool_name):
+    # Check for collision with built-in tools
+    builtin_tools = ["wikipedia", "web_search", "calculator", "wolframalpha"]
+    if tool_name in builtin_tools:
+        raise ValidationError(f"The tool name '{tool_name}' is reserved for built-in tools.")
+
+    # Check for collision with user's existing tools
+    if UserTool.objects.filter(user=user, name=tool_name).exists():
+        raise ValidationError(f"You already have a tool named '{tool_name}'. Please choose a different name.")
+
 @login_required
 def tool_list(request):
     tools = UserTool.objects.filter(user=request.user).order_by('-created_at')
@@ -210,12 +221,20 @@ def tool_create(request):
         if form.is_valid():
             tool = form.save(commit=False)
             tool.user = request.user
+
+            # Validate the tool name
+            try:
+                validate_tool_name(request.user, tool.name)
+            except ValidationError as e:
+                messages.error(request, str(e))
+                return redirect('tool_create')
+
             tool.save()
             messages.success(request, f"Tool '{tool.name}' created successfully!")
             return redirect('tool_list')
     else:
         form = UserToolForm()
-    
+
     return render(request, 'user_info/tool_form.html', {
         'form': form,
         'title': 'Create New Tool'
@@ -224,12 +243,22 @@ def tool_create(request):
 @login_required
 def tool_edit(request, tool_id):
     tool = get_object_or_404(UserTool, id=tool_id, user=request.user)
-    
+
     if request.method == 'POST':
         form = UserToolForm(request.POST, instance=tool)
         if form.is_valid():
-            form.save()
-            messages.success(request, f"Tool '{tool.name}' updated successfully!")
+            updated_tool = form.save(commit=False)
+
+            # Validate the updated tool name
+            try:
+                if updated_tool.name != tool.name:  # Only validate if the name is being changed
+                    validate_tool_name(request.user, updated_tool.name)
+            except ValidationError as e:
+                messages.error(request, str(e))
+                return redirect('tool_edit', tool_id=tool_id)
+
+            updated_tool.save()
+            messages.success(request, f"Tool '{updated_tool.name}' updated successfully!")
             return redirect('tool_list')
     else:
         # Convert JSON fields to strings for the form
@@ -238,7 +267,7 @@ def tool_edit(request, tool_id):
             for field in ['headers', 'default_params', 'data', 'json_payload', 'target_fields', 'param_mapping']
         }
         form = UserToolForm(instance=tool, initial=initial_data)
-    
+
     return render(request, 'user_info/tool_form.html', {
         'form': form,
         'tool': tool,
