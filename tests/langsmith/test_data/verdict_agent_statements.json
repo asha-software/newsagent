@@ -156,5 +156,243 @@
       "final_label": "mixed",
       "final_justification": "One claim is historically verified, the other is an unsupported conspiracy theory."
     }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Chocolate cures cancer"
+      ],
+      "labels": ["misleading"],
+      "justifications": [
+        "Chocolate has some beneficial compounds, but claiming it cures cancer greatly exaggerates scientific findings"
+      ]
+    },
+    "outputs": {
+      "final_label": "misleading",
+      "final_justification": "The claim is technically based on real components in chocolate but severely distorts their actual medical implications."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Climate change is not a serious threat",
+        "Sea levels are rising due to global warming"
+      ],
+      "labels": ["opinion/interpretation", "true"],
+      "justifications": [
+        "The seriousness of climate change depends largely on personal or political views",
+        "Scientifically documented and verified by extensive climate research"
+      ]
+    },
+    "outputs": {
+      "final_label": "opinion/interpretation",
+      "final_justification": "The primary claim reflects a subjective opinion, despite the secondary claim being objectively true."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Dinosaurs exist today",
+        "Birds evolved from dinosaurs"
+      ],
+      "labels": ["false", "true"],
+      "justifications": [
+        "Factually incorrect as dinosaurs are extinct",
+        "Widely accepted in paleontology based on fossil evidence"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "One claim is clearly false, while the other is strongly supported by scientific evidence."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Coffee consumption is dangerous",
+        "Excessive caffeine intake can be harmful"
+      ],
+      "labels": ["misleading", "true"],
+      "justifications": [
+        "The claim exaggerates general risks; moderate coffee consumption is safe",
+        "Verified by medical studies indicating risks of excessive intake"
+      ]
+    },
+    "outputs": {
+      "final_label": "misleading",
+      "final_justification": "One claim exaggerates the dangers, despite the truthful element about excessive caffeine consumption."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "This claim is purely fictional and meant for comedic effect"
+      ],
+      "labels": ["satire"],
+      "justifications": [
+        "Explicitly stated to be humorous and not factual"
+      ]
+    },
+    "outputs": {
+      "final_label": "satire",
+      "final_justification": "The claim explicitly indicates it is comedic and non-factual."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The COVID-19 virus was artificially created in a lab"
+      ],
+      "labels": ["unproven"],
+      "justifications": [
+        "Current scientific consensus is uncertain with no definitive proof either way"
+      ]
+    },
+    "outputs": {
+      "final_label": "unproven",
+      "final_justification": "This claim has been extensively investigated without definitive evidence either proving or disproving the assertion."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Pluto is a planet"
+      ],
+      "labels": ["outdated"],
+      "justifications": [
+        "Pluto was reclassified as a dwarf planet by the International Astronomical Union in 2006"
+      ]
+    },
+    "outputs": {
+      "final_label": "outdated",
+      "final_justification": "The claim was historically accurate but is now outdated due to official reclassification."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Vaccines can lead to autism",
+        "Vaccines prevent serious infectious diseases"
+      ],
+      "labels": ["false", "true"],
+      "justifications": [
+        "Widely disproven by multiple scientific studies",
+        "Extensively proven by decades of medical evidence"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "One claim is completely debunked, while the other is strongly supported by medical research."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The quote 'I cannot tell a lie' was spoken by George Washington"
+      ],
+      "labels": ["out of context"],
+      "justifications": [
+        "Misrepresented; the quote is a fictional anecdote, not historically factual"
+      ]
+    },
+    "outputs": {
+      "final_label": "out of context",
+      "final_justification": "The claim is misleadingly presented without acknowledging its fictional historical context."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Apple Inc. was founded in 1976",
+        "Steve Jobs was the sole founder of Apple"
+      ],
+      "labels": ["true", "mostly false"],
+      "justifications": [
+        "Historically documented",
+        "Misleading; Apple had multiple co-founders including Steve Wozniak and Ronald Wayne"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly false",
+      "final_justification": "Although Apple was indeed founded in 1976, the second claim significantly misrepresents historical facts."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Electric cars eliminate all environmental harm",
+        "Electric cars generally reduce carbon emissions compared to gasoline cars"
+      ],
+      "labels": ["misleading", "true"],
+      "justifications": [
+        "Exaggerated, ignoring the environmental impact of electricity generation and battery production",
+        "Backed by numerous environmental studies"
+      ]
+    },
+    "outputs": {
+      "final_label": "misleading",
+      "final_justification": "While electric cars do reduce emissions, the claim about zero environmental harm is significantly misleading."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "COVID-19 originated from bats"
+      ],
+      "labels": ["unproven"],
+      "justifications": [
+        "Likely zoonotic origin supported but definitive intermediate host and path still unproven"
+      ]
+    },
+    "outputs": {
+      "final_label": "unproven",
+      "final_justification": "This claim has strong scientific plausibility but lacks definitive evidence for the exact zoonotic origin."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Shakespeare wrote all of his plays alone"
+      ],
+      "labels": ["mostly false"],
+      "justifications": [
+        "Historical evidence suggests collaboration on several plays"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly false",
+      "final_justification": "While Shakespeare authored many works, there is credible historical evidence of collaborative efforts on several plays."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Mona Lisa is overrated"
+      ],
+      "labels": ["opinion/interpretation"],
+      "justifications": [
+        "Subjective opinion on artistic value rather than verifiable fact"
+      ]
+    },
+    "outputs": {
+      "final_label": "opinion/interpretation",
+      "final_justification": "This claim is subjective, based entirely on personal interpretation rather than factual criteria."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "April Fool’s Day is canceled worldwide"
+      ],
+      "labels": ["satire"],
+      "justifications": [
+        "Clearly humorous or satirical, not factual"
+      ]
+    },
+    "outputs": {
+      "final_label": "satire",
+      "final_justification": "The claim is clearly intended as a humorous, non-factual statement."
+    }
   }
-]
+  ]
+
