@@ -2,9 +2,10 @@ import pytest
 from unittest.mock import patch
 import json
 
-from langchain_core.messages import BaseMessage, AIMessage
+from langchain_core.messages import AIMessage
 from langchain_ollama import ChatOllama
-from build.lib.core.agents.common_types import Evidence
+
+from core.agents.utils.common_types import Evidence
 
 
 @pytest.fixture()
