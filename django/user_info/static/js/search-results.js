@@ -1,8 +1,10 @@
-// Check if we're viewing a shared result
+// Check if we're viewing a shared result or cached result
 const resultsContainer = document.getElementById('results-container');
 const isSharedView = resultsContainer.getAttribute('data-is-shared-view') === 'true';
 let currentSearchQuery = '';
 let currentSearchResult = null;
+
+// If we're viewing a shared or cached result, display it immediately
 
 // Function to display search results
 function displaySearchResults(data, query) {

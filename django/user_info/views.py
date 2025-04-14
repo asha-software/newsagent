@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import messages
 from django.http import JsonResponse, Http404
+from django.core.paginator import Paginator
 from .models import UserTool, APIKey, SharedSearchResult
 from .forms import UserToolForm
 from .utils import get_builtin_tools
@@ -65,6 +66,7 @@ def register(request):
 @login_required
 def search(request):
     show_results = False
+    shared_result = None
     
     if request.method == 'POST':
         # Get the search query
@@ -73,13 +75,31 @@ def search(request):
         # If any query is submitted, show the results section
         if query:
             show_results = True
+            
+            # Check if this query already exists in the database
+            existing_result = SharedSearchResult.objects.filter(
+                user=request.user,
+                query=query
+            ).first()
+            
+            if existing_result:
+                # If the query exists, use the cached result
+                serialized_result_data = json.dumps(json.dumps(existing_result.result_data))
+                
+                # Create a modified shared result object with the serialized data
+                shared_result = {
+                    'id': str(existing_result.id),
+                    'query': existing_result.query,
+                    'result_data': serialized_result_data,
+                    'created_at': existing_result.created_at,
+                    'is_public': existing_result.is_public
+                }
     
     # Get the user's active tools
     user_tools = UserTool.objects.filter(user=request.user, is_active=True).order_by('name')
     
     # Get the built-in tools
     builtin_tools = get_builtin_tools()
-    
     
     # Pass API_URL from settings to the template
     context = {
@@ -88,6 +108,11 @@ def search(request):
         'user_tools': user_tools,
         'builtin_tools': builtin_tools
     }
+    
+    # If we have a cached result, add it to the context
+    if shared_result:
+        context['shared_result'] = shared_result
+        context['is_shared_view'] = True
         
     return render(request, 'search.html', context)  # Render the search page with context
 
@@ -256,6 +281,19 @@ def tool_delete(request, tool_id):
         return redirect('tool_list')
     
     return render(request, 'user_info/tool_confirm_delete.html', {'tool': tool})
+
+# History view
+@login_required
+def history(request):
+    # Get all shared search results for the current user
+    user_queries = SharedSearchResult.objects.filter(user=request.user).order_by('-created_at')
+    
+    # Set up pagination
+    paginator = Paginator(user_queries, 10)  # Show 10 queries per page
+    page = request.GET.get('page')
+    history_items = paginator.get_page(page)
+    
+    return render(request, 'user_info/history.html', {'history_items': history_items})
 
 # API Key views
 @login_required

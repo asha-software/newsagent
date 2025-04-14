@@ -90,6 +90,7 @@
         <div class="menu-items">
             <a href="{% url 'tool_list' %}">Back to Tools</a>
             <a href="{% url 'search' %}">Search</a>
+            <a href="{% url 'history' %}">History</a>
             <a href="{% url 'apikey_list' %}">My API Keys</a>
             <a href="{% url 'logout' %}">Logout</a>
             <button class="menu-close-btn">Close Menu</button>
@@ -100,6 +101,9 @@
             <div class="nav-links">
                 <a href="{% url 'search' %}" class="nav-link">
                     <span>Search</span>
+                </a>
+                <a href="{% url 'history' %}" class="nav-link">
+                    <span>History</span>
                 </a>
                 <a href="{% url 'tool_list' %}" class="nav-link active">
                     <span>My Tools</span>
