@@ -5,7 +5,6 @@ let currentSearchQuery = '';
 let currentSearchResult = null;
 
 // If we're viewing a shared or cached result, display it immediately
-
 // Function to display search results
 function displaySearchResults(data, query) {
   const resultsContainer = document.getElementById('results-container');
@@ -642,10 +641,9 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
   const searchQuery = document.getElementById('search').value.trim();
   if (!searchQuery) return;
   
-  
   // Get the CSRF token from the form
   const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-  
+
   const loadingElement = document.getElementById('loading');
   const resultsContainer = document.getElementById('results-container');
   const searchContainer = document.querySelector('.search-container');
