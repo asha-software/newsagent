@@ -56,7 +56,7 @@
             <div class="suggestion-wrap">
               {% for tool in builtin_tools %}
               <label class="suggestion-item">
-                <input type="checkbox" name="source" value="{{ tool.name }}">
+                <input type="checkbox" name="source" value="{{ tool.name }}" checked>
                 <span>{{ tool.display_name }}</span>
               </label>
               {% endfor %}
@@ -68,11 +68,6 @@
                   <span>{{ tool.name }}</span>
                 </label>
                 {% endfor %}
-              {% else %}
-                <label class="suggestion-item">
-                  <input type="checkbox" name="source" value="custom">
-                  <span>Custom</span>
-                </label>
               {% endif %}
             </div>
           </fieldset>
