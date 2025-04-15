@@ -1,0 +1,111 @@
+{% load static %}
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Asha Software | Search History</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="author" content="colorlib.com">
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/api-integration.css' %}">
+    <link rel="stylesheet" href="{% static 'css/hamburger-menu.css' %}">
+    <link rel="stylesheet" href="{% static 'css/search-results.css' %}">
+    <link rel="stylesheet" href="{% static 'css/history.css' %}">
+</head>
+<body>
+    <div class="s006">
+        <div class="website-logo">
+            <a href="{% url 'search' %}">
+                <div class="logo">
+                    <img class="logo-size" src="{% static 'images/logo-light.svg' %}" alt="">
+                </div>
+            </a>
+        </div>
+        <!-- Hamburger Menu -->
+        <div class="hamburger-menu">
+            <div class="hamburger-icon">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+        <div class="menu-items">
+            <a href="{% url 'search' %}">Search</a>
+            <a href="{% url 'history' %}">History</a>
+            <a href="{% url 'tool_list' %}">Tools</a>
+            <a href="{% url 'apikey_list' %}">API Keys</a>
+            <a href="{% url 'logout' %}">Logout</a>
+            <button class="menu-close-btn">Close</button>
+        </div>
+        <div class="menu-overlay"></div>
+        
+        <div class="history-container">
+            <div class="nav-links">
+                <a href="{% url 'search' %}" class="nav-link">
+                    <span>Search</span>
+                </a>
+                <a href="{% url 'history' %}" class="nav-link active">
+                    <span>History</span>
+                </a>
+                <a href="{% url 'tool_list' %}" class="nav-link">
+                    <span>Tools</span>
+                </a>
+                <a href="{% url 'apikey_list' %}" class="nav-link">
+                    <span>API Keys</span>
+                </a>
+            </div>
+            
+            <div class="history-card">
+                <h2 class="history-title">Search History</h2>
+        
+                {% if history_items %}
+                    <ul class="query-list">
+                        {% for item in history_items %}
+                            <li class="query-item">
+                                <a href="{% url 'shared_search_result' item.id %}" class="query-link">{{ item.query }}</a>
+                                <div class="query-date">{{ item.created_at|date:"F j, Y, g:i a" }}</div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    <!-- Pagination -->
+                    {% if history_items.has_other_pages %}
+                        <div class="pagination">
+                            {% if history_items.has_previous %}
+                                <a href="?page={{ history_items.previous_page_number }}">&laquo; Previous</a>
+                            {% else %}
+                                <span class="disabled">&laquo; Previous</span>
+                            {% endif %}
+                            
+                            {% for i in history_items.paginator.page_range %}
+                                {% if history_items.number == i %}
+                                    <span class="current">{{ i }}</span>
+                                {% else %}
+                                    <a href="?page={{ i }}">{{ i }}</a>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if history_items.has_next %}
+                                <a href="?page={{ history_items.next_page_number }}">Next &raquo;</a>
+                            {% else %}
+                                <span class="disabled">Next &raquo;</span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="no-queries">
+                        <p>You haven't made any searches yet.</p>
+                        <p>Go to the <a href="{% url 'search' %}" style="color: #4da6ff; font-weight: bold;">search page</a> to get started.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/hamburger-menu.js' %}"></script>
+</body>
+</html>
