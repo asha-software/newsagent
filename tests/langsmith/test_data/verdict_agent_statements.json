@@ -334,65 +334,143 @@
       "final_justification": "While electric cars do reduce emissions, the claim about zero environmental harm is significantly misleading."
     }
   },
+
   {
     "inputs": {
       "claims": [
-        "COVID-19 originated from bats"
+        "Drinking bleach cures COVID-19",
+        "Wearing masks reduces virus spread"
       ],
-      "labels": ["unproven"],
+      "labels": ["false", "true"],
       "justifications": [
-        "Likely zoonotic origin supported but definitive intermediate host and path still unproven"
+        "Bleach is toxic and not a medical treatment",
+        "Supported by public health data and scientific consensus"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "One claim is dangerously false, while the other is supported by solid scientific evidence."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Vaccines change your DNA",
+        "Vaccines help prevent disease"
+      ],
+      "labels": ["misleading", "true"],
+      "justifications": [
+        "Technically, mRNA vaccines interact with cells but do not alter DNA",
+        "Well-supported by decades of immunological research"
+      ]
+    },
+    "outputs": {
+      "final_label": "misleading",
+      "final_justification": "One claim distorts how vaccines work, while the other provides accurate information."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Aliens built the pyramids",
+        "The pyramids are in Egypt"
+      ],
+      "labels": ["unknown", "true"],
+      "justifications": [
+        "No verifiable evidence for alien involvement exists",
+        "Geographically confirmed fact"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "Although one claim is true, the other lacks conclusive evidence and prevents a confident overall verdict."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Bigfoot exists",
+        "Gorillas live in the jungle"
+      ],
+      "labels": ["unproven", "true"],
+      "justifications": [
+        "No conclusive evidence proving or disproving Bigfoot's existence",
+        "Widely documented in zoological records"
       ]
     },
     "outputs": {
       "final_label": "unproven",
-      "final_justification": "This claim has strong scientific plausibility but lacks definitive evidence for the exact zoonotic origin."
+      "final_justification": "One claim is well-supported, but the other remains unproven despite popular interest."
     }
   },
   {
     "inputs": {
       "claims": [
-        "Shakespeare wrote all of his plays alone"
+        "Napoleon was extremely short",
+        "Napoleon was a French emperor"
       ],
-      "labels": ["mostly false"],
+      "labels": ["out of context", "true"],
       "justifications": [
-        "Historical evidence suggests collaboration on several plays"
+        "The myth of his height was a propaganda distortion; he was of average height for his time",
+        "Historically verified fact"
       ]
     },
     "outputs": {
-      "final_label": "mostly false",
-      "final_justification": "While Shakespeare authored many works, there is credible historical evidence of collaborative efforts on several plays."
+      "final_label": "out of context",
+      "final_justification": "The claim about Napoleon’s height is misleading due to missing historical context, despite other factual claims."
     }
   },
   {
     "inputs": {
       "claims": [
-        "The Mona Lisa is overrated"
+        "Pluto is the ninth planet",
+        "Pluto is a dwarf planet"
       ],
-      "labels": ["opinion/interpretation"],
+      "labels": ["outdated", "true"],
       "justifications": [
-        "Subjective opinion on artistic value rather than verifiable fact"
+        "Pluto was reclassified in 2006 and is no longer considered a planet",
+        "Its current designation is a dwarf planet"
       ]
     },
     "outputs": {
-      "final_label": "opinion/interpretation",
-      "final_justification": "This claim is subjective, based entirely on personal interpretation rather than factual criteria."
+      "final_label": "outdated",
+      "final_justification": "The outdated classification of Pluto as a planet contrasts with the current astronomical consensus."
     }
   },
   {
     "inputs": {
       "claims": [
-        "April Fool’s Day is canceled worldwide"
+        "Unicorns are real and roam the forests",
+        "This article is satire"
       ],
-      "labels": ["satire"],
+      "labels": ["false", "satire"],
       "justifications": [
-        "Clearly humorous or satirical, not factual"
+        "There is no scientific evidence for unicorns",
+        "The article clearly states it is satirical and fictional"
       ]
     },
     "outputs": {
       "final_label": "satire",
-      "final_justification": "The claim is clearly intended as a humorous, non-factual statement."
+      "final_justification": "The claims are humorous and intentionally absurd, making the overall context clearly satirical."
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Beatles are overrated",
+        "The Beatles sold over 600 million albums"
+      ],
+      "labels": ["opinion/interpretation", "true"],
+      "justifications": [
+        "Reflects personal opinion and subjective interpretation",
+        "Backed by music industry sales data"
+      ]
+    },
+    "outputs": {
+      "final_label": "opinion/interpretation",
+      "final_justification": "While one claim is objectively true, the other expresses a personal opinion and cannot be judged as fact or fiction."
     }
   }
-  ]
+]
+
 

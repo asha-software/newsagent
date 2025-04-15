@@ -35,6 +35,6 @@ You will receive one or more claims. You must evaluate and explicitly reference 
 Your response should be structured exclusively as a JSON object:
 ```json
 {
-  "final_label": "<true|mostly true|mostly false|false|mixed|unknown|unproven|out of context|outdated|satire>",
   "final_justification": "<comprehensive summary justification here>"
+  "final_label": "<true|mostly true|mostly false|false|mixed|unknown|unproven|out of context|outdated|satire>",
 }
