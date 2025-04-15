@@ -2,7 +2,7 @@ from django.urls import path
 from .views import register, signin, home, search, logout_view, forgot_password_view
 from .views import tool_list, tool_create, tool_edit, tool_delete
 from .views import get_api_key, apikey_list, apikey_create, apikey_delete
-from .views import shared_search_result, save_shared_result
+from .views import shared_search_result, save_shared_result, history
 
 urlpatterns = [
     path('', home, name='home'),
@@ -11,6 +11,7 @@ urlpatterns = [
     path('search/', search, name='search'),
     path('logout/', logout_view, name='logout'),
     path('forgot/', forgot_password_view, name='forgot'),
+    path('history/', history, name='history'),
     
     # Tool URLs
     path('tools/', tool_list, name='tool_list'),
