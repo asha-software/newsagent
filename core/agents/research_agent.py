@@ -46,7 +46,7 @@ def import_builtin(module_name):
         module = importlib.import_module(import_path)
         function = getattr(module, function_name)
         return function
-    except (ImportError, AttributeError) as e:
+    except ImportError as e:
         print(
             f"Error: Could not find module '{import_path}'.")
         print(f"cwd: {os.getcwd()}")
@@ -55,6 +55,8 @@ def import_builtin(module_name):
         print(
             f"Error: Function '{function_name}' not found in module '{import_path}'.")
         print(f"Exception: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
     return None
 
 
