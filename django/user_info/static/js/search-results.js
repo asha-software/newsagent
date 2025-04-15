@@ -799,6 +799,28 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
       
       // Display the search results
       displaySearchResults(data, searchQuery);
+      
+      // Automatically save the result to the database for future caching
+      fetch('/api/save-shared-result/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+          query: searchQuery,
+          result_data: data,
+          is_public: false  // Default to private
+        })
+      })
+      .then(response => response.json())
+      .then(saveData => {
+        console.log('Search result automatically saved for caching:', saveData.message);
+      })
+      .catch(error => {
+        console.error('Error saving search result for caching:', error);
+      });
     })
     .catch(error => {
       const loadingElement = document.getElementById('loading');
