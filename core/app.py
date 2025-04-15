@@ -1,10 +1,11 @@
 import os
 import datetime
 import pymysql
-from typing import Any, Optional
+import json
+from typing import Any, Optional, Dict, List, Union, Literal
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from processing import process_query, get_user_tool_params
 
 # Import middlewares from the new location
@@ -50,6 +51,32 @@ class APIKeyResponse(BaseModel):
     key: str
     created_at: datetime.datetime
     last_used_at: Optional[datetime.datetime] = None
+    is_active: bool
+
+
+class CustomToolCreate(BaseModel):
+    name: str
+    description: str = ""
+    method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+    url_template: str
+    headers: Optional[Dict[str, str]] = None
+    default_params: Optional[Dict[str, str]] = None
+    data: Optional[Dict[str, str]] = None
+    json_payload: Optional[Dict[str, str]] = None
+    docstring: str = ""
+    target_fields: Optional[List[List[Union[str, int]]]] = None
+    param_mapping: Dict[str, Dict[str, Union[str, Literal['url_params', 'params', 'headers', 'data', 'json']]]] = Field(...)
+    is_active: bool = True
+    is_preferred: bool = False
+
+
+class CustomToolResponse(BaseModel):
+    id: int
+    name: str
+    description: str
+    method: str
+    url_template: str
+    created_at: datetime.datetime
     is_active: bool
 
 
@@ -319,6 +346,165 @@ async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(
         raise HTTPException(
             status_code=500, detail=f"Error updating tool preferences: {str(e)}"
         )
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+
+@app.post("/tools/custom", response_model=CustomToolResponse)
+async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Creates a new custom tool for the authenticated user.
+    This endpoint allows users to define tools programmatically through the API.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Check if a tool with the same name already exists for this user
+            cursor.execute(
+                """
+                SELECT id FROM user_info_usertool 
+                WHERE user_id = %s AND name = %s
+                """,
+                (user["id"], tool.name)
+            )
+            if cursor.fetchone():
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"A tool with the name '{tool.name}' already exists."
+                )
+
+            # Insert the new tool
+            cursor.execute(
+                """
+                INSERT INTO user_info_usertool (
+                    user_id, name, description, created_at, updated_at, is_active,
+                    method, url_template, headers, default_params, data, json_payload,
+                    docstring, target_fields, param_mapping, is_preferred
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    user["id"], tool.name, tool.description, datetime.datetime.now(), datetime.datetime.now(),
+                    tool.is_active, tool.method, tool.url_template, 
+                    json.dumps(tool.headers) if tool.headers else None,
+                    json.dumps(tool.default_params) if tool.default_params else None,
+                    json.dumps(tool.data) if tool.data else None,
+                    json.dumps(tool.json_payload) if tool.json_payload else None,
+                    tool.docstring,
+                    json.dumps(tool.target_fields) if tool.target_fields else None,
+                    json.dumps(tool.param_mapping),
+                    tool.is_preferred
+                )
+            )
+            tool_id = cursor.lastrowid
+            connection.commit()
+
+            # Get the newly created tool
+            cursor.execute(
+                """
+                SELECT id, name, description, method, url_template, created_at, is_active
+                FROM user_info_usertool 
+                WHERE id = %s
+                """,
+                (tool_id,)
+            )
+            row = cursor.fetchone()
+
+            return {
+                "id": row[0],
+                "name": row[1],
+                "description": row[2],
+                "method": row[3],
+                "url_template": row[4],
+                "created_at": row[5],
+                "is_active": bool(row[6])
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error creating custom tool: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+
+@app.get("/tools/custom")
+async def list_custom_tools(user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Lists all custom tools for the authenticated user.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Get all custom tools for the user
+            cursor.execute(
+                """
+                SELECT id, name, description, method, url_template, created_at, is_active
+                FROM user_info_usertool 
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                """,
+                (user["id"],)
+            )
+            rows = cursor.fetchall()
+
+            return [
+                {
+                    "id": row[0],
+                    "name": row[1],
+                    "description": row[2],
+                    "method": row[3],
+                    "url_template": row[4],
+                    "created_at": row[5],
+                    "is_active": bool(row[6])
+                }
+                for row in rows
+            ]
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error listing custom tools: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+
+@app.delete("/tools/custom/{tool_id}")
+async def delete_custom_tool(tool_id: int, user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Deletes a custom tool for the authenticated user.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Check if the tool belongs to the user
+            cursor.execute(
+                """
+                SELECT id FROM user_info_usertool 
+                WHERE id = %s AND user_id = %s
+                """,
+                (tool_id, user["id"])
+            )
+            if not cursor.fetchone():
+                raise HTTPException(
+                    status_code=404, detail="Custom tool not found")
+
+            # Delete the tool
+            cursor.execute(
+                "DELETE FROM user_info_usertool WHERE id = %s",
+                (tool_id,)
+            )
+            connection.commit()
+
+            return {"message": "Custom tool deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error deleting custom tool: {str(e)}")
     finally:
         if 'connection' in locals() and connection:
             connection.close()

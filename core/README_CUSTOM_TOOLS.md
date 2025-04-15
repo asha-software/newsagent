@@ -204,15 +204,115 @@ For complex API responses, you can use multiple `target_fields` paths to extract
 
 This would extract four separate values from the API response.
 
+## API Endpoints for Custom Tools
+
+NewsAgent provides API endpoints that allow you to programmatically create, list, and delete custom tools. These endpoints require authentication using an API key.
+
+### Getting an API Key
+
+Before you can use the API endpoints, you need to obtain an API key. You can create an API key through the web interface or use an existing one.
+
+To list your existing API keys:
+
+```bash
+curl -X GET \
+  http://localhost:8001/api-keys \
+  -H 'X-API-Key: your-api-key'
+```
+
+To create a new API key:
+
+```bash
+curl -X POST \
+  http://localhost:8001/api-keys \
+  -H 'Content-Type: application/json' \
+  -H 'X-API-Key: your-existing-api-key' \
+  -d '{"name": "My New API Key"}'
+```
+
+### Creating a Custom Tool
+
+To create a custom tool through the API:
+
+```bash
+curl -X POST \
+  http://localhost:8001/tools/custom \
+  -H 'Content-Type: application/json' \
+  -H 'X-API-Key: your-api-key' \
+  -d '{
+    "name": "weather_api",
+    "description": "Get current weather for a location",
+    "method": "GET",
+    "url_template": "https://api.weatherapi.com/v1/current.json",
+    "headers": {
+      "Accept": "application/json"
+    },
+    "default_params": {
+      "key": "YOUR_WEATHER_API_KEY"
+    },
+    "param_mapping": {
+      "location": {
+        "type": "str",
+        "for": "params"
+      }
+    },
+    "docstring": "Get current weather for a location.\nArgs:\n    location (str): City name, ZIP code, or coordinates\nReturns:\n    dict: Current temperature and conditions",
+    "target_fields": [
+      ["current", "temp_c"],
+      ["current", "condition", "text"]
+    ],
+    "is_active": true,
+    "is_preferred": true
+  }'
+```
+
+### Listing Custom Tools
+
+To list all your custom tools:
+
+```bash
+curl -X GET \
+  http://localhost:8001/tools/custom \
+  -H 'X-API-Key: your-api-key'
+```
+
+### Deleting a Custom Tool
+
+To delete a custom tool:
+
+```bash
+curl -X DELETE \
+  http://localhost:8001/tools/custom/1 \
+  -H 'X-API-Key: your-api-key'
+```
+
+Replace `1` with the ID of the tool you want to delete.
+
 ## Using Custom Tools in NewsAgent
 
-Once you've defined a custom tool, you can use it in your fact-checking queries by including it in the `sources` array:
+Once you've defined a custom tool (either through the web interface or the API), you can use it in your fact-checking queries by including it in the `sources` array:
 
-```json
-{
-  "body": "Is it raining in London right now?",
-  "sources": ["weather_api", "web_search"]
-}
+```bash
+curl -X POST \
+  http://localhost:8001/query \
+  -H 'Content-Type: application/json' \
+  -H 'X-API-Key: your-api-key' \
+  -d '{
+    "body": "Is it raining in London right now?",
+    "sources": ["weather_api", "web_search"]
+  }'
 ```
 
 This would use both your custom `weather_api` tool and the built-in `web_search` tool to answer the query.
+
+If you don't specify any sources, the system will automatically use all built-in tools:
+
+```bash
+curl -X POST \
+  http://localhost:8001/query \
+  -H 'Content-Type: application/json' \
+  -H 'X-API-Key: your-api-key' \
+  -d '{
+    "body": "Is it raining in London right now?"
+  }'
+```
