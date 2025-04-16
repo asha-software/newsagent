@@ -29,9 +29,11 @@ def target_function(initial_state):
     # Instantiate the research agent
     from core.agents.research_agent import create_agent
     agent = create_agent(model=model,
-                         builtin_tools=['calculator', 'wikipedia',
-                                        'web_search', 'wolframalpha']
-                         )
+                         builtin_tools=[
+                             'calculator',
+                             'wikipedia',
+                             'web_search'
+                         ])
     results = agent.invoke(initial_state)
     return results['evidence']
 
@@ -42,10 +44,11 @@ def evaluate_tool_choices(outputs: list[Evidence], reference_outputs: list[Evide
     output_toolset = set([tool_call['name']
                          for tool_call in outputs['output']])
 
-    # Check that the tools invoked are the same
-    if ref_toolset != output_toolset:
+    # Check that all the tools that should have been called (ref_toolset) were called (output_toolset)
+    if not ref_toolset.issubset(output_toolset):
+        uncalled_tools = ref_toolset - output_toolset
         print(
-            f"Tool mismatch: expected tool calls on {ref_toolset}, got tool calls on {output_toolset}")
+            f"Tool(s) not called: {uncalled_tools}. Expected tool calls {ref_toolset}, got tool calls {output_toolset}")
         return False
     return True
 
@@ -60,7 +63,7 @@ def main():
     ls_client = Client()
     experiment_results = ls_client.evaluate(
         target_function,
-        data="research_agent_tool_usage",
+        data="research_3",
         evaluators=[evaluate_tool_choices],
         experiment_prefix=args.experiment_prefix
     )

@@ -400,21 +400,21 @@
   },
   {
     "inputs": {
-      "claim": "The 2025 Grammy Awards were held in Los Angeles."
+      "claim": "The 2024 Grammy Awards were held in Los Angeles."
     },
     "outputs": {
       "evidence": [
         {
-          "name": "web_search",
+          "name": "wikipedia",
           "args": {
-            "expression": "The 2025 Grammy Awards were held in Los Angeles."
+            "expression": "2024 Grammy Awards"
           }
         }
       ]
     },
     "metadata": {
       "tool": "web_search",
-      "type": "Current events like award shows should be looked up via the web."
+      "type": "Less recent events that are matters of public record can be verified via Wikipedia."
     }
   },
   {
@@ -742,6 +742,25 @@
   },
   {
     "inputs": {
+      "claim": "Bill Gates owns the patent for COVID-19 vaccines."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Bill Gates owns the patent for COVID-19 vaccines."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "False attribution of vaccine patents; Wikipedia can be used to trace factual patent ownership."
+    }
+  },
+  {
+    "inputs": {
       "claim": "The Eiffel Tower is currently being dismantled for renovations."
     },
     "outputs": {
@@ -806,14 +825,20 @@
         {
           "name": "wikipedia",
           "args": {
-            "expression": "5G technology is responsible for the spread of COVID-19."
+            "expression": "5G technology"
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Does 5G technology spread of COVID-19"
           }
         }
       ]
     },
     "metadata": {
       "tool": "wikipedia",
-      "type": "False claim mixing science and public health; Wikipedia is appropriate to clarify."
+      "type": "False claim mixing science and public health; Wikipedia is appropriate for understanding 5G, web_search for current events."
     }
   },
   {
@@ -932,42 +957,30 @@
   },
   {
     "inputs": {
-      "claim": "The COVID-19 virus originated in a Chinese lab and was released intentionally."
+      "claim": "The COVID-19 virus originated in a Chinese lab "
     },
     "outputs": {
       "evidence": [
         {
           "name": "wikipedia",
           "args": {
-            "expression": "The COVID-19 virus originated in a Chinese lab and was released intentionally."
+            "expression": "COVID-19 origins"
           }
-        }
-      ]
-    },
-    "metadata": {
-      "tool": "wikipedia",
-      "type": "A highly controversial and often politicized claim; Wikipedia can provide balanced context."
-    }
-  },
-  {
-    "inputs": {
-      "claim": "Bill Gates owns the patent for COVID-19 vaccines."
-    },
-    "outputs": {
-      "evidence": [
+        },
         {
-          "name": "wikipedia",
+          "name": "web_search",
           "args": {
-            "expression": "Bill Gates owns the patent for COVID-19 vaccines."
+            "expression": "Where did the COVID-19 virus originate"
           }
         }
       ]
     },
     "metadata": {
       "tool": "wikipedia",
-      "type": "False attribution of vaccine patents; Wikipedia can be used to trace factual patent ownership."
+      "type": "A highly controversial and often politicized claim; Wikipedia can provide balanced context and web search can offer current news."
     }
   },
+
   {
     "inputs": {
       "claim": "The U.S. Civil War was primarily fought over states' rights, not slavery."
@@ -1013,16 +1026,22 @@
     "outputs": {
       "evidence": [
         {
-          "name": "wikipedia",
+          "name": "web_search",
           "args": {
             "expression": "Walt Disney was cryogenically frozen after his death."
+          }
+        },
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Walt Disney"
           }
         }
       ]
     },
     "metadata": {
       "tool": "wikipedia",
-      "type": "Urban legend; Wikipedia provides factual information about his death."
+      "type": "Urban legend; Wikipedia provides factual information about his death. Web search may provide more specialized information."
     }
   },
   {

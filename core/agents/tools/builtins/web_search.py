@@ -7,7 +7,12 @@ import os
 @tool("web_search", parse_docstring=True)
 def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> list[dict]:
     """
-    A search engine optimized for comprehensive, accurate, and trusted results. Useful for answering questions about current events or specific topics.
+    Search the web. Use this when the claim refers to:
+      - current events
+      - living public figures
+      - recent announcements
+      - social media activity
+      - trends
 
     Args:
         query (str): The search term to query. Example: "latest technology trends" or "stock market updates".
