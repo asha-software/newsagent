@@ -4,11 +4,14 @@ from unittest.mock import patch
 import json
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
+
 @pytest.fixture()
 def verdict_agent_uut(monkeypatch):
     monkeypatch.setenv("VERDICT_AGENT_MODEL", "mistral:7b")
     import core.agents.verdict_agent as verdict_agent
+
     return verdict_agent
+
 
 @pytest.mark.usefixtures("verdict_agent_uut")
 class TestVerdictAgentNodes:
@@ -45,12 +48,15 @@ class TestVerdictAgentNodes:
         assert "Claim 2:" in human_content
         assert "Please apply the Evaluation Guidelines" in human_content
 
-    @pytest.mark.parametrize("claims, labels, justifications", [
-        ([], [], []),
-        (["Single claim"], ["unknown"], ["Could not verify"]),
-    ])
+    @pytest.mark.parametrize(
+        "claims, labels, justifications",
+        [
+            ([], [], []),
+            (["Single claim"], ["unknown"], ["Could not verify"]),
+        ],
+    )
     def test_prompt_prep_node_various_inputs(
-            self, verdict_agent_uut, claims, labels, justifications
+        self, verdict_agent_uut, claims, labels, justifications
     ):
         """
         Test prompt_prep_node with different claim/label/justification lengths,
@@ -85,18 +91,23 @@ class TestVerdictAgentNodes:
     @pytest.fixture
     def sample_messages(self):
         """Creates a sample 'messages' list for feeding into verdict_node or postprocessing_node."""
-        return [SystemMessage(content="System prompt"), HumanMessage(content="User prompt")]
+        return [
+            SystemMessage(content="System prompt"),
+            HumanMessage(content="User prompt"),
+        ]
 
     @pytest.fixture
     def fake_llm_response(self):
         """Return an AIMessage that resembles a typical LLM response with JSON content."""
         json_content = {
             "final_label": "true",
-            "final_justification": "After evaluating all claims, I conclude it is true."
+            "final_justification": "After evaluating all claims, I conclude it is true.",
         }
         return AIMessage(content=json.dumps(json_content))
 
-    def test_verdict_node_invokes_llm(self, verdict_agent_uut, sample_state, sample_messages, fake_llm_response):
+    def test_verdict_node_invokes_llm(
+        self, verdict_agent_uut, sample_state, sample_messages, fake_llm_response
+    ):
         """
         Test that verdict_node calls llm.invoke(...) with the state's messages
         and returns a dict containing 'messages' with the LLM response appended.
@@ -104,7 +115,9 @@ class TestVerdictAgentNodes:
         verdict_node = verdict_agent_uut.verdict_node
 
         # We replace the actual llm with a mock
-        with patch.object(ChatOllama, 'invoke', return_value=[fake_llm_response]) as mock_invoke:
+        with patch.object(
+            ChatOllama, "invoke", return_value=[fake_llm_response]
+        ) as mock_invoke:
             # Provide the state with some messages
             test_state = sample_state.copy()
             test_state["messages"] = sample_messages
@@ -124,10 +137,12 @@ class TestVerdictAgentNodes:
         postprocessing_node = verdict_agent_uut.postprocessing_node
 
         valid_json_message = AIMessage(
-            content=json.dumps({
-                "final_label": "true",
-                "final_justification": "All statements check out."
-            })
+            content=json.dumps(
+                {
+                    "final_label": "true",
+                    "final_justification": "All statements check out.",
+                }
+            )
         )
 
         state = {
@@ -175,10 +190,12 @@ class TestVerdictAgentNodes:
         postprocessing_node = verdict_agent_uut.postprocessing_node
 
         partial_json_message = AIMessage(
-            content=json.dumps({
-                "final_label": "mixed"
-                # 'final_justification' is missing
-            })
+            content=json.dumps(
+                {
+                    "final_label": "mixed"
+                    # 'final_justification' is missing
+                }
+            )
         )
         state = {
             "messages": [partial_json_message],
@@ -192,5 +209,6 @@ class TestVerdictAgentNodes:
         result = postprocessing_node(state)
         assert result["final_label"] == "mixed"
         assert (
-                result["final_justification"] == "Verdict Agent did not return a justification."
+            result["final_justification"]
+            == "Verdict Agent did not return a justification."
         ), "Should use fallback justification when missing in the JSON."
