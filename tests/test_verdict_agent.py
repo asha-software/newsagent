@@ -34,26 +34,16 @@ class TestVerdictAgentNodes:
         """
         # Extract the function to test from the verdict agent code
         prompt_prep_node = verdict_agent_uut.prompt_prep_node
-
         result = prompt_prep_node(sample_state)
-
         assert "messages" in result, "The result must contain a 'messages' key."
-
         # The first message should be the system message
-        assert isinstance(result["messages"][0], SystemMessage), (
-            "Expected first message to be a SystemMessage."
-        )
+        assert isinstance(result["messages"][0], SystemMessage)
         # The second message should be the constructed user/human message
-        assert isinstance(result["messages"][1], HumanMessage), (
-            "Expected second message to be a HumanMessage."
-        )
-
+        assert isinstance(result["messages"][1], HumanMessage)
         human_content = result["messages"][1].content
-        assert "Claim 1:" in human_content, "HumanMessage content must list claims."
-        assert "Claim 2:" in human_content, "HumanMessage content must list claims."
-        assert "Please apply the Evaluation Guidelines" in human_content, (
-            "Prompt must ask to apply the guidelines."
-        )
+        assert "Claim 1:" in human_content
+        assert "Claim 2:" in human_content
+        assert "Please apply the Evaluation Guidelines" in human_content
 
     @pytest.mark.parametrize("claims, labels, justifications", [
         ([], [], []),
@@ -124,9 +114,7 @@ class TestVerdictAgentNodes:
 
             # result should be a dict with "messages" that is the LLM's return_value
             assert "messages" in result
-            assert result["messages"] == [fake_llm_response], (
-                "verdict_node should return the LLM's response in a messages list."
-            )
+            assert result["messages"] == [fake_llm_response]
 
     def test_postprocessing_node_valid_json(self, verdict_agent_uut):
         """
