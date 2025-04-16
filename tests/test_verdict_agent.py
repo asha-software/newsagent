@@ -38,7 +38,7 @@ class TestVerdictAgentNodes:
         # Extract the function to test from the verdict agent code
         prompt_prep_node = verdict_agent_uut.prompt_prep_node
         result = prompt_prep_node(sample_state)
-        assert "messages" in result, "The result must contain a 'messages' key."
+        assert "messages" in result
         # The first message should be the system message
         assert isinstance(result["messages"][0], SystemMessage)
         # The second message should be the constructed user/human message
@@ -211,4 +211,4 @@ class TestVerdictAgentNodes:
         assert (
             result["final_justification"]
             == "Verdict Agent did not return a justification."
-        ), "Should use fallback justification when missing in the JSON."
+        )
