@@ -35,7 +35,6 @@ def create_dataset(name, description, examples):
     )
     client.create_examples(
         dataset_id=dataset.id,
-        # examples=examples
         inputs=[example['inputs'] for example in examples],
         outputs=[example['outputs'] for example in examples],
         metadata=[example['metadata'] for example in examples],
