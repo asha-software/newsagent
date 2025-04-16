@@ -20,7 +20,7 @@ LLM_OUTPUT_FORMAT = {
     "properties": {
         "final_label": {
             "type": "string",
-            "enum": ["true", "false", "mixed", "unknown"]
+            "enum": ["true", "false", "mixed", "unknown", "mostly true", "mostly false", "unproven","out of context", "outdated", "satire" ]
         },
         "final_justification": {
             "type": "string"
