@@ -16,7 +16,6 @@ class TestVerdictAgentNodes:
     def sample_state(self):
         """
         Returns a sample State-like dictionary to be used in tests.
-        The structure must match what's expected in the real code.
         """
         return {
             "messages": [],
