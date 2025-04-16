@@ -2,10 +2,15 @@
 Run this script from /tests/langsmith/ to load env variables 
 """
 import argparse
-import importlib
+import os
 import json
 from langsmith import Client
 from dotenv import load_dotenv
+
+"""
+Example usage:
+python setup_langsmith_dataset.py --name <dataset_name> --description <dataset_description> --units <path_to_jsonl_dataset_1> <path_to_jsonl_dataset_2>
+"""
 
 
 def argument_parser():
@@ -30,7 +35,9 @@ def create_dataset(name, description, examples):
     )
     client.create_examples(
         dataset_id=dataset.id,
-        examples=examples
+        inputs=[example['inputs'] for example in examples],
+        outputs=[example['outputs'] for example in examples],
+        metadata=[example['metadata'] for example in examples],
     )
     print(
         f"Dataset {name} (id={dataset.id}) created with {len(examples)} examples")
@@ -49,7 +56,11 @@ def get_examples(paths: list[str]):
 
 def main():
     # Get the LANGCHAIN_API_KEY from the .env file
-    load_dotenv('.env')
+    # Make sure tests/.env variables are set
+    load_dotenv("../.env", override=True)
+    assert "LANGCHAIN_API_KEY" in os.environ, "Please set the LANGCHAIN_API_KEY environment variable"
+    assert os.environ["LANGCHAIN_TRACING_V2"] == "true", "Please set the LANGCHAIN_TRACING_V2 environment variable to true"
+
     args = argument_parser()
 
     # Load examples from JSON, create dataset

@@ -1,0 +1,1161 @@
+[
+  {
+    "inputs": {
+      "claim": "12 multiplied by 10 equals 120"
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "12 * 10"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "A basic arithmetic operation appropriate for the calculator tool."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "If I save $5 a day for a year, I'll have $1,825."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "5 * 365"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "A financial projection that involves multiplication."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The average of 5, 8, and 11 is 8."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "(5 + 8 + 11) / 3"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "An average calculation should be verified by the calculator."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "25% of 80 is 20."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "0.25 * 80"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "A percentage calculation is best checked using the calculator tool."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The square root of 144 is 12."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "(144 ** 0.5)"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Basic square root calculation."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "2 raised to the 10th power is 1024."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "2**10"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Exponential calculation should use the calculator."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "If a video has 2.5 million views and 10% are likes, that's 250,000 likes."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "2.5 * 10**6 * 0.1"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Social media-style percentage-based calculation."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "If 3 tickets cost $75 total, then each ticket is $25."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "3 * 25"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Division to determine unit price."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A 15% tip on a $60 bill is $9."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "0.15 * 60"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Tipping math is simple percentage of a given amount."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A person burning 500 calories per workout, 4 times a week, burns 2000 calories weekly."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "500 * 4"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Basic fitness-related multiplication."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "If I drive 300 miles on 10 gallons of gas, I get 30 miles per gallon."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "300 / 10"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Division-based fuel efficiency calculation."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "40% of 250 is 100."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "0.4 * 250"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Percentage calculation for verification."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "There are 1,440 minutes in a day."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "60 * 24"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Calculated by multiplying 24 hours by 60 minutes."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "7 times 8 is 54."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "7*8"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Incorrect multiplication that the calculator can correct."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "If I make $20/hour and work 40 hours, I earn $800 a week."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "20 * 40"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Hourly wage calculation through multiplication."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A YouTube channel with 50k subscribers gaining 10% growth monthly would have 55k the next month."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "50 * 10**3 * 1.1"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Social media growth projection using percentage math."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "An item originally $120 with a 25% discount now costs $90."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "(1 - 0.25) * 120"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Discount calculation involving percentage and subtraction."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "If a recipe serves 4 and I need it for 6, I should multiply all ingredients by 1.5."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "4 * 1.5"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Ratio and scaling calculation."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "If I sleep 7 hours a night, that's 49 hours a week."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "7 * 7"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Multiplication to total weekly hours."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "My $1,000 investment growing at 5% annually will be worth $1,050 after one year."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "calculator",
+          "args": {
+            "expression": "1000 * 1.05"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "calculator",
+      "type": "Simple interest calculation for one-year growth."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "5G towers are causing birds to drop dead from the sky."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "5G towers are causing birds to drop dead from the sky."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Contemporary technology claims should be verified via web search."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2024 Grammy Awards were held in Los Angeles."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "2024 Grammy Awards"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Less recent events that are matters of public record can be verified via Wikipedia."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "OpenAI released a new GPT model this month."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "OpenAI released a new GPT model this month."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Recent product launches require web lookup."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Manchester United won their last match."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Manchester United won their last match."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Sports results are dynamic and best retrieved via web search."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "There is a major traffic disruption on the I-405 freeway today."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "There is a major traffic disruption on the I-405 freeway today."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Traffic updates are current and change frequently."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The U.S. government is planning to replace the dollar with a digital currency."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "The U.S. government is planning to replace the dollar with a digital currency."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Current events involving government policy should be verified via web search."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Phones continuously record audio even when turned off."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Phones continuously record audio even when turned off."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Contemporary technology claims should be verified via web search."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Bitcoin's value increased by 5% in the last week."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Bitcoin's value increased by 5% in the last week."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Cryptocurrency values change constantly."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Taylor Swift announced new tour dates this week."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Taylor Swift announced new tour dates this week."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Concert tour announcements are current events."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A 6.0 magnitude earthquake struck California this morning."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "A 6.0 magnitude earthquake struck California this morning."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Natural disaster reports require real-time data from the web."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Elon Musk tweeted about AI safety yesterday."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Elon Musk tweeted about AI safety yesterday."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Social media posts are best verified via web search."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Mark Zuckerberg personally reviews all Facebook messages."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Mark Zuckerberg personally reviews all Facebook messages."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Sports schedules for current or upcoming events should use the web."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Gas prices in New York are above $4 per gallon this week."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Gas prices in New York are above $4 per gallon this week."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Gas prices fluctuate and require up-to-date data."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A new law banning single-use plastics just passed in California."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "A new law banning single-use plastics just passed in California."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Recent legislation needs real-time information."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "NASA announced a new moon mission this month."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "NASA announced a new moon mission this month."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Recent space program updates are current events."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The unemployment rate in the U.S. increased last quarter."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "The unemployment rate in the U.S. increased last quarter."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Economic indicators are time-sensitive and updated frequently."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A major cybersecurity breach affected several U.S. banks last week."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "A major cybersecurity breach affected several U.S. banks last week."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Cyber incidents are real-time newsworthy events."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The latest Marvel movie topped the box office this weekend."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "The latest Marvel movie topped the box office this weekend."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Box office results change weekly and require web lookups."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A new COVID-19 variant was detected this week in Europe."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "A new COVID-19 variant was detected this week in Europe."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "Health updates involving disease variants are timely."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Bill Gates owns the patent for COVID-19 vaccines."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Bill Gates owns the patent for COVID-19 vaccines."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "False attribution of vaccine patents; Wikipedia can be used to trace factual patent ownership."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Eiffel Tower is currently being dismantled for renovations."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "The Eiffel Tower is currently being dismantled for renovations."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "web_search",
+      "type": "International event announcements require current information."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The moon landing in 1969 was staged by the U.S. government."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The moon landing in 1969 was staged by the U.S. government."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "A common conspiracy theory; Wikipedia can verify the historical accuracy of the moon landing."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Vaccines cause autism in children."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Vaccines cause autism in children."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "A widely debunked myth that can be addressed with scientific consensus from Wikipedia."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "5G technology is responsible for the spread of COVID-19."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "5G technology"
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Does 5G technology spread of COVID-19"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "False claim mixing science and public health; Wikipedia is appropriate for understanding 5G, web_search for current events."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Climate change is primarily caused by human activities such as burning fossil fuels."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Climate change is primarily caused by human activities such as burning fossil fuels."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "A scientifically supported statement; Wikipedia explains the current consensus."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Holocaust never happened."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The Holocaust never happened."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Holocaust denial is false and can be addressed with historical facts from Wikipedia."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Great Wall of China is visible from space with the naked eye."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The Great Wall of China is visible from space with the naked eye."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "A widely believed myth that Wikipedia can clarify as false."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Dinosaurs and humans coexisted on Earth."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Dinosaurs and humans coexisted on Earth."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "False claim that contradicts paleontological evidence; best resolved with Wikipedia."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Earth revolves around the Sun once every 365.25 days."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The Earth revolves around the Sun once every 365.25 days."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Scientific fact; Wikipedia is suitable for confirming celestial mechanics."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The pyramids of Egypt were built by aliens."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The pyramids of Egypt were built by aliens."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Conspiracy theory about ancient history; Wikipedia provides archaeological evidence."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The COVID-19 virus originated in a Chinese lab "
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "COVID-19 origins"
+          }
+        },
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Where did the COVID-19 virus originate"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "A highly controversial and often politicized claim; Wikipedia can provide balanced context and web search can offer current news."
+    }
+  },
+
+  {
+    "inputs": {
+      "claim": "The U.S. Civil War was primarily fought over states' rights, not slavery."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The U.S. Civil War was primarily fought over states' rights, not slavery."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "A revisionist claim that Wikipedia addresses with mainstream historical consensus."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The polio vaccine eradicated polio in most parts of the world."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The polio vaccine eradicated polio in most parts of the world."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Supported public health claim; Wikipedia has verified historical data."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Walt Disney was cryogenically frozen after his death."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "web_search",
+          "args": {
+            "expression": "Walt Disney was cryogenically frozen after his death."
+          }
+        },
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Walt Disney"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Urban legend; Wikipedia provides factual information about his death. Web search may provide more specialized information."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Flat Earth theory is supported by modern science."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The Flat Earth theory is supported by modern science."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Scientific misinformation; Wikipedia can clearly disprove this claim."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Marie Antoinette said, 'Let them eat cake.'"
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Marie Antoinette said, 'Let them eat cake.'"
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Misattributed historical quote; Wikipedia can clarify its origins and accuracy."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Christopher Columbus discovered America in 1492."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Christopher Columbus discovered America in 1492."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "True in a limited Eurocentric context; Wikipedia provides nuance."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Albert Einstein failed math as a student."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Albert Einstein failed math as a student."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Popular myth; Wikipedia offers accurate biographical information."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Spanish flu pandemic killed more people than World War I."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "The Spanish flu pandemic killed more people than World War I."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Historically accurate claim; Wikipedia can verify statistics."
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Napoleon Bonaparte was extremely short for his time."
+    },
+    "outputs": {
+      "evidence": [
+        {
+          "name": "wikipedia",
+          "args": {
+            "expression": "Napoleon Bonaparte was extremely short for his time."
+          }
+        }
+      ]
+    },
+    "metadata": {
+      "tool": "wikipedia",
+      "type": "Common misconception; Wikipedia clarifies historical context and measurements."
+    }
+  }
+]
