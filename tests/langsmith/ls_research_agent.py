@@ -28,8 +28,10 @@ def target_function(initial_state):
 
     # Instantiate the research agent
     from core.agents.research_agent import create_agent
-    agent = create_agent(model=model, builtin_tools=[
-                         'calculator', 'wikipedia', 'web_search', 'wolframalpha'])
+    agent = create_agent(model=model,
+                         builtin_tools=['calculator', 'wikipedia',
+                                        'web_search', 'wolframalpha']
+                         )
     results = agent.invoke(initial_state)
     return results['evidence']
 
