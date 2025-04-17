@@ -12,13 +12,11 @@ from core.agents.utils.common_types import Evidence
 # Absolute path to this dir. For relative paths like prompts
 DIR = Path(__file__).parent.resolve()
 
-
-# MODEL = "mistral-nemo"
-# TEMPERATURE = 0
 load_dotenv(DIR.parent / ".env", override=True)
 assert "REASONING_AGENT_MODEL" in os.environ, "Please set the REASONING_AGENT_MODEL environment variable"
 
 
+# Define agent state & LLM
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
@@ -44,13 +42,10 @@ LLM_OUTPUT_FORMAT = {
 llm = get_chat_model(model_name=os.getenv(
     "REASONING_AGENT_MODEL"), format_output=LLM_OUTPUT_FORMAT)
 
-"""
-Define agent
-"""
 with open(DIR / "prompts/reasoning_agent_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 
-
+# Define agent graph nodes
 def preprocessing(state: State) -> State:
     """
     Formats the system prompt template with the evidence, then supplies the claim
@@ -76,7 +71,7 @@ def assistant(state: State) -> State:
 
 
 def postprocessing(state: State) -> State:
-
+    # TODO: reimplement in Pydantic/Langchain
     reasoning = state['messages'][-1].content
 
     try:
@@ -91,9 +86,7 @@ def postprocessing(state: State) -> State:
     return {"label": label, "justification": justification}
 
 
-"""
-Build the graph
-"""
+# Build the graph
 builder = StateGraph(State)
 builder.add_node("preprocessing", preprocessing)
 builder.add_node("assistant", assistant)
