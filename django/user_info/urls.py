@@ -3,6 +3,7 @@ from .views import register, signin, home, search, logout_view, forgot_password_
 from .views import tool_list, tool_create, tool_edit, tool_delete
 from .views import get_api_key, apikey_list, apikey_create, apikey_delete
 from .views import shared_search_result, save_shared_result, history
+from .views import verify_email, reset_password_view
 
 urlpatterns = [
     path('', home, name='home'),
@@ -30,4 +31,10 @@ urlpatterns = [
     
     # Shared search results
     path('search/<uuid:result_id>/', shared_search_result, name='shared_search_result'),
+    
+    # Email verification
+    path('verify-email/<uuid:token>/', verify_email, name='verify_email'),
+    
+    # Password reset
+    path('reset-password/<uuid:token>/', reset_password_view, name='reset_password'),
 ]
