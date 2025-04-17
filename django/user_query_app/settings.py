@@ -135,3 +135,65 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # API URL for FastAPI service
 API_URL = os.getenv("API_URL", "http://localhost:8001")
+
+# Email settings
+# If EMAIL_HOST is not set, use console backend for development
+if os.getenv('EMAIL_HOST'):
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+    # If port is 465, use SSL instead of TLS
+    if EMAIL_PORT == 465:
+        EMAIL_USE_SSL = True
+        EMAIL_USE_TLS = False
+    else:
+        EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+        EMAIL_USE_SSL = False
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'support@ashasoftware.com')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+else:
+    # Use console backend for development - prints emails to console
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    
+DEFAULT_FROM_EMAIL = 'support@ashasoftware.com'
+
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'django.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'user_info': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}
