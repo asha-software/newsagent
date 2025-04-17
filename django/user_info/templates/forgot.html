@@ -14,7 +14,7 @@
 <body>
     <div class="form-body">
         <div class="website-logo">
-            <a href="index.html">
+            <a href="{% url 'home' %}">
                 <div class="logo">
                     <img class="logo-size" src="{% static 'images/logo-light.svg' %}" alt="">
                 </div>
@@ -32,7 +32,18 @@
                     <div class="form-items">
                         <h3>Password Reset</h3>
                         <p>To reset your password, enter the username you use to sign in to AshaSoftware</p>
-                        <form>
+                        <form action="{% url 'forgot' %}" method="POST">
+                            {% csrf_token %}
+                            {% if error %}
+                            <div class="alert alert-danger">
+                                {{ error }}
+                            </div>
+                            {% endif %}
+                            {% if success %}
+                            <div class="alert alert-success">
+                                {{ success }}
+                            </div>
+                            {% endif %}
                             <input class="form-control" type="text" name="username" placeholder="Username" required>
                             <div class="form-button full-width">
                                 <button id="submit" type="submit" class="ibtn btn-forget">Send Reset Link</button>

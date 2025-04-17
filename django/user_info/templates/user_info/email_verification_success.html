@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asha Software | Register</title>
+    <title>Asha Software | Email Verification</title>
     {% load static %}
     <!-- Load CSS files -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
@@ -30,30 +30,31 @@
             <div class="form-holder">
                 <div class="form-content">
                     <div class="form-items">
-                        <h3>Fact Verification System</h3>
-                        <p>Register to leverage AI to uncover the truth in digital media</p>
-                        <div class="page-links">
-                            <a href="{% url 'signin' %}">Login</a><a href="{% url 'signup' %}" class="active">Register</a>
-                        </div>
-                        <form action="{% url 'signup' %}" method="POST">
-                            {% csrf_token %}
-                            {% if error %}
-                            <div class="alert alert-danger">
-                                {{ error }}
-                            </div>
-                            {% endif %}
-                            {% if success %}
+                        <h3>Email Verification</h3>
+                        {% if success %}
                             <div class="alert alert-success">
-                                {{ success }}
+                                <p>Your email has been successfully verified!</p>
+                                {% if auto_login %}
+                                    <p>Your account is now active and you have been automatically logged in.</p>
+                                {% else %}
+                                    <p>Your account is now active. You can now sign in to your account.</p>
+                                {% endif %}
                             </div>
-                            {% endif %}
-                            <input class="form-control" type="text" name="user_name" placeholder="Username" required>
-                            <input class="form-control" type="email" name="email" placeholder="E-mail Address" required>
-                            <input class="form-control" type="password" name="password" placeholder="Password" required>
                             <div class="form-button">
-                                <button id="submit" type="submit" class="ibtn">Register</button>
+                                {% if auto_login %}
+                                    <a href="{% url 'search' %}" class="ibtn">Go to Dashboard</a>
+                                {% else %}
+                                    <a href="{% url 'signin' %}" class="ibtn">Sign In</a>
+                                {% endif %}
                             </div>
-                        </form>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <p>{{ error_message }}</p>
+                            </div>
+                            <div class="form-button">
+                                <a href="{% url 'home' %}" class="ibtn">Back to Home</a>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
