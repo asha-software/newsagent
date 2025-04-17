@@ -73,6 +73,8 @@
           </fieldset>
         </form>
         
+        <div id="error-message" style="color: red; display: none; margin-top: 10px;"></div>
+        
         <div class="search-results">
           <div id="loading" class="loading" style="display: none;">
             <p style="color: white;">Analyzing your query...</p>
@@ -110,6 +112,28 @@
     const YES_ICON_URL = "{% static 'images/yes.png' %}";
     const NO_ICON_URL = "{% static 'images/no.png' %}";
     const HAS_CACHED_RESULT = "{% if has_cached_result %}true{% else %}false{% endif %}";
+  </script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const searchForm = document.getElementById('search-form');
+      const searchInput = document.getElementById('search');
+      const errorMessage = document.getElementById('error-message');
+
+      searchForm.addEventListener('submit', function (event) {
+        const queryText = searchInput.value.trim();
+
+        // Clear any previous error message
+        errorMessage.style.display = 'none';
+        errorMessage.textContent = '';
+
+        // Check if the input text exceeds 3500 characters
+        if (queryText.length > 3500) {
+          event.preventDefault(); // Prevent form submission
+          errorMessage.textContent = 'Input text exceeds the maximum allowed length of 3500 characters.';
+          errorMessage.style.display = 'block';
+        }
+      });
+    });
   </script>
   <script src="{% static 'js/search-results.js' %}"></script>
 </body>
