@@ -71,11 +71,12 @@ def send_password_reset_email(user, reset_token, request):
     Returns:
         bool: True if the email was sent successfully, False otherwise
     """
+
     # Check if email verification is enabled
     if not settings.EMAIL_VERIFICATION_ENABLED:
         # If email verification is disabled, just return True without sending email
         return True
-        
+
     try:
         # Get the domain from the request
         domain = request.get_host()
@@ -121,11 +122,11 @@ def send_verification_email(user_or_pending, verification_token, request):
     Returns:
         bool: True if the email was sent successfully, False otherwise
     """
+
     # Check if email verification is enabled
     if not settings.EMAIL_VERIFICATION_ENABLED:
         # If email verification is disabled, just return True without sending email
         return True
-        
     try:
         # Get the domain from the request
         domain = request.get_host()
@@ -153,7 +154,7 @@ def send_verification_email(user_or_pending, verification_token, request):
             'expiry_hours': 24,  # Token expires after 24 hours
         })
         plain_message = strip_tags(html_message)
-        
+
         # Send the email
         send_mail(
             subject=subject,

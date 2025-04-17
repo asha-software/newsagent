@@ -250,7 +250,7 @@ def verify_email(request, token):
             )
             user.is_active = True  # Activate the user immediately
             user.save()
-            
+           
             # Create a default API key for the user
             default_api_key = APIKey(user=user, name="Default API Key")
             default_api_key.save()
@@ -267,8 +267,6 @@ def verify_email(request, token):
                 'auto_login': True
             })
         except Exception as e:
-            # Handle the error
-            
             return render(request, 'user_info/email_verification_success.html', {
                 'success': False,
                 'error_message': f'Error creating your account. Please contact support.'
@@ -302,7 +300,6 @@ def verify_email(request, token):
             if not APIKey.objects.filter(user=user).exists():
                 default_api_key = APIKey(user=user, name="Default API Key")
                 default_api_key.save()
-            
             # Mark as verified
             verification.is_verified = True
             verification.save()
