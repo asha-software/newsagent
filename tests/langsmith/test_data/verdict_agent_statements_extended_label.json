@@ -1,0 +1,2242 @@
+[
+  {
+    "inputs": {
+      "claims": [
+        "The sun rises in the east"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Observable natural phenomenon"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Observable natural phenomenon"
+    },
+    "metadata": {
+      "category": "general_knowledge"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Pigs can fly naturally"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Defies biological and physical laws"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Defies biological and physical laws"
+    },
+    "metadata": {
+      "category": "absurd_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Aliens visited Earth last year"
+      ],
+      "labels": [
+        "unknown"
+      ],
+      "justifications": [
+        "No verified evidence supports this claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "No verified evidence supports this claim"
+    },
+    "metadata": {
+      "category": "conspiracy_theory"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "A new plant species can cure all viral diseases"
+      ],
+      "labels": [
+        "unproven"
+      ],
+      "justifications": [
+        "No verified clinical trials or peer-reviewed studies available"
+      ]
+    },
+    "outputs": {
+      "final_label": "unproven",
+      "final_justification": "No clinical trials or peer-reviewed studies"
+    },
+    "metadata": {
+      "category": "medical_research"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Einstein said imagination is more important than knowledge"
+      ],
+      "labels": [
+        "out of context"
+      ],
+      "justifications": [
+        "Quoted without full context of scientific discussion"
+      ]
+    },
+    "outputs": {
+      "final_label": "out of context",
+      "final_justification": "Quoted without full context of scientific discussion"
+    },
+    "metadata": {
+      "category": "misused_quote"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Pluto is the ninth planet"
+      ],
+      "labels": [
+        "outdated"
+      ],
+      "justifications": [
+        "Pluto was reclassified as a dwarf planet in 2006"
+      ]
+    },
+    "outputs": {
+      "final_label": "outdated",
+      "final_justification": "Pluto was reclassified as a dwarf planet in 2006"
+    },
+    "metadata": {
+      "category": "astronomy"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Politician proposes to replace taxes with hugs"
+      ],
+      "labels": [
+        "satire"
+      ],
+      "justifications": [
+        "Claim originates from a satirical news source"
+      ]
+    },
+    "outputs": {
+      "final_label": "satire",
+      "final_justification": "Claim originates from a satirical news source"
+    },
+    "metadata": {
+      "category": "satirical_news"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The weather is always hot in the Sahara"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Often true but can be cold at night and during winter"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Mostly true but can be cold at night and during winter"
+    },
+    "metadata": {
+      "category": "climate_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Vaccines prevent disease and sometimes cause mild side effects"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Accurate but side effects are typically minimal"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly true",
+      "final_justification": "Accurate but side effects are typically minimal"
+    },
+    "metadata": {
+      "category": "health_info"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Drinking bleach kills viruses and is a recommended cure"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "False and dangerous, though bleach can kill viruses on surfaces"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "False and dangerous, though bleach can kill viruses on surfaces"
+    },
+    "metadata": {
+      "category": "dangerous_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Water freezes at 0 degree",
+        "Cats have wings"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Scientific consensus",
+        "False biological claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are mixed with one being true and another false, leading to final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Dinosaurs are alive today",
+        "The Earth is flat"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Verified observations that dinosaurs not living anymore",
+        "Contradicted by space and geological data"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are mixed with one being false and another false, leading to final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There is life on Mars",
+        "Bigfoot lives in Canada"
+      ],
+      "labels": [
+        "unknown",
+        "false"
+      ],
+      "justifications": [
+        "Evidence inconclusive from space missions",
+        "Myth based claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are mixed with one being unknown and another false, leading to final label 'unknown'."
+    },
+    "metadata": {
+      "category": "false"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Coconut oil cures diabetes",
+        "Exercise improves memory"
+      ],
+      "labels": [
+        "unproven",
+        "true"
+      ],
+      "justifications": [
+        "No scientific proof for the cure",
+        "Proven benefit by cognitive studies"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "The claims are mixed with one being unproven and another true, leading to final label 'true'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Bill Gates said vaccines are for depopulation",
+        "Vaccines reduce disease spread"
+      ],
+      "labels": [
+        "out of context",
+        "true"
+      ],
+      "justifications": [
+        "Statement misrepresented and removed from original context",
+        "Proven by public health data"
+      ]
+    },
+    "outputs": {
+      "final_label": "out of context",
+      "final_justification": "The claims are mixed with one being out of context and another true, leading to final label 'out of context'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Smoking is healthy",
+        "Smoking causes cancer"
+      ],
+      "labels": [
+        "outdated",
+        "true"
+      ],
+      "justifications": [
+        "Belief from early 20th century advertising",
+        "Established medical fact"
+      ]
+    },
+    "outputs": {
+      "final_label": "outdated",
+      "final_justification": "The claims are mixed with one being outdated and another true, leading to final label 'outdated'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "NASA to replace astronauts with hamsters",
+        "Moon is made of cheese"
+      ],
+      "labels": [
+        "satire",
+        "false"
+      ],
+      "justifications": [
+        "Satirical article from known humor site",
+        "Debunked myth"
+      ]
+    },
+    "outputs": {
+      "final_label": "satire",
+      "final_justification": "The claims are mixed with one being satire and another false, leading to final label 'satire'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Coffee improves alertness",
+        "Coffee causes immediate death"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Caffeine increases alertness",
+        "No evidence of instant death from normal consumption"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are mixed with one being true and another false, leading to final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Vaccines are effective",
+        "Some vaccines have side effects"
+      ],
+      "labels": [
+        "true",
+        "true"
+      ],
+      "justifications": [
+        "Supported by health organizations",
+        "Side effects well documented for some vaccines"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "The claims are both true, leading to final label 'true'."
+    },
+    "metadata": {
+      "category": "medical"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Drinking silver water heals all diseases",
+        "Silver is used in some wound dressings"
+      ],
+      "labels": [
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Contradicted by scientific evidences",
+        "Proven it is used by some African Tribes"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are mixed with one being false and another true, leading to final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Earth revolves around the Sun",
+        "Dinosaurs are alive today",
+        "Aliens control the government"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "unknown"
+      ],
+      "justifications": [
+        "Confirmed by astronomical observations",
+        "Proven by scientific evidence",
+        "No credible evidence supports this claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The combination of labels leads to the 'unknown' conclusion."
+    },
+    "metadata": {
+      "category": "science_myths"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Organic food is healthier",
+        "GMOs are safe to eat",
+        "Chocolate causes hallucinations"
+      ],
+      "labels": [
+        "unproven",
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Evidence is not conclusive",
+        "Scientific consensus supports safety of GMOs",
+        "scientific backing refuting hallucinations from chocolate"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The combination of labels leads to the 'mixed' conclusion."
+    },
+    "metadata": {
+      "category": "food_health"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Politician claims to end taxes",
+        "Government announces free energy",
+        "Unicorns found in Scotland"
+      ],
+      "labels": [
+        "satire",
+        "out of context",
+        "false"
+      ],
+      "justifications": [
+        "Source is a satirical news site",
+        "Misleading headline not reflecting the full context",
+        "Scientific Evidence of unicorns not existing"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The combination of labels leads to the 'false' conclusion."
+    },
+    "metadata": {
+      "category": "bizarre_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Eating carrots improves vision",
+        "Vaccines contain microchips",
+        "COVID-19 is caused by 5G"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Beta-carotene helps maintain eye health",
+        "No physical space in vaccines for chips",
+        "Virus spread not linked to mobile networks"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly false",
+      "final_justification": "The combination of labels with a majority of false claims lead to the 'mostly false' conclusion."
+    },
+    "metadata": {
+      "category": "health_misinfo"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Exercise helps mental health",
+        "Taking long walks boosts creativity",
+        "Sugar causes hyperactivity in all children"
+      ],
+      "labels": [
+        "true",
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Supported by many psychological studies",
+        "Backed by anecdotal and some empirical evidence",
+        "Scientific studies refute this common belief"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly true",
+      "final_justification": "The combination of labels leads to the 'mostly true' conclusion."
+    },
+    "metadata": {
+      "category": "health_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Humans need oxygen to survive"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Basic biological requirement supported by medical science"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Basic biological requirement supported by medical science"
+    },
+    "metadata": {
+      "category": "biology_basics"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Eiffel Tower is in Rome"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "It is located in Paris, France"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "It is located in Paris, France"
+    },
+    "metadata": {
+      "category": "geography_error"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There are pyramids on the moon"
+      ],
+      "labels": [
+        "unknown"
+      ],
+      "justifications": [
+        "No verified evidence or imagery confirms this"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "No verified evidence or imagery confirms this"
+    },
+    "metadata": {
+      "category": "space_mystery"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Drinking seawater cures depression"
+      ],
+      "labels": [
+        "unproven"
+      ],
+      "justifications": [
+        "Lacks scientific evidence or clinical studies"
+      ]
+    },
+    "outputs": {
+      "final_label": "unproven",
+      "final_justification": "Lacks scientific evidence or clinical studies"
+    },
+    "metadata": {
+      "category": "mental_health_myths"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Newton said 'I can calculate the motion of heavenly bodies, but not the madness of people'"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Quoted without historical or contextual accuracy"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Quoted without historical or contextual accuracy"
+    },
+    "metadata": {
+      "category": "historical_quotes"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Earth is the center of the universe"
+      ],
+      "labels": [
+        "outdated"
+      ],
+      "justifications": [
+        "Disproved by heliocentric models centuries ago"
+      ]
+    },
+    "outputs": {
+      "final_label": "outdated",
+      "final_justification": "Disproved by heliocentric models centuries ago"
+    },
+    "metadata": {
+      "category": "historical_science"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Aliens run the U.S. Senate according to new bill"
+      ],
+      "labels": [
+        "satire"
+      ],
+      "justifications": [
+        "Published by a known satirical outlet"
+      ]
+    },
+    "outputs": {
+      "final_label": "satire",
+      "final_justification": "Published by a known satirical outlet"
+    },
+    "metadata": {
+      "category": "political_satire"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Some sharks are dangerous, but many are harmless"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Proven by observations"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Proven by observations"
+    },
+    "metadata": {
+      "category": "animal_behavior"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Solar panels generate clean energy but are costly"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Clean energy confirmed; cost factor depends on region"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Clean energy confirmed; cost factor depends on region"
+    },
+    "metadata": {
+      "category": "energy_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Electric cars always cause more pollution than gas cars"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Battery production pollutes, but overall emissions are lower"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Battery production pollutes, but overall emissions are lower"
+    },
+    "metadata": {
+      "category": "transportation_myths"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Fire needs oxygen to burn",
+        "Bananas grow on trees"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Scientific principle",
+        "Botanically, bananas grow on large herbs, not trees"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are a mix, resulting in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The moon is made of cheese",
+        "Mount Everest is underwater"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Debunked myth",
+        "Geographically incorrect"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are both false, resulting in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There is a lost city under Antarctica",
+        "Unicorn fossils were discovered in Siberia"
+      ],
+      "labels": [
+        "unknown",
+        "false"
+      ],
+      "justifications": [
+        "No verifiable evidence exists",
+        "Fabricated claim with no scientific basis"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are a mix, resulting in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Meditation can cure all diseases",
+        "Sleep is essential for health"
+      ],
+      "labels": [
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Some diseases cannot be cured by medication",
+        "Widely supported by research"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are a mix, resulting in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Churchill said democracy is the worst form of government",
+        "Democracy increases inequality"
+      ],
+      "labels": [
+        "out of context",
+        "false"
+      ],
+      "justifications": [
+        "Often quoted without full context of speech",
+        "Evidence contredict this fact"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are a mix, resulting in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Bloodletting cures fever",
+        "Hydration helps reduce fever"
+      ],
+      "labels": [
+        "outdated",
+        "true"
+      ],
+      "justifications": [
+        "Outdated medical practice",
+        "Supported by modern medicine"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are a mix, resulting in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "New law requires citizens to speak only in rhymes",
+        "Cats given voting rights in local election"
+      ],
+      "labels": [
+        "satire",
+        "false"
+      ],
+      "justifications": [
+        "Clearly satirical proposal",
+        "Fabricated hoax"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are a mix, resulting in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Lightning never strikes twice",
+        "Lightning can strike the same place multiple times"
+      ],
+      "labels": [
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Old saying, not factually accurate",
+        "Confirmed by meteorologists"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are a mix, resulting in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Green tea boosts metabolism",
+        "Green tea cures cancer"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Backed by nutritional studies",
+        "Exaggerated health claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are a mix, resulting in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Wearing crystals balances body energy",
+        "Some crystals have natural radiation"
+      ],
+      "labels": [
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Evidence contredict this fact",
+        "Minor radioactive elements like zircon exist"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are a mix, resulting in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Snakes are cold-blooded",
+        "Snakes eat plants",
+        "Snakes live in trees"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Confirmed by biological studies",
+        "Contrary to carnivorous behavior of snakes",
+        "Some species are arboreal"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly true",
+      "final_justification": "The combination of labels justifies the overall label: 'mostly true'."
+    },
+    "metadata": {
+      "category": "animal_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Wearing copper bracelets cures arthritis",
+        "Some patients report feeling better",
+        "Scientific evidence is inconclusive"
+      ],
+      "labels": [
+        "false",
+        "true",
+        "unknown"
+      ],
+      "justifications": [
+        "Evidence contredict this fact",
+        "Anecdotal reports exist to support this claim",
+        "Lack of robust studies"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The combination of labels justifies the overall label: 'mixed'."
+    },
+    "metadata": {
+      "category": "medical_alternatives"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The stock market is always predictable",
+        "Investing in index funds can reduce risk",
+        "Government manipulates all financial data"
+      ],
+      "labels": [
+        "false",
+        "true",
+        "unproven"
+      ],
+      "justifications": [
+        "Markets fluctuate unpredictably",
+        "Well-supported by financial studies",
+        "No solid evidence of systematic manipulation"
+      ]
+    },
+    "outputs": {
+      "final_label": "unproven",
+      "final_justification": "The combination of labels justifies the overall label: 'unproven'."
+    },
+    "metadata": {
+      "category": "financial_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Elvis is still alive",
+        "Aliens built the pyramids",
+        "Vaccines save lives"
+      ],
+      "labels": [
+        "false",
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Evidence contredict this fact as he died in 1977",
+        "Egyptological consensus contradicts this claim",
+        "Supported by health data"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly false",
+      "final_justification": "The combination of labels justifies the overall label: 'mostly false'."
+    },
+    "metadata": {
+      "category": "conspiracy_blend"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Reading improves vocabulary",
+        "All books are educational",
+        "Speed reading guarantees knowledge"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Proven by linguistic studies",
+        "Some books contain misinformation",
+        "Speed reading may reduce comprehension"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly false",
+      "final_justification": "The combination of labels justifies the overall label: 'mostly false'."
+    },
+    "metadata": {
+      "category": "education_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Water is composed of hydrogen and oxygen"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Supported by chemical formula H2O"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Supported by chemical formula H2O"
+    },
+    "metadata": {
+      "category": "chemistry_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The human heart is located in the right side of the chest"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Anatomically incorrect, it is left-centered"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Anatomically incorrect, it is left-centered"
+    },
+    "metadata": {
+      "category": "anatomy_error"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Atlantis existed as a real city"
+      ],
+      "labels": [
+        "unknown"
+      ],
+      "justifications": [
+        "No archaeological evidence confirms its existence"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "No archaeological evidence confirms its existence"
+    },
+    "metadata": {
+      "category": "mythical_places"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Listening to Mozart raises IQ permanently"
+      ],
+      "labels": [
+        "unproven"
+      ],
+      "justifications": [
+        "Popular claim not verified by scientific studies"
+      ]
+    },
+    "outputs": {
+      "final_label": "unproven",
+      "final_justification": "Popular claim not verified by scientific studies"
+    },
+    "metadata": {
+      "category": "brain_myths"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Darwin said 'only the strong survive'"
+      ],
+      "labels": [
+        "out of context"
+      ],
+      "justifications": [
+        "Misattributed and oversimplifies his theory"
+      ]
+    },
+    "outputs": {
+      "final_label": "out of context",
+      "final_justification": "Misattributed and oversimplifies his theory"
+    },
+    "metadata": {
+      "category": "misinterpreted_quotes"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Leeches cure most illnesses"
+      ],
+      "labels": [
+        "outdated"
+      ],
+      "justifications": [
+        "Medical practice replaced by modern treatments"
+      ]
+    },
+    "outputs": {
+      "final_label": "outdated",
+      "final_justification": "Medical practice replaced by modern treatments"
+    },
+    "metadata": {
+      "category": "obsolete_medicine"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Study shows pigeons earning university degrees"
+      ],
+      "labels": [
+        "satire"
+      ],
+      "justifications": [
+        "From a parody news article"
+      ]
+    },
+    "outputs": {
+      "final_label": "satire",
+      "final_justification": "From a parody news article"
+    },
+    "metadata": {
+      "category": "education_satire"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Apples are healthy, but can cause allergies"
+      ],
+      "labels": [
+        "mixed"
+      ],
+      "justifications": [
+        "True for many, but some allergic reactions exist"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "True for many, but some allergic reactions exist"
+    },
+    "metadata": {
+      "category": "nutrition_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Electric bikes are eco-friendly but require charging"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Saves emissions, but depends on electricity source"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Saves emissions, but depends on electricity source"
+    },
+    "metadata": {
+      "category": "green_tech"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "All supplements are effective and safe"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Some may help, but many lack regulation or efficacy"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Some may help, but many lack regulation or efficacy"
+    },
+    "metadata": {
+      "category": "health_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Carbon dioxide is a greenhouse gas",
+        "Humans can photosynthesize"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Proven contributor to climate change",
+        "Biologically impossible"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The mix of inputs supports the 'mixed' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The sun sets in the north",
+        "The Amazon River is in Europe"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Inaccurate direction",
+        "Wrong continent"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The mix of inputs supports the 'false' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There is a civilization inside the Earth",
+        "Dinosaurs still roam remote jungles"
+      ],
+      "labels": [
+        "unknown",
+        "false"
+      ],
+      "justifications": [
+        "No scientific basis",
+        "No credible reports"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The mix of inputs supports the 'false' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Drinking lemon water daily prevents cancer",
+        "Vaccines contain preservatives"
+      ],
+      "labels": [
+        "unproven",
+        "true"
+      ],
+      "justifications": [
+        "Claim lacks verified research",
+        "Fact supported by vaccine ingredient lists"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "The mix of inputs supports the 'true' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Gandhi said 'an eye for an eye makes the whole world blind'",
+        "Gandhi supported wars"
+      ],
+      "labels": [
+        "out of context",
+        "false"
+      ],
+      "justifications": [
+        "Quote origin debated and context often missed",
+        "Contradicted by his non-violence stance"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The mix of inputs supports the 'false' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Earth is flat according to medieval maps",
+        "Earth observed as round from space"
+      ],
+      "labels": [
+        "outdated",
+        "true"
+      ],
+      "justifications": [
+        "Historical belief from old maps",
+        "Confirmed by satellite imagery"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "The mix of verifiable inputs supports the 'true' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Government bans thinking on weekends",
+        "Dogs appointed as mayors in 3 cities"
+      ],
+      "labels": [
+        "satire",
+        "false"
+      ],
+      "justifications": [
+        "Clearly satirical source",
+        "Fabricated news item"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The mix of verifiable inputs supports the 'false' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Exercise helps with depression",
+        "Exercise cures depression"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Backed by research",
+        "Cure claim is exaggerated"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The mix of inputs supports the 'mixed' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Solar panels save money",
+        "Solar panels are always cheap"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Long-term savings supported",
+        "Initial costs vary greatly"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The mix of inputs supports the 'mixed' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Antibiotics kill viruses",
+        "Antibiotics have side effects"
+      ],
+      "labels": [
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Ineffective against viruses",
+        "Known and documented in medical literature"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The mix of inputs supports the 'mixed' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Whales are mammals",
+        "Whales breathe underwater",
+        "Whales give live birth"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Confirmed by biological classification",
+        "Whales surface to breathe air",
+        "True of all mammals including whales"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly true",
+      "final_justification": "The combination of claim labels leads to the final label 'mostly true'."
+    },
+    "metadata": {
+      "category": "marine_biology"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Aliens abducted my neighbor",
+        "The Earth is hollow",
+        "Gravity does not exist"
+      ],
+      "labels": [
+        "unknown",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "No verifiable source or witness accounts",
+        "Contradicted by geology",
+        "Well-established scientific law"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The combination of claim labels leads to the final label 'false'."
+    },
+    "metadata": {
+      "category": "fringe_beliefs"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Vaccines work",
+        "Vaccines cause autism",
+        "Bill Gates controls global health policy secretly"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "unproven"
+      ],
+      "justifications": [
+        "Proven by scientific studies",
+        "Debunked by large-scale research",
+        "No verified or documented evidence"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The combination of claim labels leads to the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "vaccine_misinformation"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The sky is blue",
+        "Grass is red",
+        "Fire is cold"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Due to Rayleigh scattering",
+        "Incorrect color classification",
+        "Contradicted by physics"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly false",
+      "final_justification": "The combination of claim labels leads to the final label 'mostly false'."
+    },
+    "metadata": {
+      "category": "basic_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Reading fiction enhances empathy",
+        "Books improve vocabulary",
+        "All books are equally valuable"
+      ],
+      "labels": [
+        "true",
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Supported by psychological studies",
+        "Linguistic studies confirm this",
+        "Depends heavily on content and quality"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly true",
+      "final_justification": "The combination of claim labels leads to the final label 'mostly true'."
+    },
+    "metadata": {
+      "category": "literacy_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The speed of light is approximately 299,792 km/s"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Confirmed by physics and scientific measurements"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Confirmed by physics and scientific measurements"
+    },
+    "metadata": {
+      "category": "physics_constants"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Humans can breathe in space without equipment"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Requires a pressurized suit due to vacuum"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Requires a pressurized suit due to vacuum"
+    },
+    "metadata": {
+      "category": "space_misconceptions"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Loch Ness Monster lives in Scotland"
+      ],
+      "labels": [
+        "unknown"
+      ],
+      "justifications": [
+        "No definitive evidence found"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "No definitive evidence found"
+    },
+    "metadata": {
+      "category": "urban_legends"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Cinnamon can cure diabetes"
+      ],
+      "labels": [
+        "unproven"
+      ],
+      "justifications": [
+        "Preliminary studies exist but not proven as a cure"
+      ]
+    },
+    "outputs": {
+      "final_label": "unproven",
+      "final_justification": "Preliminary studies exist but not proven as a cure"
+    },
+    "metadata": {
+      "category": "dietary_myths"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Tesla said 'anti-social people have higher intelligence'"
+      ],
+      "labels": [
+        "out of context"
+      ],
+      "justifications": [
+        "Often attributed out of historical or documented context"
+      ]
+    },
+    "outputs": {
+      "final_label": "out of context",
+      "final_justification": "Often attributed out of historical or documented context"
+    },
+    "metadata": {
+      "category": "misquoted_inventors"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Washing hands is not necessary for surgery"
+      ],
+      "labels": [
+        "outdated"
+      ],
+      "justifications": [
+        "Obsolete belief before germ theory"
+      ]
+    },
+    "outputs": {
+      "final_label": "outdated",
+      "final_justification": "Obsolete belief before germ theory"
+    },
+    "metadata": {
+      "category": "medical_practices"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Penguins join the navy to patrol the Arctic"
+      ],
+      "labels": [
+        "satire"
+      ],
+      "justifications": [
+        "Published by a known satire outlet"
+      ]
+    },
+    "outputs": {
+      "final_label": "satire",
+      "final_justification": "Published by a known satire outlet"
+    },
+    "metadata": {
+      "category": "military_satire"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Milk is a good source of calcium but causes lactose issues"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "True for some but problematic for others"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "True for some, problematic for others"
+    },
+    "metadata": {
+      "category": "nutrition_mixed"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Electric cars are quiet and eco-friendly"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Mostly true depending on electricity source"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Mostly true depending on electricity source"
+    },
+    "metadata": {
+      "category": "tech_benefits"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "All natural products are safe and effective"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Some are harmful or ineffective despite being 'natural'"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Some are harmful or ineffective despite being 'natural'"
+    },
+    "metadata": {
+      "category": "health_misconceptions"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Sound travels slower than light",
+        "Birds speak fluent English"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Scientific fact",
+        "Anthropomorphic exaggeration"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "Combination of inputs results in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The sun is cold",
+        "Bats are blind and navigate by smell only"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Inaccurate statement",
+        "Bats have eyesight and use echolocation"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Combination of inputs results in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There is a hidden planet beyond Pluto",
+        "Time travel is happening in secret labs"
+      ],
+      "labels": [
+        "unknown",
+        "false"
+      ],
+      "justifications": [
+        "Speculated but not verified",
+        "No credible evidence"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Combination of inputs results in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Drinking aloe vera cures cancer",
+        "Water helps maintain hydration"
+      ],
+      "labels": [
+        "unproven",
+        "true"
+      ],
+      "justifications": [
+        "No sufficient clinical studies",
+        "Common hydration fact"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Combination of inputs results in the final label 'true'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Lincoln said 'I destroy my enemies when I make them my friends'",
+        "Lincoln supported slavery"
+      ],
+      "labels": [
+        "out of context",
+        "false"
+      ],
+      "justifications": [
+        "Misused quote and not in political context",
+        "Contradicted by historical record"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Combination of inputs results in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Blood types must always match for transfusions",
+        "Type O negative is universal donor"
+      ],
+      "labels": [
+        "outdated",
+        "true"
+      ],
+      "justifications": [
+        "Previously believed but now exceptions exist",
+        "Still accurate today"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Combination of inputs results in the final label 'true'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Dogs demand voting rights in new petition",
+        "Chickens apply for driver\u2019s licenses"
+      ],
+      "labels": [
+        "satire",
+        "false"
+      ],
+      "justifications": [
+        "Clearly a fabricated story",
+        "Outrageous and false claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Combination of inputs results in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Global warming is a serious threat",
+        "Climate change is a hoax"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Backed by majority of climate scientists",
+        "Refuted by evidence"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "Combination of inputs results in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Organic farming reduces pesticide use",
+        "Organic food has no pesticides at all"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "True in general, but not completely pesticide-free",
+        "Overstatement"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "Combination of inputs results in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Using magnets can cure pain",
+        "Some magnets are used in devices for medical imaging"
+      ],
+      "labels": [
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "No scientific basis for healing properties",
+        "MRI uses powerful magnets"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "Combination of inputs results in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Vaccines reduce disease spread",
+        "Vaccines make people magnetic",
+        "Vaccines can have side effects"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Supported by epidemiological studies",
+        "No scientific support for magnetism claim",
+        "Mild side effects are documented"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly true",
+      "final_justification": "Given the set of claims and their justifications, the document is classified as 'mostly true'."
+    },
+    "metadata": {
+      "category": "vaccine_discussion"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Area 51 holds alien corpses",
+        "COVID-19 was created as a bioweapon",
+        "NASA faked the Mars rover landing"
+      ],
+      "labels": [
+        "unknown",
+        "unproven",
+        "false"
+      ],
+      "justifications": [
+        "No declassified evidence",
+        "Some theories exist without proof",
+        "Publicly verified mission data"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Given the set of claims and their justifications, the document is classified as 'false'."
+    },
+    "metadata": {
+      "category": "conspiracy_blend"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Sugar causes hyperactivity",
+        "Some kids are sensitive to sugar",
+        "Scientific consensus says otherwise"
+      ],
+      "labels": [
+        "false",
+        "true",
+        "true"
+      ],
+      "justifications": [
+        "Widely refuted myth",
+        "Anecdotal reports of sensitivity",
+        "Multiple controlled studies show no consistent effect"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly true",
+      "final_justification": "Given the set of claims and their justifications, the document is classified as 'mostly true'."
+    },
+    "metadata": {
+      "category": "child_nutrition"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "2+2=5",
+        "The moon is made of rubber",
+        "The sky is green"
+      ],
+      "labels": [
+        "false",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Mathematically incorrect",
+        "No evidence or scientific basis",
+        "Color of sky due to Rayleigh scattering"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Given the set of claims and their justifications, the document is classified as 'false'."
+    },
+    "metadata": {
+      "category": "absurd_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Humans have walked on the moon",
+        "The moon landing was staged",
+        "Moon is made of cheese"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Well-documented NASA mission",
+        "Debunked conspiracy theory",
+        "Childhood myth"
+      ]
+    },
+    "outputs": {
+      "final_label": "mostly false",
+      "final_justification": "Given the set of claims and their justifications, the document is classified as 'mostly false'."
+    },
+    "metadata": {
+      "category": "moon_claims"
+    }
+  }
+]
