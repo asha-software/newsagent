@@ -5,7 +5,7 @@ from langchain_core.tools import tool
 WOLFRAM_APP_ID_NAME = "WOLFRAM_APP_ID"
 
 
-@tool("wolfram_alpha", parse_docstring=True)
+@tool("wolframalpha", parse_docstring=True)
 def tool_function(query_input: str) -> str:
     """
     Queries Wolfram Alpha to ask questions it can answer, returning the best textual result.

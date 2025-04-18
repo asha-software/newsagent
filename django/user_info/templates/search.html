@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="{% static 'css/api-integration.css' %}">
     <link rel="stylesheet" href="{% static 'css/hamburger-menu.css' %}">
     <link rel="stylesheet" href="{% static 'css/search-results.css' %}">
+    <link rel="stylesheet" href="{% static 'css/history.css' %}">
   </head>
   <body>
     <div class="s006">
@@ -30,6 +31,8 @@
         </div>
       </div>
       <div class="menu-items">
+        <a href="{% url 'search' %}">Search</a>
+        <a href="{% url 'history' %}">History</a>
         <a href="{% url 'tool_list' %}">Tools</a>
         <a href="{% url 'apikey_list' %}">API Keys</a>
         <a href="{% url 'logout' %}">Logout</a>
@@ -37,7 +40,7 @@
       </div>
       <div class="menu-overlay"></div>
       <div class="search-container">
-        <form action="{% url 'search' %}" method="POST" data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+        <form id="search-form" action="{% url 'search' %}" method="POST" data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
           {% csrf_token %}
           <fieldset>
             <div class="inner-form">
@@ -53,7 +56,7 @@
             <div class="suggestion-wrap">
               {% for tool in builtin_tools %}
               <label class="suggestion-item">
-                <input type="checkbox" name="source" value="{{ tool.name }}">
+                <input type="checkbox" name="source" value="{{ tool.name }}" checked>
                 <span>{{ tool.display_name }}</span>
               </label>
               {% endfor %}
@@ -65,11 +68,6 @@
                   <span>{{ tool.name }}</span>
                 </label>
                 {% endfor %}
-              {% else %}
-                <label class="suggestion-item">
-                  <input type="checkbox" name="source" value="custom">
-                  <span>Custom</span>
-                </label>
               {% endif %}
             </div>
           </fieldset>
@@ -82,10 +80,8 @@
           </div>
           <div id="results-container" style="display: none;" 
                data-is-shared-view="{% if is_shared_view %}true{% else %}false{% endif %}"
-               {% if shared_result %}
-               data-shared-result="{{ shared_result.result_data }}"
-               data-shared-query="{{ shared_result.query }}"
-               {% endif %}>
+               data-shared-result="{% if shared_result %}{{ shared_result.result_data }}{% endif %}"
+               data-shared-query="{% if shared_result %}{{ shared_result.query }}{% endif %}">
           </div>
           
           {% if user.is_authenticated and not is_shared_view %}
@@ -113,6 +109,7 @@
     const API_URL = '{{ API_URL }}';
     const YES_ICON_URL = "{% static 'images/yes.png' %}";
     const NO_ICON_URL = "{% static 'images/no.png' %}";
+    const HAS_CACHED_RESULT = "{% if has_cached_result %}true{% else %}false{% endif %}";
   </script>
   <script src="{% static 'js/search-results.js' %}"></script>
 </body>

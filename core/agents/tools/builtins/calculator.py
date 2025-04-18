@@ -6,7 +6,7 @@ from langchain_core.tools import tool
 
 @tool("calculator", parse_docstring=True)
 def tool_function(expression: str) -> str:
-    """A calculator tool for evaluating single-line mathematical expressions. Useful for performing quick calculations.
+    """Calculate single-line numeric expressions. Useful for performing quick calculations.
 
     Args:
         expression (str): A valid mathematical expression in string format. Supports basic operators (+, -, *, /),
