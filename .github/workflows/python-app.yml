@@ -53,22 +53,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Install linting dependencies
         run: |
           python -m pip install --upgrade pip
           pip install flake8 black
           pip install -e .
-
-      - name: Run Flake8 and comment on PR
+      - name: Run linter and comment PR
         uses: matias-martini/flake8-pr-comments-action@main
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-
+          github_token: ${{ github.token }}
+          plugins: "pep8-naming flake8-functions"
       - name: Check files with black formatter
         uses: rickstaa/action-black@v1
         id: action_black
