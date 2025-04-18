@@ -7,7 +7,7 @@ on:
     branches: ["main"]
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 jobs:
@@ -73,7 +73,6 @@ jobs:
         id: action_black
         with:
           black_args: "."
-
       - name: Create Pull Request for Formatting
         if: steps.action_black.outputs.is_formatted == 'true'
         uses: peter-evans/create-pull-request@v7
