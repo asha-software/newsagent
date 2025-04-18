@@ -252,17 +252,14 @@ def search(request):
     
     if request.method == 'POST':
         # Get the search query
-        query = request.POST.get('search', '').strip()
-        sources = request.POST.getlist('source')
+        query = request.POST.get('search')
 
         # Check if the query exceeds 3500 characters
         if len(query) > 3500:
-            user_tools = UserTool.objects.filter(user=request.user, is_active=True).order_by('name')
-            builtin_tools = get_builtin_tools()
             return render(request, 'search.html', {
                 'error_message': 'Input text exceeds the maximum allowed length of 3500 characters.',
-                'user_tools': user_tools,
-                'builtin_tools': builtin_tools,
+                'user_tools': [],
+                'builtin_tools': [],
                 'show_results': show_results,
                 'API_URL': settings.API_URL,
                 'has_cached_result': has_cached_result
