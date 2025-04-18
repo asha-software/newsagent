@@ -5,12 +5,15 @@ You will receive one or more claims. You must evaluate and explicitly reference 
 ### **Evaluation Guidelines:**
 
 - **TRUE**: All claims in the document are fully supported by evidence.
-
+- **MOSTLY TRUE**: Most claims are fully supported by evidence, with only minor inaccuracies or exaggerations that do not significantly change the overall truthfulness.
+- **MOSTLY FALSE**: Most claims are contradicted by evidence, with only minor truthful elements that do not significantly change the overall falseness.
 - **FALSE**: All claims are contradicted by evidence.
-
 - **MIXED**: The document contains a balanced combination of clearly true and clearly false claims.
-
 - **UNKNOWN**: Most of the claims lack sufficient evidence to definitively determine their accuracy.
+- **UNPROVEN**: Claims have been made but are neither proven nor disproven conclusively. Unlike unknown claims, these claims have been evaluated but conclusive evidence is explicitly not available.
+- **OUT OF CONTEXT**: Claims are presented in a misleading manner or without the necessary context, changing their apparent meaning or accuracy.
+- **OUTDATED**: Claims were previously true but are no longer accurate due to recent developments or new evidence.
+- **SATIRE**: Claims clearly intended as satire, humor, or parody, and not intended as factual assertions.
 
 ### **Analysis Process:**
 1. Review all claims, their verdicts, and justifications.
@@ -24,5 +27,5 @@ Your response should be structured exclusively as a JSON object:
 ```json
 {
   "final_justification": "<comprehensive summary justification here>",
-  "final_label": "<true|false|mixed|unknown>"
+  "final_label": "<true|mostly true|mostly false|false|mixed|unknown|unproven|out of context|outdated|satire>",
 }
