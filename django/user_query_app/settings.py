@@ -30,7 +30,7 @@ SECRET_KEY = "django-insecure-*^48$l3*)32zqcv&)h+0r*2cnf4u=l#et9sa95c)7txun*+y%p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']  # Allow all hosts in development
+ALLOWED_HOSTS = ["*"]  # Allow all hosts in development
 
 
 # Application definition
@@ -128,7 +128,7 @@ STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "user_info/static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-LOGIN_URL = 'signin'  # Redirect to sign-in page for unauthenticated users
+LOGIN_URL = "signin"  # Redirect to sign-in page for unauthenticated users
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -138,62 +138,62 @@ API_URL = os.getenv("API_URL", "http://localhost:8001")
 
 # Email settings
 # If EMAIL_HOST is not set, use console backend for development
-if os.getenv('EMAIL_HOST'):
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.getenv('EMAIL_HOST')
-    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+if os.getenv("EMAIL_HOST"):
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = os.getenv("EMAIL_HOST")
+    EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
     # If port is 465, use SSL instead of TLS
     if EMAIL_PORT == 465:
         EMAIL_USE_SSL = True
         EMAIL_USE_TLS = False
     else:
-        EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+        EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
         EMAIL_USE_SSL = False
-    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'support@ashasoftware.com')
-    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+    EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "support@ashasoftware.com")
+    EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
 else:
     # Use console backend for development - prints emails to console
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    
-DEFAULT_FROM_EMAIL = 'support@ashasoftware.com'
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+DEFAULT_FROM_EMAIL = "support@ashasoftware.com"
 
 # Logging configuration
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
         },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'django.log'),
-            'formatter': 'verbose',
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
         },
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
-        'user_info': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': True,
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": os.path.join(BASE_DIR, "django.log"),
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+        "user_info": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": True,
         },
     },
 }

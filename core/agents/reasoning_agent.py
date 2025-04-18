@@ -13,7 +13,9 @@ from core.agents.utils.common_types import Evidence
 DIR = Path(__file__).parent.resolve()
 
 load_dotenv(DIR.parent / ".env", override=True)
-assert "REASONING_AGENT_MODEL" in os.environ, "Please set the REASONING_AGENT_MODEL environment variable"
+assert (
+    "REASONING_AGENT_MODEL" in os.environ
+), "Please set the REASONING_AGENT_MODEL environment variable"
 
 
 # Define agent state & LLM
@@ -28,22 +30,19 @@ class State(TypedDict):
 LLM_OUTPUT_FORMAT = {
     "type": "object",
     "properties": {
-        "label": {
-            "type": "string",
-            "enum": ["true", "false", "unknown"]
-        },
-        "justification": {
-            "type": "string"
-        }
+        "label": {"type": "string", "enum": ["true", "false", "unknown"]},
+        "justification": {"type": "string"},
     },
-    "required": ["label", "justification"]
+    "required": ["label", "justification"],
 }
 
-llm = get_chat_model(model_name=os.getenv(
-    "REASONING_AGENT_MODEL"), format_output=LLM_OUTPUT_FORMAT)
+llm = get_chat_model(
+    model_name=os.getenv("REASONING_AGENT_MODEL"), format_output=LLM_OUTPUT_FORMAT
+)
 
 with open(DIR / "prompts/reasoning_agent_system_prompt.txt", "r") as f:
     system_prompt = f.read()
+
 
 # Define agent graph nodes
 def preprocessing(state: State) -> State:
@@ -54,25 +53,25 @@ def preprocessing(state: State) -> State:
     """
     # Format system prmopt template: unwind the evidence list to a bullet list
     evidence_str = "\n".join(
-        [f"* {ev['name']}: {ev['result']}" for ev in state["evidence"]])
+        [f"* {ev['name']}: {ev['result']}" for ev in state["evidence"]]
+    )
     formatted_prompt = system_prompt.format(evidence=evidence_str)
 
     # Set system and human messages in the state
     sys_message = SystemMessage(content=formatted_prompt)
-    claim_message = HumanMessage(content='Claim: ' + state['claim'])
+    claim_message = HumanMessage(content="Claim: " + state["claim"])
 
-    return {'messages': [sys_message, claim_message]}
+    return {"messages": [sys_message, claim_message]}
 
 
 def assistant(state: State) -> State:
-
-    response = llm.invoke(state['messages'])
+    response = llm.invoke(state["messages"])
     return {"messages": response}
 
 
 def postprocessing(state: State) -> State:
     # TODO: reimplement in Pydantic/Langchain
-    reasoning = state['messages'][-1].content
+    reasoning = state["messages"][-1].content
 
     try:
         # Try to parse the reasoning as JSON
@@ -81,8 +80,8 @@ def postprocessing(state: State) -> State:
         print(f"JSONDecodeError: {e}")
         print(f"Reasoning content: {reasoning}")
 
-    label = formatted_reasoning['label']
-    justification = formatted_reasoning['justification']
+    label = formatted_reasoning["label"]
+    justification = formatted_reasoning["justification"]
     return {"label": label, "justification": justification}
 
 
