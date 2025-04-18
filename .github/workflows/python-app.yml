@@ -45,10 +45,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Run linter and comment PR
-        uses: matias-martini/flake8-pr-comments-action@main
-        with:
-          github_token: ${{ github.token }}
+    - name: Run linter and comment PR
+      uses: matias-martini/flake8-pr-comments-action@main
+      with:
+        github_token: ${{ github.token }}
     - uses: actions/checkout@v4
     - name: Check files using the black formatter
       uses: rickstaa/action-black@v1
