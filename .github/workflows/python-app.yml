@@ -28,17 +28,16 @@ jobs:
           coverage run --branch -m pytest
           coverage xml -o coverage.xml
           coverage html
-      - name: Deploy HTML coverage report as GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload HTML coverage report
+        uses: actions/upload-artifact@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./htmlcov
-      - name: Post coverage comment with website link
-        uses: marocchino/sticky-pull-request-comment@v2
+          name: html-coverage-report
+          path: htmlcov/
+      - name: Post coverage comment
+        uses: MishaKav/pytest-coverage-comment@main
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          message: |
-            📊 **Coverage Report:** [View HTML Coverage Report](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/)
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pytest-xml-coverage-path: coverage.xml
 
   lint:
     runs-on: ubuntu-latest
@@ -79,3 +78,4 @@ jobs:
             Related PR: #${{ github.event.pull_request.number }}
           base: ${{ github.head_ref }}
           branch: actions/black
+
