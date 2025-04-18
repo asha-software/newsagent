@@ -188,7 +188,7 @@
     },
     "outputs": {
       "final_label": "false",
-      "final_justification": "Not completly correct as can be cold at night and during winter"
+      "final_justification": "Not completely correct as can be cold at night and during winter"
     },
     "metadata": {
       "category": "climate_facts"
@@ -252,7 +252,7 @@
       ],
       "justifications": [
         "Evidence inconclusive from space missions",
-        "It is proven that Bigfoot is a myth"
+        "There is no scientific evidence supporting Bigfoot’s existence"
       ]
     },
     "outputs": {
@@ -275,7 +275,7 @@
       ],
       "justifications": [
         "Caffeine increases alertness",
-        "Observations clearly refutes this statement"
+        "Observations clearly refute this statement"
       ]
     },
     "outputs": {
@@ -301,7 +301,7 @@
       "justifications": [
         "Confirmed by astronomical observations",
         "Scientifically proven that dinosaurs are not alive anymore",
-        "Satiric claim"
+        "Satirical claim"
       ]
     },
     "outputs": {
@@ -386,7 +386,7 @@
     },
     "outputs": {
       "final_label": "true",
-      "final_justification": "Proven by litterature"
+      "final_justification": "Proven by literature"
     },
     "metadata": {
       "category": "historical_quotes"
@@ -517,7 +517,7 @@
         "false"
       ],
       "justifications": [
-        "Scientific Evidence refute the claim",
+        "Scientific evidence refutes the claim",
         "Verified reports exist",
         "Lack of robust studies"
       ]
@@ -576,7 +576,7 @@
         "Atlantis existed as a real city"
       ],
       "labels": [
-        "unkwnon"
+        "unknown"
       ],
       "justifications": [
         "No archaeological evidence confirms or refutes its existence"
@@ -599,7 +599,7 @@
         "true"
       ],
       "justifications": [
-        "Apple are generally healthy but can cause allergic reactions sometimes"
+        "Apples are generally healthy but can cause allergic reactions sometimes"
       ]
     },
     "outputs": {
@@ -668,7 +668,7 @@
       ],
       "justifications": [
         "Scientific evidence proving it is impossible",
-        "Satiric claim"
+        "Satirical claim"
       ]
     },
     "outputs": {
@@ -710,12 +710,12 @@
         "Gravity does not exist"
       ],
       "labels": [
-        "fasle",
+        "false",
         "false",
         "false"
       ],
       "justifications": [
-        "Satiric claim",
+        "Satirical claim",
         "Contradicted by geology",
         "Well-established scientific law"
       ]
@@ -781,7 +781,7 @@
       ]
     },
     "outputs": {
-      "final_label": "fasle",
+      "final_label": "false",
       "final_justification": "No definitive evidence found"
     },
     "metadata": {
