@@ -253,6 +253,17 @@ def search(request):
     if request.method == 'POST':
         # Get the search query
         query = request.POST.get('search')
+
+        # Check if the query exceeds 3500 characters
+        if len(query) > 3500:
+            return render(request, 'search.html', {
+                'error_message': 'Input text exceeds the maximum allowed length of 3500 characters.',
+                'user_tools': [],
+                'builtin_tools': [],
+                'show_results': show_results,
+                'API_URL': settings.API_URL,
+                'has_cached_result': has_cached_result
+            })
         
         # If any query is submitted, show the results section
         if query:
