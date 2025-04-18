@@ -321,7 +321,6 @@ def test_extract_fields_with_object_attribute():
 
 
 def test_create_tool_with_data_payload(monkeypatch):
-
     class MockResponse:
         def __init__(self):
             self.status_code = 200

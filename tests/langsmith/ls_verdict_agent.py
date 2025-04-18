@@ -23,9 +23,10 @@ if str(project_root) not in sys.path:
 
 
 def argument_parser():
-    parser = argparse.ArgumentParser(description='Evaluate the verdict agent')
-    parser.add_argument('--experiment_prefix', '-p',
-                        type=str, help='Prefix for the experiment name')
+    parser = argparse.ArgumentParser(description="Evaluate the verdict agent")
+    parser.add_argument(
+        "--experiment_prefix", "-p", type=str, help="Prefix for the experiment name"
+    )
     return parser.parse_args()
 
 
@@ -36,11 +37,12 @@ def load_prompt(path):
 
 def target_function(inputs) -> dict:
     from core.agents.verdict_agent import verdict_agent
+
     result = verdict_agent.invoke(inputs)
     return {
         "output": {
             "final_label": result["final_label"],
-            "final_justification": result["final_justification"]
+            "final_justification": result["final_justification"],
         }
     }
 
@@ -51,7 +53,7 @@ def label_match(outputs: dict, reference_outputs: dict) -> dict:
     return {
         "key": "label_match",
         "score": predicted == expected,
-        "comment": f"Expected '{expected}', got '{predicted}'"
+        "comment": f"Expected '{expected}', got '{predicted}'",
     }
 
 
@@ -66,7 +68,7 @@ def justification_coherence(outputs: dict, reference_outputs: dict, example) -> 
         prompt = prompt_template.format(
             predicted_label=predicted_label,
             claim_labels=claim_labels,
-            justification=justification
+            justification=justification,
         )
 
         llm_eval = ChatOllama(
@@ -76,10 +78,10 @@ def justification_coherence(outputs: dict, reference_outputs: dict, example) -> 
                 "type": "object",
                 "properties": {
                     "coherent": {"type": "boolean"},
-                    "reason": {"type": "string"}
+                    "reason": {"type": "string"},
                 },
-                "required": ["coherent", "reason"]
-            }
+                "required": ["coherent", "reason"],
+            },
         )
 
         response = llm_eval.invoke(prompt).content
@@ -88,21 +90,25 @@ def justification_coherence(outputs: dict, reference_outputs: dict, example) -> 
         return {
             "key": "justification_coherence",
             "score": eval_result["coherent"],
-            "comment": eval_result["reason"]
+            "comment": eval_result["reason"],
         }
 
     except Exception as e:
         return {
             "key": "justification_coherence",
             "score": False,
-            "comment": f"Error during evaluation: {e}"
+            "comment": f"Error during evaluation: {e}",
         }
 
 
 def main():
     load_dotenv("../.env", override=True)
-    assert "LANGCHAIN_API_KEY" in os.environ, "Please set LANGCHAIN_API_KEY environment variable"
-    assert os.environ["LANGCHAIN_TRACING_V2"] == "true", "Please set LANGCHAIN_TRACING_V2=true"
+    assert (
+        "LANGCHAIN_API_KEY" in os.environ
+    ), "Please set LANGCHAIN_API_KEY environment variable"
+    assert (
+        os.environ["LANGCHAIN_TRACING_V2"] == "true"
+    ), "Please set LANGCHAIN_TRACING_V2=true"
 
     args = argument_parser()
     ls_client = Client()
@@ -110,7 +116,7 @@ def main():
         target_function,
         data="verdict-eval-v3",
         evaluators=[label_match, justification_coherence],
-        experiment_prefix=args.experiment_prefix
+        experiment_prefix=args.experiment_prefix,
     )
 
 

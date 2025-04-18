@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 
 # Assumes you're running this from tests/ and the .env file with NEWSAGENT_API_KEY is in the root directory
-load_dotenv('../.env', override=True)
+load_dotenv("../.env", override=True)
 
 
 @pytest.fixture
@@ -34,7 +34,9 @@ def test_api_response_structure(api_endpoint, api_key):
     response = requests.post(api_endpoint, json=payload, headers=headers)
 
     # Check response status
-    assert response.status_code == 200, f"API request failed with status {response.status_code}: {response.text}"
+    assert (
+        response.status_code == 200
+    ), f"API request failed with status {response.status_code}: {response.text}"
 
     # Verify response is valid JSON
     try:

@@ -1,6 +1,7 @@
 # Queries Wikipedia
 from langchain_core.tools import tool
 import wikipedia
+
 # from typeguard import check_type
 from core.agents.tools.builtins import tool_registry_globals
 
@@ -8,11 +9,11 @@ from core.agents.tools.builtins import tool_registry_globals
 @tool("wikipedia", parse_docstring=True)
 def tool_function(query_str: str) -> str:
     """
-    Query Wikipedia. Use it to get factual information on: 
+    Query Wikipedia. Use it to get factual information on:
     - historical figures, events, or places
     - scientific concepts
     - common knowledge
-    - debunked myths 
+    - debunked myths
 
     Args:
         query_str (str): The search term to query Wikipedia.
