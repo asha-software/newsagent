@@ -1,46 +1,38 @@
 name: Python application
-
 on:
   push:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-
 permissions:
   contents: write
   pull-requests: write
-
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install -e .
-
       - name: Run tests with coverage
         run: |
           pip install pytest pytest-cov coverage
           coverage run --branch -m pytest
           coverage xml -o coverage.xml
           coverage html
-
       - name: Upload HTML coverage report
         uses: actions/upload-artifact@v4
         with:
           name: html-coverage-report
           path: htmlcov/
-
       - name: Post coverage comment
         uses: MishaKav/pytest-coverage-comment@main
         with:
@@ -52,22 +44,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Set up Python 3.13
         uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-
       - name: Install linting dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 black
+          pip install flake8 black flake8-pytest-style pep8-naming flake8-functions
           pip install -e .
       - name: Run linter and comment PR
         uses: matias-martini/flake8-pr-comments-action@main
         with:
           github_token: ${{ github.token }}
-          plugins: "pep8-naming flake8-functions"
+          plugins: "pep8-naming flake8-functions flake8-pytest-style"
       - name: Check files with black formatter
         uses: rickstaa/action-black@v1
         id: action_black
@@ -81,7 +71,11 @@ jobs:
           title: "Format Python code with psf/black"
           commit-message: ":art: Format Python code with psf/black"
           body: |
-            There appear to be some Python formatting issues in ${{ github.sha }}. 
+            There appear to be some Python formatting issues in commit ${{ github.sha }}.
+
             This pull request fixes these issues using [psf/black](https://github.com/psf/black).
+
+            Related PR: #${{ github.event.pull_request.number }}
           base: ${{ github.head_ref }}
           branch: actions/black
+
