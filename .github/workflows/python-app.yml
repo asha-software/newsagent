@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -29,20 +29,14 @@ jobs:
         pip install flake8 pytest coverage
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install -e .
-    - name: Run linter and comment PR
-      uses: matias-martini/flake8-pr-comments-action@main
-      with:
-          github_token: ${{ github.token }}
     - name: Run tests with coverage
       run: |
         pytest --cov=your_package --cov-report=term --cov-report=xml:coverage.xml --cov-report=html
-
     - name: Upload HTML coverage report
       uses: actions/upload-artifact@v4
       with:
         name: html-coverage-report
         path: htmlcov/
-
     - name: Post coverage comment
       uses: MishaKav/pytest-coverage-comment@main
       with:
@@ -51,6 +45,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+      - name: Run linter and comment PR
+        uses: matias-martini/flake8-pr-comments-action@main
+        with:
+          github_token: ${{ github.token }}
     - uses: actions/checkout@v4
     - name: Check files using the black formatter
       uses: rickstaa/action-black@v1
