@@ -20,6 +20,7 @@ The project is containerized using Docker Compose with three services:
 
 - Docker and Docker Compose installed on your system
 - Git (to clone the repository)
+- [Ollama](https://ollama.com/download) installed for local LLM deployment (follow the [Ollama installation instructions](https://ollama.com/download))
 
 ### Getting Started
 
@@ -109,13 +110,12 @@ The application can use various language models:
 - **Ollama Integration**: The system supports running LLMs locally via Ollama. By default, it connects to Ollama at `http://localhost:11434`. You can override this by setting the `OLLAMA_BASE_URL` environment variable.
 
 - **Supported Models**:
-  - OpenAI: `gpt-4o-mini`
-  - Anthropic: `claude-3-opus-20240229`, `claude-3-sonnet-20240229`, `claude-3-haiku-20240307`, `claude-2.0`, `claude-2.1`
-  - Ollama (local): `llama3`, `llama3:8b`, `llama3:70b`, `mistral-nemo`, `mistral:7b`, `mixtral`, `phi3`, `qwq`
+  - For the Research Agent, which requires tool usage, use models like: `llama3.1`, `llama3.2`, `mistral-nemo`. You can find more models at: `https://ollama.com/search?c=tools`
+  - For other agents (Claim Decomposer, Reasoning Agent, Verdict Agent), any Ollama model can be used
 
 - **Agent Model Configuration**: The application uses different models for different components of the fact-checking pipeline. These can be configured in the `core/.env` file:
   - `CLAIM_DECOMPOSER_MODEL`: Model used for breaking down claims (default: `mistral-nemo`)
-  - `RESEARCH_AGENT_MODEL`: Model used for research (default: `mistral-nemo`)
+  - `RESEARCH_AGENT_MODEL`: Model used for research (default: `mistral-nemo`) - **Must support tool usage**
   - `REASONING_AGENT_MODEL`: Model used for reasoning (default: `mistral-nemo`)
   - `VERDICT_AGENT_MODEL`: Model used for final verdict (default: `mistral-nemo`)
 
