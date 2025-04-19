@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from langsmith import Client
 from pathlib import Path
 from langchain_ollama import ChatOllama
+from core.agents.verdict_agent import verdict_agent
 
 # Load environment variables
 load_dotenv(".env", override=True)
@@ -35,7 +36,6 @@ def load_prompt(path):
 
 
 def target_function(inputs) -> dict:
-    from core.agents.verdict_agent import verdict_agent
     result = verdict_agent.invoke(inputs)
     return {
         "output": {
@@ -108,10 +108,22 @@ def main():
     ls_client = Client()
     ls_client.evaluate(
         target_function,
-        data="verdict-eval-v3",
-        evaluators=[label_match, justification_coherence],
+        data="verdict_original",
+        evaluators=[label_match],
         experiment_prefix=args.experiment_prefix
     )
+
+    # result = verdict_agent.invoke({
+    #     "claims": ["The sky is blue.", "The grass is green."],
+    #     "labels": ["true", "true"],
+    #     "justifications": [
+    #         "The sky appears blue due to Rayleigh scattering of sunlight.",
+    #         "The grass is green due to chlorophyll."
+    #     ]
+    # })
+
+    # for message in result["messages"]:
+    #     message.pretty_print()
 
 
 if __name__ == "__main__":

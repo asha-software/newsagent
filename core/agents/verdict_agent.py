@@ -58,7 +58,7 @@ def prompt_prep_node(state: State) -> dict:
 
     user_message_content = (
         f"{claim_analysis}"
-        "Please apply the Evaluation Guidelines and produce a single JSON response "
+        "Please apply the Guidelines and produce a single JSON response "
         "with `final_label` and `final_justification` for the entire document."
     )
 
