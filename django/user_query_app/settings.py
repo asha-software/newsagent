@@ -157,6 +157,9 @@ else:
     
 DEFAULT_FROM_EMAIL = 'support@ashasoftware.com'
 
+# Email verification toggle
+EMAIL_VERIFICATION_ENABLED = os.getenv('EMAIL_VERIFICATION_ENABLED', 'True') == 'True'
+
 # Logging configuration
 LOGGING = {
     'version': 1,
