@@ -21,26 +21,29 @@ The project is containerized using Docker Compose with three services:
 - Docker and Docker Compose installed on your system
 - Git (to clone the repository)
 - [Ollama](https://ollama.com/download) installed for local LLM deployment (follow the [Ollama installation instructions](https://ollama.com/download))
+- Install `mistral-nemo` using `ollama pull mistral-nemo`
 
 ### Getting Started
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/asha-software/newsagent.git
    cd newsagent
    ```
 
-2. Start the Docker containers:
+2. Make sure Ollama is running in the background (this is required for the LLM functionality)
+
+3. Start the Docker containers:
    ```bash
-   docker-compose up -d
+   docker compose up
    ```
 
-3. Create a superuser for the Django admin (optional):
+4. Create a superuser for the Django admin (optional):
    ```bash
-   docker-compose exec django python manage.py createsuperuser
+   docker compose exec django python manage.py createsuperuser
    ```
 
-4. Access the application:
+5. Access the application:
    - Django web interface: http://localhost:8000
    - FastAPI backend: http://localhost:8001
    - FastAPI documentation: http://localhost:8001/docs
@@ -51,6 +54,8 @@ The project is containerized using Docker Compose with three services:
 - Provides user authentication (signup, signin, logout)
 - Search interface for fact-checking claims
 - Communicates with the FastAPI backend for claim analysis
+- Create and manage API Keys
+- Create and manage custom tools
 
 #### FastAPI Backend (port 8001)
 - Processes claims using various agent components
@@ -58,31 +63,29 @@ The project is containerized using Docker Compose with three services:
 - Returns analysis results to the Django frontend
 
 #### MySQL Database
-- Stores user information and application data
+- Stores user information, api keys, custom tools, and application data
 - Accessible within the Docker network
 
 ### Environment Variables
 
-The application uses environment variables for configuration. You can set these by:
+The application uses environment variables for configuration. For local development with default settings, you don't need to create any additional files as the docker-compose.yml provides sensible defaults.
 
-1. Edit the `.env` file in the project root
-
-The following environment variables are available:
+**For production or custom configurations**, create a `.env` file in the project root with any of the following variables:
 
 - Database configuration:
-  - `MYSQL_ROOT_PASSWORD`: Database root (default: `password`) - **Change this!**
+  - `MYSQL_ROOT_PASSWORD`: Database root (default: `password`) - **Change this for production!**
   - `MYSQL_DATABASE`: Database name (default: `fakenews_db`)
   - `MYSQL_USER`: Database username (default: `fakenews_user`)
-  - `MYSQL_PASSWORD`: Database password (default: `password`) - **Change this!**
+  - `MYSQL_PASSWORD`: Database password (default: `password`) - **Change this for production!**
 
 - Django configuration:
   - `DB_HOST`: Database hostname (default: `db`)
   - `DB_NAME`: Database name (default: `fakenews_db`)
   - `DB_USER`: Database username (default: `fakenews_user`)
-  - `DB_PASSWORD`: Database password (default: `password`) - **Change this!**
+  - `DB_PASSWORD`: Database password (default: `password`) - **Change this for production!**
 
 - API configuration:
-  - `API_URL`: URL for the FastAPI service (default: `http://localhost:8001`)
+  - `API_URL`: URL for the FastAPI service (default: `http://api:8000`)
 
 - Email configuration:
   - `EMAIL_HOST`: SMTP server hostname
@@ -105,19 +108,24 @@ This approach ensures that the database schema is properly managed by Django's m
 
 ### LLM Configuration
 
-The application can use various language models:
+The application uses Ollama to run language models locally:
 
-- **Ollama Integration**: The system supports running LLMs locally via Ollama. By default, it connects to Ollama at `http://localhost:11434`. You can override this by setting the `OLLAMA_BASE_URL` environment variable.
+- **Setup (Already done in Prerequisites)**: 
+  1. Install [Ollama](https://ollama.com/download)
+  2. Pull the mistral-nemo model: `ollama pull mistral-nemo`
+  3. Ensure Ollama is running
 
-- **Supported Models**:
-  - For the Research Agent, which requires tool usage, use models like: `llama3.1`, `llama3.2`, `mistral-nemo`. You can find more models at: `https://ollama.com/search?c=tools`
-  - For other agents (Claim Decomposer, Reasoning Agent, Verdict Agent), any Ollama model can be used
+- **Default Configuration**: 
+  The application is pre-configured to use `mistral-nemo` for all components. If you've completed the Prerequisites section, no further configuration is needed.
 
-- **Agent Model Configuration**: The application uses different models for different components of the fact-checking pipeline. These can be configured in the `core/.env` file:
-  - `CLAIM_DECOMPOSER_MODEL`: Model used for breaking down claims (default: `mistral-nemo`)
-  - `RESEARCH_AGENT_MODEL`: Model used for research (default: `mistral-nemo`) - **Must support tool usage**
-  - `REASONING_AGENT_MODEL`: Model used for reasoning (default: `mistral-nemo`)
-  - `VERDICT_AGENT_MODEL`: Model used for final verdict (default: `mistral-nemo`)
+- **Advanced Configuration (Optional)**:
+  If you want to use different models, you can modify the `core/.env` file:
+  - `CLAIM_DECOMPOSER_MODEL`: Model for breaking down claims
+  - `RESEARCH_AGENT_MODEL`: Model for research (must support tool usage)
+  - `REASONING_AGENT_MODEL`: Model for reasoning
+  - `VERDICT_AGENT_MODEL`: Model for final verdict
+
+  You can find more models with tool support at: `https://ollama.com/search?c=tools`
 
 ### API Keys Configuration
 
@@ -130,6 +138,12 @@ The core backend requires several API keys to function properly. These should be
 - `LANGCHAIN_PROJECT`: LangChain project name
 - `LANGCHAIN_TRACING_V2`: Enable LangChain tracing (set to `true` or `false`)
 
+You can obtain these API keys from their respective services:
+- Wolfram Alpha: [https://developer.wolframalpha.com/portal/myapps/](https://developer.wolframalpha.com/portal/myapps/)
+- Tavily: [https://tavily.com/](https://tavily.com/)
+- OpenAI: [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+- LangChain: [https://smith.langchain.com/](https://smith.langchain.com/)
+
 ### Development
 
 For development purposes, the application code is mounted as volumes in the containers, so changes to the code will be reflected without rebuilding the containers.
@@ -137,7 +151,7 @@ For development purposes, the application code is mounted as volumes in the cont
 To rebuild the containers after making changes to the Dockerfiles:
 ```bash
 docker compose build
-docker compose up -d
+docker compose up
 ```
 
 ### Custom Tools
@@ -169,10 +183,16 @@ The application includes a complete user authentication system with:
 
 - To restart a specific service:
   ```bash
-  docker-compose restart django
+  docker compose restart django
   ```
 
 - If email verification is causing issues during local development, you can disable it by setting `EMAIL_VERIFICATION_ENABLED=False` in your `.env` file.
+
+- If you encounter LLM-related issues:
+  1. Ensure Ollama is running: Check if the Ollama application is running in the background
+  2. Verify the mistral-nemo model is installed: Run `ollama list` to see installed models
+  3. If needed, reinstall the model: `ollama pull mistral-nemo`
+  4. Check Ollama logs for any errors
 
 ### API Usage
 
