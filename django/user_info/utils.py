@@ -1,8 +1,10 @@
 import requests
+import logging
 from django.conf import settings
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
+from django.contrib.auth.models import User
 
 def get_builtin_tools():
     """
@@ -69,6 +71,12 @@ def send_password_reset_email(user, reset_token, request):
     Returns:
         bool: True if the email was sent successfully, False otherwise
     """
+
+    # Check if email verification is enabled
+    if not settings.EMAIL_VERIFICATION_ENABLED:
+        # If email verification is disabled, just return True without sending email
+        return True
+
     try:
         # Get the domain from the request
         domain = request.get_host()
@@ -86,17 +94,6 @@ def send_password_reset_email(user, reset_token, request):
         })
         plain_message = strip_tags(html_message)
         
-        # Print email settings for debugging
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
-        logger.info(f"Sending password reset email to: {user.email}")
-        logger.info(f"Reset URL: {reset_url}")
-        
-        # For testing purposes, let's log the email content
-        logger.info(f"Email subject: {subject}")
-        logger.info(f"Email plain message: {plain_message[:100]}...")  # Log first 100 chars
-        
         # Send the email
         send_mail(
             subject=subject,
@@ -108,7 +105,6 @@ def send_password_reset_email(user, reset_token, request):
         )
         return True
     except Exception as e:
-        import logging
         logger = logging.getLogger(__name__)
         logger.error(f"Error sending password reset email: {str(e)}")
         # Re-raise the exception so it can be caught and handled by the view
@@ -126,6 +122,11 @@ def send_verification_email(user_or_pending, verification_token, request):
     Returns:
         bool: True if the email was sent successfully, False otherwise
     """
+
+    # Check if email verification is enabled
+    if not settings.EMAIL_VERIFICATION_ENABLED:
+        # If email verification is disabled, just return True without sending email
+        return True
     try:
         # Get the domain from the request
         domain = request.get_host()
@@ -135,7 +136,6 @@ def send_verification_email(user_or_pending, verification_token, request):
         verification_url = f"{protocol}://{domain}/verify-email/{verification_token}/"
         
         # Determine if this is a User or PendingRegistration
-        from django.contrib.auth.models import User
         is_user = isinstance(user_or_pending, User)
         
         # Get the username and email
@@ -154,18 +154,7 @@ def send_verification_email(user_or_pending, verification_token, request):
             'expiry_hours': 24,  # Token expires after 24 hours
         })
         plain_message = strip_tags(html_message)
-        
-        # Print email settings for debugging
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info(f"Email settings: HOST={settings.EMAIL_HOST}, PORT={settings.EMAIL_PORT}, USER={settings.EMAIL_HOST_USER}")
-        logger.info(f"Sending verification email to: {email}")
-        logger.info(f"Verification URL: {verification_url}")
-        
-        # For testing purposes, let's log the email content
-        logger.info(f"Email subject: {subject}")
-        logger.info(f"Email plain message: {plain_message[:100]}...")  # Log first 100 chars
-        
+
         # Send the email
         send_mail(
             subject=subject,
@@ -177,7 +166,6 @@ def send_verification_email(user_or_pending, verification_token, request):
         )
         return True
     except Exception as e:
-        import logging
         logger = logging.getLogger(__name__)
         logger.error(f"Error sending verification email: {str(e)}")
         # Re-raise the exception so it can be caught and handled by the view
