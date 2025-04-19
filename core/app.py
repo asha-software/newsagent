@@ -132,6 +132,12 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
     
+    if len(text) > 3500:
+        raise HTTPException(
+            status_code=400,
+            detail="Input text exceeds the maximum allowed length of 3500 characters."
+        )
+    
     user_tool_kwargs = await get_user_tool_params(user["id"], tools) if user else []
     
     print(f"User tool parameters: {user_tool_kwargs}")

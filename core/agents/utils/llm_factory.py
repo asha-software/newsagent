@@ -26,6 +26,7 @@ MODEL_PROVIDERS = {
     "mixtral": "ollama",
     "phi3": "ollama",
     "qwq": "ollama",
+    "deepseek-r1:32b": "ollama",
 }
 
 # Allow explicit provider override

@@ -2,6 +2,53 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+from datetime import timedelta
+from django.contrib.auth.hashers import make_password
+
+class PendingRegistration(models.Model):
+    username = models.CharField(max_length=150, unique=True)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=128)  # Hashed password
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    
+    def save(self, *args, **kwargs):
+        # Hash the password if it's not already hashed
+        if not self.password.startswith('pbkdf2_sha256$'):
+            self.password = make_password(self.password)
+            
+        # Set expiration time if not set
+        if not self.expires_at:
+            # Token expires after 24 hours
+            self.expires_at = timezone.now() + timedelta(hours=24)
+            
+        super().save(*args, **kwargs)
+    
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+    
+    def __str__(self):
+        return f"Pending registration for {self.username}"
+
+class EmailVerification(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification')
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_verified = models.BooleanField(default=False)
+    
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            # Token expires after 24 hours
+            self.expires_at = timezone.now() + timedelta(hours=24)
+        super().save(*args, **kwargs)
+    
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+    
+    def __str__(self):
+        return f"Verification for {self.user.username}"
 
 class APIKey(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='api_keys')
@@ -56,6 +103,25 @@ class UserTool(models.Model):
     
     def __str__(self):
         return self.name
+
+class PasswordResetToken(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_reset_tokens')
+    token = models.UUIDField(default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+    
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            # Token expires after 24 hours
+            self.expires_at = timezone.now() + timedelta(hours=24)
+        super().save(*args, **kwargs)
+    
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+    
+    def __str__(self):
+        return f"Password reset for {self.user.username}"
 
 class SharedSearchResult(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

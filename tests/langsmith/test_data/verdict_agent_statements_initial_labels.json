@@ -1,0 +1,929 @@
+[
+  {
+    "inputs": {
+      "claims": [
+        "Water is essential for human survival",
+        "The human body is mostly water"
+      ],
+      "labels": [
+        "true",
+        "true"
+      ],
+      "justifications": [
+        "Biological necessity confirmed by medical science",
+        "Supported by anatomical studies"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Both claims are scientifically accurate and well-documented."
+    },
+    "metadata": {
+      "category": "human_biology"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Earth orbits the Sun",
+        "Photosynthesis converts sunlight into energy"
+      ],
+      "labels": [
+        "true",
+        "true"
+      ],
+      "justifications": [
+        "Astronomical observations confirm this",
+        "Fundamental process in plant biology"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "All claims are confirmed by modern science and widely accepted."
+    },
+    "metadata": {
+      "category": "science_basics"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Gravity pulls objects toward the Earth",
+        "Objects fall faster in a vacuum without air resistance"
+      ],
+      "labels": [
+        "true",
+        "true"
+      ],
+      "justifications": [
+        "Newtonian physics",
+        "Demonstrated by vacuum chamber experiments"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "The statements reflect well-established physical principles."
+    },
+    "metadata": {
+      "category": "physics"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Plants need sunlight to grow"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Photosynthesis requires light to function"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "The claim is accurate and supported by botanical science."
+    },
+    "metadata": {
+      "category": "plant_biology"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Pacific Ocean is the largest ocean on Earth",
+        "The Sahara is the largest hot desert in the world",
+        "Mount Everest is the highest mountain above sea level"
+      ],
+      "labels": [
+        "true",
+        "true",
+        "true"
+      ],
+      "justifications": [
+        "Geographical data confirm it is the largest",
+        "Climate and area confirm it is the largest hot desert",
+        "Global topographical measurements confirm this"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "All claims are verified by reliable geographical sources."
+    },
+    "metadata": {
+      "category": "geography_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The sun rises in the east"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Observable natural phenomenon"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Observable natural phenomenon"
+    },
+    "metadata": {
+      "category": "general_knowledge"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Pigs can fly naturally"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Defies biological and physical laws"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Defies biological and physical laws"
+    },
+    "metadata": {
+      "category": "absurd_claims"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Aliens visited Earth last year"
+      ],
+      "labels": [
+        "unknown"
+      ],
+      "justifications": [
+        "No verified evidence supports this claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "No verified evidence supports this claim"
+    },
+    "metadata": {
+      "category": "conspiracy_theory"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The weather is always hot in the Sahara"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "It can be cold at night and during winter"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Not completely correct as can be cold at night and during winter"
+    },
+    "metadata": {
+      "category": "climate_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Water freezes at 0°C",
+        "Cats have wings"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Scientific consensus",
+        "False biological claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are mixed with one being true and another false, leading to final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Dinosaurs are still alive today",
+        "The Earth is flat"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Scientific evidence demonstrates there are no dinosaurs living on earth at the moment",
+        "Contradicted by space and geological data"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are both false, leading to final label 'false'."
+    },
+    "metadata": {
+      "category": "divers"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There is life on Mars",
+        "Bigfoot lives in Canada"
+      ],
+      "labels": [
+        "unknown",
+        "false"
+      ],
+      "justifications": [
+        "Evidence inconclusive from space missions",
+        "There is no scientific evidence supporting Bigfoot’s existence"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are mixed with one being unknown and another false, leading to final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Coffee improves alertness",
+        "Coffee causes immediate death"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Caffeine increases alertness",
+        "Observations clearly refute this statement"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are mixed with one being true and another false, leading to final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Earth revolves around the Sun",
+        "Dinosaurs are alive today",
+        "Aliens control the government"
+      ],
+      "labels": [
+        "true",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Confirmed by astronomical observations",
+        "Scientifically proven that dinosaurs are not alive anymore",
+        "Satirical claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The combination of labels leads to the 'false' conclusion."
+    },
+    "metadata": {
+      "category": "science_myths"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Humans need oxygen to survive"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Basic biological requirement supported by medical science"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Basic biological requirement supported by medical science"
+    },
+    "metadata": {
+      "category": "biology_basics"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The Eiffel Tower is in Rome"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "It is located in Paris, France"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "It is located in Paris, France"
+    },
+    "metadata": {
+      "category": "geography_error"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There are pyramids on the moon"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "verified evidence or imagery confirms there are no pyramids on the moon"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "verified evidence or imagery confirms there are no pyramids on the moon"
+    },
+    "metadata": {
+      "category": "space_mystery"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Newton said 'I can calculate the motion of heavenly bodies, but not the madness of people'"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Proven that this sentence was said by Newton"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Proven by literature"
+    },
+    "metadata": {
+      "category": "historical_quotes"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Some sharks are dangerous, but many are harmless"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Verified by observations and generally admitted as correct"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Statement is correct and verified"
+    },
+    "metadata": {
+      "category": "animal_behavior"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Fire needs oxygen to burn",
+        "Bananas grow on trees"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Scientific principle",
+        "Botanically, bananas grow on large herbs, not trees"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are a mix, resulting in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The moon is made of cheese",
+        "Mount Everest is underwater"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Debunked myth",
+        "Geographically incorrect"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are both false, resulting in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There is a lost city under Antarctica",
+        "Unicorn fossils were discovered in Siberia"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "No verifiable evidence exists",
+        "Discovered fossils were actually coming from horses"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The claims are both false, resulting in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Lightning never strikes twice",
+        "Lightning can strike the same place multiple times"
+      ],
+      "labels": [
+        "false",
+        "true"
+      ],
+      "justifications": [
+        "Old saying, not factually accurate",
+        "Confirmed by meteorologists"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The claims are a mix, resulting in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_2"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Wearing copper bracelets cures arthritis",
+        "Some patients report feeling better",
+        "Scientific evidence is inconclusive"
+      ],
+      "labels": [
+        "false",
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Scientific evidence refutes the claim",
+        "Verified reports exist",
+        "Lack of robust studies"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The combination of labels justifies the overall label: 'mixed'."
+    },
+    "metadata": {
+      "category": "medical_alternatives"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Water is composed of hydrogen and oxygen"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Supported by chemical formula H2O"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Supported by chemical formula H2O"
+    },
+    "metadata": {
+      "category": "chemistry_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The human heart is located in the right side of the chest"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Anatomically incorrect, it is left-centered"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Anatomically incorrect, it is left-centered"
+    },
+    "metadata": {
+      "category": "anatomy_error"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Atlantis existed as a real city"
+      ],
+      "labels": [
+        "unknown"
+      ],
+      "justifications": [
+        "No archaeological evidence confirms or refutes its existence"
+      ]
+    },
+    "outputs": {
+      "final_label": "unknown",
+      "final_justification": "No archaeological evidence confirms its existence"
+    },
+    "metadata": {
+      "category": "mythical_places"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Apples are healthy, but can cause allergies"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Apples are generally healthy but can cause allergic reactions sometimes"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "True for many, but some allergic reactions exist"
+    },
+    "metadata": {
+      "category": "nutrition_facts"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Carbon dioxide is a greenhouse gas",
+        "Humans can photosynthesize"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Proven contributor to climate change",
+        "Biologically impossible"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The mix of inputs supports the 'mixed' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The sun sets in the north",
+        "The Amazon River is in Europe"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Inaccurate direction",
+        "Wrong continent"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The mix of inputs supports the 'false' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There is a civilization inside the Earth",
+        "Dinosaurs still roam remote jungles"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Scientific evidence proving it is impossible",
+        "Satirical claim"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Both claims are false."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Exercise helps with depression",
+        "Exercise cures depression"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Backed by research",
+        "Cure claim is exaggerated"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "The mix of inputs supports the 'mixed' classification."
+    },
+    "metadata": {
+      "category": "mixed_case_3"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Aliens abducted my neighbor",
+        "The Earth is hollow",
+        "Gravity does not exist"
+      ],
+      "labels": [
+        "false",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Satirical claim",
+        "Contradicted by geology",
+        "Well-established scientific law"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "The combination of claim labels leads to the final label 'false'."
+    },
+    "metadata": {
+      "category": "fringe_beliefs"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The speed of light is approximately 299,792 km/s"
+      ],
+      "labels": [
+        "true"
+      ],
+      "justifications": [
+        "Confirmed by physics and scientific measurements"
+      ]
+    },
+    "outputs": {
+      "final_label": "true",
+      "final_justification": "Confirmed by physics and scientific measurements"
+    },
+    "metadata": {
+      "category": "physics_constants"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Humans can breathe in space without equipment"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Requires a pressurized suit due to vacuum"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Requires a pressurized suit due to vacuum"
+    },
+    "metadata": {
+      "category": "space_misconceptions"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Loch Ness Monster lives in Scotland"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Loch Ness Monster is part of Scottish folklore, science proves it does not exist"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "No definitive evidence found"
+    },
+    "metadata": {
+      "category": "urban_legends"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Milk is a good source of calcium but causes lactose issues"
+      ],
+      "labels": [
+        "false"
+      ],
+      "justifications": [
+        "Milk does not cause lactose issues"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "True for some, problematic for others"
+    },
+    "metadata": {
+      "category": "nutrition_mixed"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Sound travels slower than light",
+        "Birds speak fluent English"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Scientific fact",
+        "Anthropomorphic exaggeration"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "Combination of inputs results in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "The sun is cold",
+        "Bats are blind and navigate by smell only"
+      ],
+      "labels": [
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Inaccurate statement",
+        "Bats have eyesight and use echolocation"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Combination of inputs results in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "There is a hidden planet beyond Pluto",
+        "Time travel is happening in secret labs"
+      ],
+      "labels": [
+        "unknown",
+        "false"
+      ],
+      "justifications": [
+        "Speculated but not verified",
+        "No credible evidence"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Combination of inputs results in the final label 'false'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "Global warming is a serious threat",
+        "Climate change is a hoax"
+      ],
+      "labels": [
+        "true",
+        "false"
+      ],
+      "justifications": [
+        "Backed by majority of climate scientists",
+        "Refuted by evidence"
+      ]
+    },
+    "outputs": {
+      "final_label": "mixed",
+      "final_justification": "Combination of inputs results in the final label 'mixed'."
+    },
+    "metadata": {
+      "category": "mixed_case_4"
+    }
+  },
+  {
+    "inputs": {
+      "claims": [
+        "2+2=5",
+        "The moon is made of rubber",
+        "The sky is green"
+      ],
+      "labels": [
+        "false",
+        "false",
+        "false"
+      ],
+      "justifications": [
+        "Mathematically incorrect",
+        "Scientific consensus",
+        "Color of sky due to Rayleigh scattering"
+      ]
+    },
+    "outputs": {
+      "final_label": "false",
+      "final_justification": "Given the set of claims and their justifications, the document is classified as 'false'."
+    },
+    "metadata": {
+      "category": "absurd_claims"
+    }
+  }
+]

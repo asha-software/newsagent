@@ -6,10 +6,12 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import JsonResponse, Http404
 from django.core.paginator import Paginator
-from .models import UserTool, APIKey, SharedSearchResult
+from django.utils import timezone
+from .models import UserTool, APIKey, SharedSearchResult, EmailVerification, PendingRegistration, PasswordResetToken
 from .forms import UserToolForm
-from .utils import get_builtin_tools
+from .utils import get_builtin_tools, send_verification_email, send_password_reset_email
 import json
+<<<<<<< HEAD
 import requests
 
 # Helper functions for API operations
@@ -89,6 +91,9 @@ def api_request(method, endpoint, api_key, json_data=None):
                 return False, f"Error: {response.status_code} - {response.text}"
     except Exception as e:
         return False, str(e)
+=======
+import datetime
+>>>>>>> main
 
 def signin(request): 
     if request.user.is_authenticated:
@@ -97,6 +102,98 @@ def signin(request):
         username = request.POST.get('user_name')
         password = request.POST.get('password')
 
+        # First check if the user exists but is inactive (unverified)
+        try:
+            user_obj = User.objects.get(username=username)
+            if not user_obj.is_active:
+                # Check if email verification is enabled
+                if settings.EMAIL_VERIFICATION_ENABLED:
+                    # Check if there's a verification token
+                    try:
+                        verification = EmailVerification.objects.get(user=user_obj)
+                        if verification.is_expired():
+                            # If token is expired, delete it and create a new one
+                            verification.delete()
+                            verification = EmailVerification(user=user_obj)
+                            verification.save()
+                        
+                        # Resend verification email
+                        email_sent = send_verification_email(user_obj, verification.token, request)
+                        if email_sent:
+                            return render(request, 'signin.html', {
+                                'error': 'Your account is not verified. A new verification email has been sent to your email address.'
+                            })
+                        else:
+                            return render(request, 'signin.html', {
+                                'error': 'Your account is not verified and we could not send a verification email. Please contact support.'
+                            })
+                    except EmailVerification.DoesNotExist:
+                        # If no verification token exists, create one
+                        verification = EmailVerification(user=user_obj)
+                        verification.save()
+                        email_sent = send_verification_email(user_obj, verification.token, request)
+                        if email_sent:
+                            return render(request, 'signin.html', {
+                                'error': 'Your account is not verified. A verification email has been sent to your email address.'
+                            })
+                        else:
+                            return render(request, 'signin.html', {
+                                'error': 'Your account is not verified and we could not send a verification email. Please contact support.'
+                            })
+                else:
+                    # If email verification is disabled, activate the user and proceed with login
+                    user_obj.is_active = True
+                    user_obj.save()
+                    
+                    # Create a default API key for the user if one doesn't exist
+                    if not APIKey.objects.filter(user=user_obj).exists():
+                        default_api_key = APIKey(user=user_obj, name="Default API Key")
+                        default_api_key.save()
+                    
+                    # Continue to authentication below
+        except User.DoesNotExist:
+            pass  # User doesn't exist, will be handled by authenticate below
+
+        # Check if there's a pending registration for this username
+        pending = PendingRegistration.objects.filter(username=username).first()
+        if pending:
+            # If there is, inform the user they need to verify their email
+            if settings.EMAIL_VERIFICATION_ENABLED:
+                return render(request, 'signin.html', {
+                    'error': 'Your account is not verified. Please check your email for the verification link or request a new one.'
+                })
+            else:
+                # If email verification is disabled, create the user from pending registration
+                try:
+                    # Create a new user with the pending registration data
+                    user = User(
+                        username=pending.username,
+                        email=pending.email,
+                        password=pending.password  # This is already hashed
+                    )
+                    user.is_active = True  # Activate the user immediately
+                    user.save()
+                    
+                    # Create a default API key for the user
+                    default_api_key = APIKey(user=user, name="Default API Key")
+                    default_api_key.save()
+                    
+                    # Delete the pending registration as it's no longer needed
+                    pending.delete()
+                    
+                    # Automatically log in the user
+                    user.backend = 'django.contrib.auth.backends.ModelBackend'
+                    login(request, user)
+                    
+                    return redirect('search')
+                except Exception as e:
+                    # Handle the error
+                    
+                    return render(request, 'signin.html', {
+                        'error': f'Error creating your account. Please contact support.'
+                    })
+        
+        # If no pending registration, proceed with normal authentication
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
@@ -133,13 +230,176 @@ def register(request):
         if User.objects.filter(email=email).exists():
             return render(request, 'signup.html', {'error': 'Email already exists.'})
         
-        # Create new user
-        user = User.objects.create_user(username=username, email=email, password=password)
+        # Check if there's already a pending registration for this username or email
+        pending_username = PendingRegistration.objects.filter(username=username).first()
+        pending_email = PendingRegistration.objects.filter(email=email).first()
         
-        # Redirect to signin page with success message
-        return render(request, 'signin.html', {'success': 'Account created successfully! Please sign in.'})
+        if pending_username:
+            return render(request, 'signup.html', {'error': 'There is already a pending registration for this username. Please check your email for the verification link.'})
+        
+        if pending_email:
+            return render(request, 'signup.html', {'error': 'There is already a pending registration for this email. Please check your email for the verification link.'})
+        
+        # Check if email verification is enabled
+        if settings.EMAIL_VERIFICATION_ENABLED:
+            # Create a pending registration instead of a user
+            pending = PendingRegistration(
+                username=username,
+                email=email,
+                password=password  # This will be hashed in the save method
+            )
+            pending.save()
+            
+            # Send verification email
+            try:
+                email_sent = send_verification_email(pending, pending.token, request)
+                
+                if email_sent:
+                    # Redirect to signup page with success message
+                    return render(request, 'signup.html', {
+                        'success': 'Registration initiated! Please check your email to verify your account.'
+                    })
+                else:
+                    # If email sending fails, delete the pending registration and show an error
+                    pending.delete()
+                    return render(request, 'signup.html', {
+                        'error': 'We could not send the verification email. Please try again later or contact support.'
+                    })
+            except Exception as e:
+                # Handle the error
+                
+                # Delete the pending registration
+                pending.delete()
+                
+                # Show a user-friendly error message
+                return render(request, 'signup.html', {
+                    'error': f'Registration failed: {str(e)}'
+                })
+        else:
+            # If email verification is disabled, create and activate the user directly
+            try:
+                # Create a new user
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password
+                )
+                user.is_active = True
+                user.save()
+                
+                # Create a default API key for the user
+                default_api_key = APIKey(user=user, name="Default API Key")
+                default_api_key.save()
+                
+                # Log the user in
+                user = authenticate(request, username=username, password=password)
+                login(request, user)
+                
+                # Redirect to search page
+                return redirect('search')
+            except Exception as e:
+                # Handle the error
+                
+                # Show a user-friendly error message
+                return render(request, 'signup.html', {
+                    'error': f'Registration failed: {str(e)}'
+                })
     
     return render(request, 'signup.html')  # Render the signup page
+
+def verify_email(request, token):
+    # First try to find a pending registration with this token
+    try:
+        pending = get_object_or_404(PendingRegistration, token=token)
+        
+        # Check if the token is expired
+        if pending.is_expired():
+            # Delete the expired pending registration
+            pending.delete()
+            return render(request, 'user_info/email_verification_success.html', {
+                'success': False,
+                'error_message': 'Verification link has expired. Please register again.'
+            })
+        
+        # Create the user account now that email is verified
+        try:
+            # Create a new user with the pending registration data
+            # Since the password is already hashed, we need to create the user without hashing
+            user = User(
+                username=pending.username,
+                email=pending.email,
+                password=pending.password  # This is already hashed
+            )
+            user.is_active = True  # Activate the user immediately
+            user.save()
+           
+            # Create a default API key for the user
+            default_api_key = APIKey(user=user, name="Default API Key")
+            default_api_key.save()
+            
+            # Delete the pending registration as it's no longer needed
+            pending.delete()
+            
+            # Automatically log in the user
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            
+            return render(request, 'user_info/email_verification_success.html', {
+                'success': True,
+                'auto_login': True
+            })
+        except Exception as e:
+            return render(request, 'user_info/email_verification_success.html', {
+                'success': False,
+                'error_message': f'Error creating your account. Please contact support.'
+            })
+            
+    except (ValueError, Http404):
+        # If not found as a pending registration, try as an EmailVerification
+        try:
+            # Find the verification token
+            verification = get_object_or_404(EmailVerification, token=token)
+            
+            # Check if the token is expired
+            if verification.is_expired():
+                return render(request, 'user_info/email_verification_success.html', {
+                    'success': False,
+                    'error_message': 'Verification link has expired. Please register again.'
+                })
+            
+            # Check if already verified
+            if verification.is_verified:
+                return render(request, 'user_info/email_verification_success.html', {
+                    'success': True
+                })
+            
+            # Activate the user
+            user = verification.user
+            user.is_active = True
+            user.save()
+            
+            # Create a default API key for the user if one doesn't exist
+            if not APIKey.objects.filter(user=user).exists():
+                default_api_key = APIKey(user=user, name="Default API Key")
+                default_api_key.save()
+            # Mark as verified
+            verification.is_verified = True
+            verification.save()
+            
+            # Automatically log in the user
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            
+            return render(request, 'user_info/email_verification_success.html', {
+                'success': True,
+                'auto_login': True
+            })
+            
+        except (ValueError, Http404):
+            return render(request, 'user_info/email_verification_success.html', {
+                'success': False,
+                'error_message': 'Invalid verification link.'
+            })
 
 @login_required
 def search(request):
@@ -150,6 +410,17 @@ def search(request):
     if request.method == 'POST':
         # Get the search query
         query = request.POST.get('search')
+
+        # Check if the query exceeds 3500 characters
+        if len(query) > 3500:
+            return render(request, 'search.html', {
+                'error_message': 'Input text exceeds the maximum allowed length of 3500 characters.',
+                'user_tools': [],
+                'builtin_tools': [],
+                'show_results': show_results,
+                'API_URL': settings.API_URL,
+                'has_cached_result': has_cached_result
+            })
         
         # If any query is submitted, show the results section
         if query:
@@ -319,7 +590,109 @@ def save_shared_result(request):
     }, status=405)
 
 def forgot_password_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        
+        # Check if the user exists
+        user = User.objects.filter(username=username).first()
+        
+        # Check if there's a pending registration
+        pending = PendingRegistration.objects.filter(username=username).first()
+        
+        if pending:
+            # If there's a pending registration, inform the user they need to verify their email
+            return render(request, 'forgot.html', {
+                'error': 'Your account is not verified yet. Please check your email for the verification link.'
+            })
+        elif user:
+            # Create a password reset token
+            reset_token = PasswordResetToken(user=user)
+            reset_token.save()
+            
+            # Check if email verification is enabled
+            if settings.EMAIL_VERIFICATION_ENABLED:
+                # Send the password reset email
+                try:
+                    email_sent = send_password_reset_email(user, reset_token.token, request)
+                    
+                    if email_sent:
+                        return render(request, 'forgot.html', {
+                            'success': 'A password reset link has been sent to your email address.'
+                        })
+                    else:
+                        return render(request, 'forgot.html', {
+                            'error': 'We could not send the password reset email. Please try again later or contact support.'
+                        })
+                except Exception as e:
+                    # Handle the error
+                    
+                    return render(request, 'forgot.html', {
+                        'error': f'Error sending password reset email: {str(e)}'
+                    })
+            else:
+                # If email verification is disabled, redirect directly to the reset password page
+                return redirect('reset_password', token=reset_token.token)
+        else:
+            # Don't reveal that the user doesn't exist for security reasons
+            if settings.EMAIL_VERIFICATION_ENABLED:
+                return render(request, 'forgot.html', {
+                    'success': 'If an account with that username exists, a password reset link has been sent to the associated email address.'
+                })
+            else:
+                return render(request, 'forgot.html', {
+                    'error': 'No account found with that username.'
+                })
+    
     return render(request, 'forgot.html')  # Render the forgot password page
+
+def reset_password_view(request, token):
+    # Find the reset token
+    try:
+        reset_token = get_object_or_404(PasswordResetToken, token=token)
+        
+        # Check if the token is expired or already used
+        if reset_token.is_expired() or reset_token.is_used:
+            return render(request, 'user_info/reset_password.html', {
+                'expired': True
+            })
+        
+        if request.method == 'POST':
+            password = request.POST.get('password')
+            confirm_password = request.POST.get('confirm_password')
+            
+            # Validate the passwords
+            if password != confirm_password:
+                return render(request, 'user_info/reset_password.html', {
+                    'error': 'Passwords do not match.',
+                    'token': token
+                })
+            
+            # Update the user's password
+            user = reset_token.user
+            user.set_password(password)
+            user.save()
+            
+            # Mark the token as used
+            reset_token.is_used = True
+            reset_token.save()
+            
+            # Automatically log in the user
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            
+            return render(request, 'user_info/reset_password.html', {
+                'success': 'Your password has been reset successfully. You have been automatically logged in.',
+                'token': token
+            })
+        
+        return render(request, 'user_info/reset_password.html', {
+            'token': token
+        })
+        
+    except (ValueError, Http404):
+        return render(request, 'user_info/reset_password.html', {
+            'expired': True
+        })
 
 # Tool views
 @login_required
@@ -467,7 +840,6 @@ def apikey_create(request):
             return redirect('apikey_list')
             
         # Generate a name with a timestamp to make it unique
-        import datetime
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         name = f"API Key - {timestamp}"
         
