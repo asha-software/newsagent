@@ -57,6 +57,10 @@ services:
       - DB_NAME=${DB_NAME:-fakenews_db}
       - DB_USER=${DB_USER:-fakenews_user}
       - DB_PASSWORD=${DB_PASSWORD:-password}
+      - CLAIM_DECOMPOSER_MODEL=mistral-nemo
+      - RESEARCH_AGENT_MODEL=mistral-nemo
+      - REASONING_AGENT_MODEL=mistral-nemo
+      - VERDICT_AGENT_MODEL=mistral-nemo
     ports:
       - '8001:8000'
     volumes:

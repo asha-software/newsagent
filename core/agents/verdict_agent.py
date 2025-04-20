@@ -31,7 +31,7 @@ LLM_OUTPUT_FORMAT = {
 }
 
 llm = get_chat_model(model_name=os.getenv(
-    "VERDICT_AGENT_MODEL"), format_output=LLM_OUTPUT_FORMAT)
+    "VERDICT_AGENT_MODEL", DEFAULT_MODEL), format_output=LLM_OUTPUT_FORMAT)
 
 
 class State(TypedDict):
