@@ -42,7 +42,7 @@ LLM_OUTPUT_FORMAT = {
 }
 
 llm = get_chat_model(model_name=os.getenv(
-    "REASONING_AGENT_MODEL"), format_output=LLM_OUTPUT_FORMAT)
+    "REASONING_AGENT_MODEL", DEFAULT_MODEL), format_output=LLM_OUTPUT_FORMAT)
 
 with open(DIR / "prompts/reasoning_agent_system_prompt.txt", "r") as f:
     system_prompt = f.read()
