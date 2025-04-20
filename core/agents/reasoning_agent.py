@@ -9,11 +9,13 @@ from typing import Annotated, Literal, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
 from core.agents.utils.common_types import Evidence
 
+DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
+
 # Absolute path to this dir. For relative paths like prompts
 DIR = Path(__file__).parent.resolve()
 
+# Load env variables from core/.env
 load_dotenv(DIR.parent / ".env", override=True)
-assert "REASONING_AGENT_MODEL" in os.environ, "Please set the REASONING_AGENT_MODEL environment variable"
 
 
 # Define agent state & LLM

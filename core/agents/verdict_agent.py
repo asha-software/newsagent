@@ -6,13 +6,14 @@ from langchain_core.messages import SystemMessage, BaseMessage, AIMessage, Human
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
-
 from core.agents.utils.llm_factory import get_chat_model
+
+DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
 # Load environment variables
 DIR = Path(__file__).parent.resolve()
 load_dotenv(DIR.parent / ".env", override=True)
-assert "VERDICT_AGENT_MODEL" in os.environ, "Please set the VERDICT_AGENT_MODEL environment variable"
+
 
 
 LLM_OUTPUT_FORMAT = {

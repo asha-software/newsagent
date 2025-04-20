@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 import importlib
 import os
 from pathlib import Path
-
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage, SystemMessage
 from langgraph.graph import StateGraph, START, END
@@ -19,12 +18,13 @@ from core.agents.tools.tool_registry import create_tool
 from core.agents.utils.llm_factory import get_chat_model
 from core.agents.utils.common_types import Evidence
 
+DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
+
 # Absolute path to this dir. For handling relative paths like to prompt file
 DIR = Path(__file__).parent.resolve()
 
-#NOTE Assumes .env is in the parent directory
+# Load env variables from core/.env
 load_dotenv(DIR.parent / '.env', override=True)
-assert "RESEARCH_AGENT_MODEL" in os.environ, "Please set the RESEARCH_AGENT_MODEL environment variable"
 
 # Import prefix for builtin tools
 MODULE_PREFIX = "core.agents.tools.builtins."
@@ -164,7 +164,7 @@ def create_agent(
 
     # Instantiate LLM-based objects for the agent (ChatModel, assistant node)
     if not model:
-        model = os.getenv("RESEARCH_AGENT_MODEL")
+        model = os.getenv("RESEARCH_AGENT_MODEL", DEFAULT_MODEL)
     llm = get_chat_model(model_name=model).bind_tools(tools)
     assistant = get_assistant_node(llm)
 
