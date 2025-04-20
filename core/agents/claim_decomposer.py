@@ -1,4 +1,3 @@
-
 from dotenv import load_dotenv
 import json
 import os
@@ -9,13 +8,11 @@ from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
 
-DIR = Path(__file__).parent.resolve()
-# MODEL = "mistral-nemo"
-# TEMPERATURE = 0
+DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
+DIR = Path(__file__).parent.resolve()
 # Load env variables from core/.env
 load_dotenv(DIR.parent / ".env", override=True)
-assert "CLAIM_DECOMPOSER_MODEL" in os.environ, "Please set the CLAIM_DECOMPOSER_MODEL environment variable"
 
 """
 Define State, LLM output schema, and LLM
@@ -35,9 +32,8 @@ LLM_OUTPUT_FORMAT = {
     }
 }
 
-
 llm = get_chat_model(
-    model_name=os.getenv("CLAIM_DECOMPOSER_MODEL"),
+    model_name=os.getenv("CLAIM_DECOMPOSER_MODEL", DEFAULT_MODEL),
     format_output=LLM_OUTPUT_FORMAT,
 )
 
