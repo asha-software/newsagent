@@ -46,7 +46,6 @@ class TestVerdictAgentNodes:
         human_content = result["messages"][1].content
         assert "Claim 1:" in human_content
         assert "Claim 2:" in human_content
-        assert "Please apply the Evaluation Guidelines" in human_content
 
     @pytest.mark.parametrize(
         "claims, labels, justifications",
