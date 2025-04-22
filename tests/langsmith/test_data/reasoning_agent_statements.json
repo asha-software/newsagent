@@ -1,6 +1,196 @@
 [
   {
     "inputs": {
+      "claim": "India won the ICC Men's Cricket World Cup in 2023.",
+      "evidence": [
+        {
+          "name": "ESPN Cricinfo",
+          "result": "India defeated Australia in the 2023 World Cup final to claim the title."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Tournament records confirm India lifted the 2023 trophy."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2023 Nobel Prize in Literature was awarded to Jon Fosse.",
+      "evidence": [
+        {
+          "name": "NobelPrize.org",
+          "result": "Norwegian author Jon Fosse received the 2023 Nobel Prize in Literature."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Official Nobel records confirm the award."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "In 2024 the European Parliament formally approved the EU AI Act.",
+      "evidence": [
+        {
+          "name": "Politico EU",
+          "result": "On March 13 2024, MEPs voted to adopt the landmark Artificial Intelligence Act."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Parliament voting records verify the Act’s approval."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Japan’s H3 launch vehicle successfully reached orbit in March 2025.",
+      "evidence": [
+        {
+          "name": "JAXA Press Release",
+          "result": "The H3 rocket placed its payload into orbit on March 7 2025."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "JAXA mission logs confirm orbital insertion."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Louvre was the most visited museum worldwide in 2024.",
+      "evidence": [
+        {
+          "name": "The Art Newspaper",
+          "result": "The Louvre topped global visitor charts with 9.6 million visits in 2024."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Annual visitor statistics rank the Louvre first."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2025 Tour de France will feature an individual time trial up Mont Ventoux.",
+      "evidence": [
+        {
+          "name": "CyclingNews",
+          "result": "Route rumors suggest Ventoux could host a time‑trial, but ASO has not released the official 2025 route."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Route details are unconfirmed until ASO’s official announcement."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The European Central Bank will cut interest rates in June 2025.",
+      "evidence": [
+        {
+          "name": "Financial Times",
+          "result": "Analysts are divided; the ECB has given no firm guidance on a June cut."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Future monetary‑policy decisions remain undecided."
+    },
+    "metadata": {
+      "type": "economics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Marvel Studios will release 'Avengers: Secret Wars' as a two‑part film in 2026.",
+      "evidence": [
+        {
+          "name": "Variety",
+          "result": "Studio insiders mention possible two‑part structure, but no official release plan exists."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Release format and date are speculative at this stage."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The EU’s planned 2035 ban on new internal‑combustion cars will be postponed.",
+      "evidence": [
+        {
+          "name": "Reuters",
+          "result": "Some member states seek delays, but the European Commission has not amended the 2035 target."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Policy negotiations are ongoing; no official postponement."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "NASA’s Artemis III mission will land astronauts on the lunar south pole in 2027.",
+      "evidence": [
+        {
+          "name": "NASA",
+          "result": "NASA schedules Artemis III for no earlier than 2027, but slips remain possible."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Launch date and landing site could change as schedules evolve."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
       "claim": "The 2024 US presidential election was won by an independent candidate.",
       "evidence": [
         {
