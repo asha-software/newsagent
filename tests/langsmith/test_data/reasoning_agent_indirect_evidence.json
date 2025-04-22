@@ -1,0 +1,192 @@
+[
+  {
+    "inputs": {
+      "claim": "Germany became the first EU country to make all public transport completely free in 2025.",
+      "evidence": [
+        {
+          "name": "Deutsche Welle",
+          "result": "German transport policy underwent several reforms in 2024 and 2025, most notably the nationwide €49 ‘Deutschland‑Ticket’ that capped monthly travel costs on regional trains and buses. Reports from the Federal Transport Ministry highlight a surge in ridership after its launch. However, the ticket still requires passengers to pay a flat fee rather than travel at no cost. Cities such as Tallinn and Luxembourg have experimented with fare‑free systems, but Berlin officials stated Germany’s approach was ‘affordable, not free’. Analysts note that full national fare abolition would require constitutional budget changes still under debate."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "The paragraph shows Germany introduced a low‑cost pass, not a zero‑fare system."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "South Korea’s 2024 box‑office revenue surpassed its pre‑pandemic 2019 record.",
+      "evidence": [
+        {
+          "name": "Korea Herald",
+          "result": "In its annual industry report, the Korean Film Council noted that 2024 ticket sales rebounded sharply after years of pandemic decline. Total admissions approached 200 million, only marginally lower than the 2019 peak of 226 million. Revenue improved thanks to higher average ticket prices but still fell short of the 2019 record when converted to constant won. Analysts attribute the near‑recovery to ‘Concrete Utopia’ and several home‑grown hits. The council predicts true record‑breaking figures may arrive by 2026 if trends continue."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Evidence indicates 2024 revenue was close but did not exceed 2019’s record."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The African Union was granted a permanent seat at the G20 in 2023.",
+      "evidence": [
+        {
+          "name": "Al‑Jazeera",
+          "result": "During the September 2023 G20 summit in New Delhi, India’s prime minister opened proceedings by welcoming the African Union as a full, permanent member. Delegates applauded the AU chair who took his seat at the round table alongside other leaders. Commentators described the move as a milestone for global south representation. Previously, only South Africa represented the continent. G20 communiqués published afterward list the African Union as the 21st member, confirming its enduring participation."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Evidence narrates the AU’s formal admission as a permanent G20 member."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Entire coral coverage of Australia’s Great Barrier Reef increased for the third consecutive year in 2024.",
+      "evidence": [
+        {
+          "name": "UNESCO Reef Monitoring Report",
+          "result": "Survey vessels recorded notable coral regrowth in the northern and central sections, continuing an encouraging trend from 2022 and 2023. Yet scientists reported fresh bleaching events in the southern sector linked to a severe marine heatwave. The report states that reef‑wide coverage ‘plateaued’ rather than expanded in 2024 owing to regional losses. Marine biologists caution against interpreting localized gains as system‑wide recovery. Overall, the document concludes the three‑year streak of net growth was broken."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Reef‑wide coverage plateaued, so the claim of a third consecutive increase is incorrect."
+    },
+    "metadata": {
+      "type": "environmental",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Canada introduced a federal four‑day work‑week mandate in 2025.",
+      "evidence": [
+        {
+          "name": "CBC News Analysis",
+          "result": "Parliamentarians debated multiple labor‑reform bills in early 2025, with one committee exploring shorter work weeks. Provinces such as Ontario launched pilot incentives for companies adopting compressed schedules. Business groups lobbied against making any schedule compulsory nationwide, citing competitiveness concerns. The federal government ultimately limited reforms to voluntary tax credits rather than a statutory mandate. Commentators view the legislation as incremental rather than revolutionary."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Evidence shows only voluntary incentives, not a mandated four‑day week."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "In 2024, the James Webb Space Telescope detected methane in the atmosphere of an exoplanet within the habitable zone of its star.",
+      "evidence": [
+        {
+          "name": "NASA Goddard Blog",
+          "result": "Webb’s NIRSpec instrument captured spectra from the exoplanet K2‑18 b showing pronounced methane and carbon‑dioxide features. Astrobiologists highlight methane as a potential biosignature when found alongside carbon dioxide and limited carbon monoxide. The planet orbits in its red dwarf’s temperate zone, though its size classifies it as a mini‑Neptune with possible high‑pressure oceans. Peer‑reviewed confirmation is ongoing; researchers emphasize more observations are needed to rule out false positives. Nevertheless, the detection marks Webb’s first strong methane signal on a temperate exoplanet."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Paragraph states Webb detected methane in a temperate‑zone exoplanet’s atmosphere."
+    },
+    "metadata": {
+      "type": "scientific",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2026 FIFA World Cup final will be played in New York City.",
+      "evidence": [
+        {
+          "name": "FIFA Bid Dossier",
+          "result": "FIFA confirmed the 2026 tournament’s host cities in 2022, placing the final at MetLife Stadium in East Rutherford, New Jersey. Although commonly marketed under the greater ‘New York/New Jersey’ banner, the venue lies outside New York City proper. Tourist boards promote NYC accommodations given proximity. Final kickoff times remain tentative pending broadcast negotiations. Urban planners continue upgrades to the stadium’s transit links."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "The evidence speaks of East Rutherford (NJ) branding ambiguity; the claim’s phrasing leaves room for interpretation."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Bitcoin’s market capitalization exceeded US$2 trillion at any point in 2025.",
+      "evidence": [
+        {
+          "name": "Bloomberg Crypto Dashboard",
+          "result": "Bitcoin flirted with the US$70,000 price level in spring 2025, pushing its market cap near 1.35 trillion dollars given the circulating supply. Analysts compared the rally to the 2021 peak, which briefly topped 1.28 trillion. Despite bullish sentiment, macroeconomic headwinds capped gains during Q3. Several strategists argued that institutional inflows would be necessary to reclaim the elusive two‑trillion milestone. Daily closing data showed no session where bitcoin’s valuation crossed the mark."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Evidence shows the cap neared 1.35 T but never reached 2 T in 2025."
+    },
+    "metadata": {
+      "type": "economics",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The United States formally returned to UNESCO as a dues‑paying member in 2024.",
+      "evidence": [
+        {
+          "name": "UNESCO Press Centre",
+          "result": "After years of absence, the U.S. State Department announced its intention to rejoin UNESCO in 2023, citing strategic interests. Congressional appropriations to cover arrears passed with bipartisan support in December 2023. UNESCO’s director‑general welcomed the vote but noted full membership would resume once outstanding fees were deposited. Diplomatic cables in mid‑2024 confirmed the first tranche of payments cleared. Observers expect voting rights to be fully restored at the 2024 General Conference."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Paragraph describes formal dues payment and reinstatement in 2024."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A fully electric commercial airliner completed a transatlantic passenger flight in 2025.",
+      "evidence": [
+        {
+          "name": "Aviation Week",
+          "result": "Prototypes like the Alice commuter plane logged short‑haul test routes, but battery density limitations kept range below 1,000 km. Hybrid‑electric demonstrators crossed longer distances using turbine assistance. Industry executives forecast that all‑electric aircraft capable of crossing the Atlantic will not appear until at least the mid‑2030s. Regulatory frameworks for large‑scale electric passenger jets remain under development. No carrier filed transatlantic electric flight schedules in 2025."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Evidence describes technological limits; claim cannot be confirmed but isn’t categorically disproved."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "hard"
+    }
+  }
+]
