@@ -1,0 +1,952 @@
+[
+  {
+    "inputs": {
+      "claim": "India won the ICC Men's Cricket World Cup in 2023.",
+      "evidence": [
+        {
+          "name": "ESPN Cricinfo",
+          "result": "India defeated Australia in the 2023 World Cup final to claim the title."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Tournament records confirm India lifted the 2023 trophy."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2023 Nobel Prize in Literature was awarded to Jon Fosse.",
+      "evidence": [
+        {
+          "name": "NobelPrize.org",
+          "result": "Norwegian author Jon Fosse received the 2023 Nobel Prize in Literature."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Official Nobel records confirm the award."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "In 2024 the European Parliament formally approved the EU AI Act.",
+      "evidence": [
+        {
+          "name": "Politico EU",
+          "result": "On March 13 2024, MEPs voted to adopt the landmark Artificial Intelligence Act."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Parliament voting records verify the Act’s approval."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Japan’s H3 launch vehicle successfully reached orbit in March 2025.",
+      "evidence": [
+        {
+          "name": "JAXA Press Release",
+          "result": "The H3 rocket placed its payload into orbit on March 7 2025."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "JAXA mission logs confirm orbital insertion."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Louvre was the most visited museum worldwide in 2024.",
+      "evidence": [
+        {
+          "name": "The Art Newspaper",
+          "result": "The Louvre topped global visitor charts with 9.6 million visits in 2024."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Annual visitor statistics rank the Louvre first."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2025 Tour de France will feature an individual time trial up Mont Ventoux.",
+      "evidence": [
+        {
+          "name": "CyclingNews",
+          "result": "Route rumors suggest Ventoux could host a time‑trial, but ASO has not released the official 2025 route."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Route details are unconfirmed until ASO’s official announcement."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The European Central Bank will cut interest rates in June 2025.",
+      "evidence": [
+        {
+          "name": "Financial Times",
+          "result": "Analysts are divided; the ECB has given no firm guidance on a June cut."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Future monetary‑policy decisions remain undecided."
+    },
+    "metadata": {
+      "type": "economics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Marvel Studios will release 'Avengers: Secret Wars' as a two‑part film in 2026.",
+      "evidence": [
+        {
+          "name": "Variety",
+          "result": "Studio insiders mention possible two‑part structure, but no official release plan exists."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Release format and date are speculative at this stage."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The EU’s planned 2035 ban on new internal‑combustion cars will be postponed.",
+      "evidence": [
+        {
+          "name": "Reuters",
+          "result": "Some member states seek delays, but the European Commission has not amended the 2035 target."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Policy negotiations are ongoing; no official postponement."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "NASA’s Artemis III mission will land astronauts on the lunar south pole in 2027.",
+      "evidence": [
+        {
+          "name": "NASA",
+          "result": "NASA schedules Artemis III for no earlier than 2027, but slips remain possible."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Launch date and landing site could change as schedules evolve."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2024 US presidential election was won by an independent candidate.",
+      "evidence": [
+        {
+          "name": "AP News",
+          "result": "The 2024 US presidential election was won by the Republican Party candidate."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Evidence contradicts the claim; the winner was not an independent."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Lionel Messi retired from international football in 2024.",
+      "evidence": [
+        {
+          "name": "ESPN",
+          "result": "As of March 2025, Lionel Messi continues to play for Argentina’s national team."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Messi is still active in international football according to the latest reports."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2025 Academy Award for Best Picture was won by a foreign-language film.",
+      "evidence": [
+        {
+          "name": "Variety",
+          "result": "The 2025 Academy Award for Best Picture went to a U.S.-produced film."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Award records show the winning film was not foreign-language."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Ukraine regained full control over Crimea in 2025.",
+      "evidence": [
+        {
+          "name": "BBC",
+          "result": "As of April 2025, Crimea remains under Russian control."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "No confirmed reports of Ukraine regaining full control over Crimea."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "NASA plans a crewed Mars mission for 2030.",
+      "evidence": [
+        {
+          "name": "NASA",
+          "result": "NASA aims for a crewed Mars mission in the early 2030s, potentially after 2031."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Timelines are speculative and not officially confirmed for 2030."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2024 Summer Olympics were hosted by Paris.",
+      "evidence": [
+        {
+          "name": "Olympics.com",
+          "result": "Paris hosted the 2024 Summer Olympic Games."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Evidence explicitly confirms Paris as the host city."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "China landed a rover on the far side of the Moon in 2024.",
+      "evidence": [
+        {
+          "name": "SpaceNews",
+          "result": "China's far-side lunar mission is scheduled for late 2026."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Planned mission has not occurred yet as of 2024."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2025 Grammy Award for Album of the Year was awarded to a debut artist.",
+      "evidence": [
+        {
+          "name": "Rolling Stone",
+          "result": "The winner of the 2025 Grammy for Album of the Year had released two previous albums."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "The winner was not a debut artist according to release history."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Inflation in the Eurozone dropped below 2% in early 2025.",
+      "evidence": [
+        {
+          "name": "ECB",
+          "result": "Eurozone inflation rate in Q1 2025 averaged 2.6%."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Evidence shows inflation remained above 2%."
+    },
+    "metadata": {
+      "type": "economics",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2024 Nobel Peace Prize was awarded to a climate activist.",
+      "evidence": [
+        {
+          "name": "NobelPrize.org",
+          "result": "The Nobel Peace Prize in 2024 went to a coalition promoting press freedom."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Recipient focus was on journalism, not climate activism."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Apple launched its first foldable iPhone in 2025.",
+      "evidence": [
+        {
+          "name": "TechCrunch",
+          "result": "Apple has not officially released a foldable iPhone as of April 2025."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "No official product launch reported as of the date."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2025 Cannes Film Festival awarded Best Director to a woman.",
+      "evidence": [
+        {
+          "name": "Cannes Official Website",
+          "result": "The Best Director award in 2025 went to a female filmmaker."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Official festival sources confirm a woman won the award."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Joe Biden is seeking re-election in 2024.",
+      "evidence": [
+        {
+          "name": "CNN",
+          "result": "Joe Biden formally announced his 2024 re-election campaign."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Official announcement confirms his candidacy."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The UK rejoined the European Union in 2025.",
+      "evidence": [
+        {
+          "name": "The Guardian",
+          "result": "The UK remains outside the EU as of April 2025."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Current political status confirms the UK has not rejoined the EU."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Taylor Swift announced retirement from music in 2025.",
+      "evidence": [
+        {
+          "name": "Billboard",
+          "result": "Taylor Swift announced a new album and tour for 2025."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Ongoing musical projects contradict retirement rumors."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Qatar hosted the 2023 Asian Cup final.",
+      "evidence": [
+        {
+          "name": "Al Jazeera",
+          "result": "Qatar hosted the 2023 AFC Asian Cup final in Lusail."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Confirmed by official tournament records."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "France won the 2022 FIFA World Cup.",
+      "evidence": [
+        {
+          "name": "FIFA",
+          "result": "Argentina won the 2022 FIFA World Cup by beating France in the final."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "France reached the final but lost to Argentina."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "A new Picasso painting was discovered in Spain in 2024.",
+      "evidence": [
+        {
+          "name": "El País",
+          "result": "Experts are investigating a previously unknown artwork possibly by Picasso found in Madrid."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Authenticity is still under investigation, no official confirmation yet."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Water boils at 100°C at sea level.",
+      "evidence": [
+        {
+          "name": "Wikipedia",
+          "result": "Water's boiling point at sea level is 100°C"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Evidence explicitly confirms the claim."
+    },
+    "metadata": {
+      "type": "scientific",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The capital of France is Madrid.",
+      "evidence": [
+        {
+          "name": "Wikipedia",
+          "result": "The capital city of France is Paris"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Madrid is the capital of Spain, not France."
+    },
+    "metadata": {
+      "type": "geographical",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Vaccines cause autism.",
+      "evidence": [
+        {
+          "name": "CDC",
+          "result": "No credible scientific evidence links vaccines to autism"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Extensive research disproves any link between vaccines and autism."
+    },
+    "metadata": {
+      "type": "medical",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Gold melts at 1064 degrees Celsius.",
+      "evidence": [
+        {
+          "name": "Encyclopedia Britannica",
+          "result": "The melting point of gold is exactly 1064°C"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Evidence explicitly confirms the melting point of gold."
+    },
+    "metadata": {
+      "type": "scientific",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Earth is 4.6 billion years old.",
+      "evidence": [
+        {
+          "name": "NASA",
+          "result": "Radiometric dating estimates Earth’s age to be around 4.6 billion years"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Scientific consensus and dating methods confirm this age."
+    },
+    "metadata": {
+      "type": "scientific",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Humans use only 10% of their brains.",
+      "evidence": [
+        {
+          "name": "Scientific American",
+          "result": "Neurological studies show humans utilize most of their brain regions daily"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Neurological evidence disproves this popular myth."
+    },
+    "metadata": {
+      "type": "myth",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Lightning never strikes the same place twice.",
+      "evidence": [
+        {
+          "name": "National Geographic",
+          "result": "Lightning frequently strikes tall structures repeatedly"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Documented cases of repeated lightning strikes disprove this claim."
+    },
+    "metadata": {
+      "type": "myth",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Coffee stunts growth.",
+      "evidence": [
+        {
+          "name": "Mayo Clinic",
+          "result": "No scientific evidence links coffee consumption to growth suppression"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "No scientific studies support this claim."
+    },
+    "metadata": {
+      "type": "medical",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Great white sharks are mammals.",
+      "evidence": [
+        {
+          "name": "Marine Biology Journal",
+          "result": "Great white sharks are fish, specifically cartilaginous fish"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Sharks are classified as fish, not mammals."
+    },
+    "metadata": {
+      "type": "biological",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Amazon rainforest produces 20% of the Earth's oxygen.",
+      "evidence": [
+        {
+          "name": "National Geographic",
+          "result": "The Amazon rainforest contributes approximately 6-9% of global oxygen production"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Actual scientific estimates are significantly lower than 20%."
+    },
+    "metadata": {
+      "type": "environmental",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Water boils at 100°C at sea level.",
+      "evidence": [
+        {
+          "name": "Wikipedia",
+          "result": "Water's boiling point at sea level is 100°C"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Evidence explicitly confirms the claim."
+    },
+    "metadata": {
+      "type": "scientific",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The capital of France is Madrid.",
+      "evidence": [
+        {
+          "name": "Wikipedia",
+          "result": "The capital city of France is Paris"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Madrid is the capital of Spain, not France."
+    },
+    "metadata": {
+      "type": "geographical",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Vaccines cause autism.",
+      "evidence": [
+        {
+          "name": "CDC",
+          "result": "No credible scientific evidence links vaccines to autism"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Extensive research disproves any link between vaccines and autism."
+    },
+    "metadata": {
+      "type": "medical",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Gold melts at 1064 degrees Celsius.",
+      "evidence": [
+        {
+          "name": "Encyclopedia Britannica",
+          "result": "The melting point of gold is exactly 1064°C"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Evidence explicitly confirms the melting point of gold."
+    },
+    "metadata": {
+      "type": "scientific",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Earth is 4.6 billion years old.",
+      "evidence": [
+        {
+          "name": "NASA",
+          "result": "Radiometric dating estimates Earth’s age to be around 4.6 billion years"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Scientific consensus and dating methods confirm this age."
+    },
+    "metadata": {
+      "type": "scientific",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Humans use only 10% of their brains.",
+      "evidence": [
+        {
+          "name": "Scientific American",
+          "result": "Neurological studies show humans utilize most of their brain regions daily"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Neurological evidence disproves this popular myth."
+    },
+    "metadata": {
+      "type": "myth",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Lightning never strikes the same place twice.",
+      "evidence": [
+        {
+          "name": "National Geographic",
+          "result": "Lightning frequently strikes tall structures repeatedly"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Documented cases of repeated lightning strikes disprove this claim."
+    },
+    "metadata": {
+      "type": "myth",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Coffee stunts growth.",
+      "evidence": [
+        {
+          "name": "Mayo Clinic",
+          "result": "No scientific evidence links coffee consumption to growth suppression"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "No scientific studies support this claim."
+    },
+    "metadata": {
+      "type": "medical",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Great white sharks are mammals.",
+      "evidence": [
+        {
+          "name": "Marine Biology Journal",
+          "result": "Great white sharks are fish, specifically cartilaginous fish"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Sharks are classified as fish, not mammals."
+    },
+    "metadata": {
+      "type": "biological",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The Amazon rainforest produces 20% of the Earth's oxygen.",
+      "evidence": [
+        {
+          "name": "National Geographic",
+          "result": "The Amazon rainforest contributes approximately 6-9% of global oxygen production"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Actual scientific estimates are significantly lower than 20%."
+    },
+    "metadata": {
+      "type": "environmental",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Bananas grow on trees.",
+      "evidence": [
+        {
+          "name": "Britannica",
+          "result": "Bananas grow on large herbaceous flowering plants, not trees"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "false",
+      "justification": "Bananas grow on plants that are technically herbs, not trees."
+    },
+    "metadata": {
+      "type": "biological",
+      "difficulty": "easy"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Albert Einstein won a Nobel Prize in Physics.",
+      "evidence": [
+        {
+          "name": "NobelPrize.org",
+          "result": "Albert Einstein won the Nobel Prize in Physics in 1921"
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Historical records confirm Einstein's Nobel Prize."
+    },
+    "metadata": {
+      "type": "historical",
+      "difficulty": "easy"
+    }
+  }
+  ]
