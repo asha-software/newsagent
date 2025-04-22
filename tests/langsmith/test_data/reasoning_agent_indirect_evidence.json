@@ -1,6 +1,196 @@
 [
   {
     "inputs": {
+      "claim": "The World Health Organization officially declared an end to the COVID‑19 global health emergency in 2023.",
+      "evidence": [
+        {
+          "name": "WHO Media Briefing Transcript",
+          "result": "The Geneva press room filled quickly on 5 May 2023 ahead of the Director‑General’s weekly address. Journalists noted the absence of the large epidemiological charts that had dominated earlier briefings. Dr Tedros began by thanking frontline workers and vaccine developers for three years of effort. He stated the Emergency Committee had convened for its fifteenth meeting the previous day. A unanimous vote recommended lifting the Public Health Emergency of International Concern. The Director‑General accepted the advice, thereby terminating the legal emergency status. Member states were urged to integrate COVID‑19 surveillance into routine respiratory‑disease programmes. Financial officers confirmed the shift would reallocate contingency funds to long‑term preparedness. Reporters asked whether travel‑health regulations would now change; officials answered that each country retained border discretion. Charts showed steep global declines in hospitalisations and deaths since early 2022. A slide compared vaccine coverage by income quintile, noting gaps that still needed closing. Civil‑society groups present at the briefing pledged to continue booster‑dose campaigns. WHO legal counsel clarified that the decision did not mark the end of the pandemic but of the emergency phase. Regional directors joined via video link to outline transition road‑maps. Stock‑market analysts later wrote that the announcement signalled a turning point for travel and hospitality sectors. Health‑ministry spokespeople from several continents issued statements aligning with the new phase. Global news outlets ran the headline “WHO DOWNGRADES COVID‑19”. Academic modellers described the decision as expected given months of declining case fatality. No delegate requested a dissenting footnote in the official minutes. The streamed briefing ended with applause usually absent from technical WHO updates."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "The briefing narrative explicitly records the formal termination of the PHEIC in 2023."
+    },
+    "metadata": {
+      "type": "current events",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "India's Chandrayaan‑3 mission achieved a successful soft landing near the lunar south pole in August 2023.",
+      "evidence": [
+        {
+          "name": "ISRO Mission Logbook",
+          "result": "Telemetry on 23 August 2023 indicated the Vikram lander had begun its powered descent. Engineers inside Mission Control in Bengaluru watched Doppler velocity plots stabilise within expected parameters. A collective cheer erupted when ground tracking showed touchdown confirmation at 12:34 UTC. Surface cameras transmitted panoramic images of a gently sloped plain within the targeted high‑latitude zone. Pre‑landing hazard maps had highlighted boulder fields to the west that the onboard computer successfully avoided. Temperatures on landing leg sensors matched predictions for a dawn terminator environment. Prime Minister Modi, joining via video link from Johannesburg, congratulated scientists on “this historic moment”. The Polar Satellite Launch Vehicle insignia was visible on a flag unfurled by engineers. ISRO published coordinates giving a latitude of roughly 69 degrees south. Science teams prepared to deploy the Pragyan rover ramp within four hours. International media contrasted the achievement with Luna‑25’s crash the previous week. NASA Administrator Bill Nelson tweeted “Congratulations @ISRO on being the 4th nation to soft‑land on the Moon!” South‑pole landing attempts are notoriously difficult due to low sun angles limiting power. Mission planners selected the region for its permanently shadowed craters thought to contain water ice. Spectrometers aboard the lander began collecting thermal‑emission data by the second lunar day. European Space Agency tracking dishes in New Norcia relayed high‑bandwidth telemetry during orbiter passes. ATV fuel margins after descent were logged at three percent, well within safety limits. Budget analysts noted the entire mission cost under $100 million, showcasing frugal engineering. Geologists worldwide requested raw image mosaics for peer‑review analysis. All official documentation refers to the landing as fully successful, with no loss‑of‑mission events recorded."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Mission logs, coordinates and global reactions confirm a successful south‑polar landing in Aug 2023."
+    },
+    "metadata": {
+      "type": "scientific",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Spain won the inaugural UEFA Women's Nations League in 2024.",
+      "evidence": [
+        {
+          "name": "UEFA Match Centre Archive",
+          "result": "The final was staged at La Cartuja Stadium in Seville on 24 February 2024. Ticket allocation for home fans sold out within 48 hours, signalling intense local interest. Spain faced France, who had edged Germany in the semi‑finals. The match opened with high‑press tactics employed by La Roja. Midfielder Aitana Bonmatí struck first in the 27th minute after a one‑two with Alexia Putellas. France equalised five minutes before halftime through a long‑range effort by Grace Geyoro. Second‑half possession tilted 62 percent in Spain’s favour according to Opta stats. A decisive header from centre‑back Ivana Andrés found the net in the 78th minute. VAR checked for offside but upheld the goal. Crowd noise peaked at 112 decibels, per stadium sensors. Goalkeeper Misa Rodríguez pulled off a fingertip save in stoppage time to preserve the lead. The referee blew full time after six added minutes. UEFA dignitaries presented gold medals on a stage draped with red‑and‑yellow livery. Captain Irene Paredes hoisted the silver Nations League trophy amid confetti cannons. Official statistics list Spain as champions with a 2‑1 score line. Broadcast rights on RTVE achieved the highest women’s football viewership in Spanish history. Analysts hailed the result as confirmation of Spain’s dominance following their 2023 World Cup victory. FIFA rankings released in March kept Spain top. French newspapers acknowledged tactical superiority of the hosts. UEFA’s historical page now shows Spain as the first name on the Women’s Nations League honour roll."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "UEFA’s archive verifies Spain lifted the first Women’s Nations League trophy in 2024."
+    },
+    "metadata": {
+      "type": "sports",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Amazon's Project Kuiper launched its first two prototype satellites in 2023.",
+      "evidence": [
+        {
+          "name": "FCC Launch Manifest Filing",
+          "result": "A document stamped 7 October 2023 records liftoff of the Atlas V 501 designated “KuiperSat‑1” and “KuiperSat‑2”. Launch provider United Launch Alliance listed the mission under contract LK‑1A. The vehicle departed Cape Canaveral’s SLC‑41 at 14:06 UTC. Stage‑one RD‑180 engines burned for four minutes and ten seconds before main‑engine cutoff. Centaur upper‑stage ignition placed the payload in a 500‑km circular orbit inclined 30 degrees. Amazon engineers confirmed first contact via the Protoflight ground station in McAllen, Texas. Telemetry packets included temperature readings of the Ka‑band phased‑array antennas. Orbit‑raising manoeuvres using krypton Hall‑effect thrusters commenced two days later. Amazon’s blog outlined plans for inter‑satellite laser‑link tests. Competitors Starlink and OneWeb issued congratulatory statements. The FCC Public Notice granted experimental authority for 10.7–12.7 GHz downlink frequencies. Atmospheric drag models estimate deorbit no later than 2027 to avoid space‑debris buildup. ULA CEO Tory Bruno tweeted a launch photo captioned “Kuiper prototypes on their way”. Telemetry graphs showed battery state of charge nominal. Amazon’s Project Kuiper vice‑president described the mission as a “dress rehearsal” for full‑scale deployment. The satellites were equipped with deployable solar arrays spanning ten metres. Ground‑terminal prototypes in Redmond successfully received broadband test packets. The launch fulfilled Amazon’s FCC milestone to deploy satellites by July 2026. Industry analysts now estimate a first operational batch in late 2025. All flight data confirm two satellites from Project Kuiper were indeed launched in 2023."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "FCC filings and mission telemetry collectively confirm the twin prototypes launched in 2023."
+    },
+    "metadata": {
+      "type": "technology",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The COP28 final text included a call to transition away from fossil fuels.",
+      "evidence": [
+        {
+          "name": "UNFCCC Plenary Transcript – Dubai 13 Dec 2023",
+          "result": "Delegates reconvened at 2 a.m. local time for the closing plenary. COP President Sultan Al Jaber gavelled the session to order. He introduced the “UAE Consensus” document as the compromise text. Paragraph 28 reads, “Parties agree to transition away from fossil fuels in energy systems in a just, orderly and equitable manner.” This phrase followed days of negotiation over the wording “phase‑out”. Small‑island states initially objected but later accepted the formulation. Saudi Arabia recorded a formal statement of reservations yet did not block adoption. The plenary hall erupted in applause when the text passed by consensus. Climate NGOs noted this was the first explicit fossil‑fuel‑transition reference in COP history. Media headlines worldwide spotlighted the phrase as a diplomatic breakthrough. Oil‑exporting economies emphasised recognition of differing national circumstances. Technical annexes outline finance mechanisms for renewables. Several paragraphs promote tripling global renewable capacity by 2030. Observers compared the language to the weaker “phase‑down” term used at COP26. UN Secretary‑General António Guterres praised the outcome as historic. Fact‑checking groups confirmed the wording remained intact in the final published PDF. Stock markets saw renewable‑energy shares rise the following morning. Fossil‑fuel lobbyists argued the pledge remains non‑binding. Legal scholars said the text sets a normative precedent despite vagueness. Thus, the adopted decision text plainly calls for transitioning away from fossil fuels."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "true",
+      "justification": "Quoted paragraph 28 and surrounding context demonstrate the fossil‑fuel transition language was adopted."
+    },
+    "metadata": {
+      "type": "environmental",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "More than half of Nigeria's adult population actively uses the eNaira by 2025.",
+      "evidence": [
+        {
+          "name": "Central Bank of Nigeria Digital Currency Dashboard",
+          "result": "Quarterly data released in October 2025 list 16.4 million verified eNaira wallets. Nigeria’s National Bureau of Statistics estimates an adult population of roughly 110 million. Wallet activations grew after the cash‑shortage crisis but plateaued in Q3. Analysts differ on how many wallets correspond to unique users versus duplicates. Point‑of‑sale merchants report eNaira represents under ten percent of daily transactions. A Lagos fintech survey found 37 percent of respondents had tried the CBDC at least once. Rural‑bank‑agent associations cite patchy mobile coverage as a barrier. The central bank unveiled incentives such as five‑percent cashback on utility bills. Cryptocurrency enthusiasts remain sceptical due to wallet KYC requirements. The International Monetary Fund staff urged clearer usage metrics. Several states accepted eNaira for motor‑vehicle taxes, boosting registrations. Commercial banks bundle eNaira with new account openings by default. Tech bloggers claim many users delete the app after initial curiosity. Government payroll trials for youth‑service members began in August. No independent audit verifies active monthly users relative to adults. The central bank promises a dashboard revamp in 2026. Senate hearings questioned data transparency. Payment‑switch operators requested API enhancements. Academic economists await peer‑reviewed uptake studies. Current evidence leaves the 50‑percent adoption threshold unproven."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "User‑count figures and surveys are inconclusive; active‑usage rate may be well below or above 50 percent."
+    },
+    "metadata": {
+      "type": "economics",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Apple will launch its long‑rumoured electric ‘Apple Car’ in 2026.",
+      "evidence": [
+        {
+          "name": "Wall Street Journal Tech Dossier",
+          "result": "Project Titan has shifted focus repeatedly since its inception in 2014. Sources say Apple cut 200 automotive positions in early 2025. Executives reportedly debated pivoting from full vehicle to advanced driver‑assist systems. Hyundai‑Kia negotiations in 2021 never materialised into a production contract. Recent job postings emphasise battery safety and charging‑network integration. Morgan Stanley notes Apple doubled its secret‑road‑testing mileage year on year. Patent filings reveal a crab‑steering mechanism. Supply‑chain insiders maintain Foxconn aims to assemble an EV for multiple brands. Apple refuses to answer analyst questions on manufacturing partners. Regulatory filings list no vehicle under the Apple brand. Industry timelines suggest homologation requires at least 30 months once a prototype is frozen. Former employees cite indecision on Level‑4 autonomy targets. Battery‑cell suppliers in Korea have not signed volume contracts. CarPlay announcements at WWDC 25 focused only on software. Share‑price movements around “Apple Car” rumours remain volatile. Reuters’ investigative piece says 2028 is the earliest feasible launch. Leaked internal memos stress “no ship before perfect”. German testing grounds spotted a LiDAR‑equipped van but carried no Apple logo. Consultants predict a reveal event could slip if macro conditions worsen. Thus, a firm 2026 launch cannot be confirmed or dismissed conclusively."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Evidence shows both progress and delays; no definitive commitment makes 2026 uncertain."
+    },
+    "metadata": {
+      "type": "technology",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Greenland will achieve full political independence from Denmark by 2030.",
+      "evidence": [
+        {
+          "name": "Nordic Council Policy Brief",
+          "result": "Greenland’s 2024 election returned a government supportive of increased autonomy. Talks with Copenhagen opened on expanding mineral‑licence control. The Danish constitution still requires a national referendum for sovereignty changes. Polling shows Danish voters split on relinquishing Arctic security responsibilities. Greenlandic public opinion favours independence but diverges on timeline due to economic concerns. The EU reiterated that fisheries‑agreement renegotiation would be mandatory. U.S. State Department cables classify Greenland as a strategic pivot. China’s rare‑earth consortium expressed investment interest in Kvanefjeld. Icelandic diplomats predicted a phased decoupling model rather than a single date. IMF projections show Greenland’s budget reliant on an annual block grant equal to 20 percent of GDP. Tourism revenue growth lags behind forecasts. Climate‑change impacts on ice‑sheet melt could reshape commercial shipping but remain speculative. A constitutional‑commission draft is due in 2027. Denmark’s prime minister signalled openness to “any mutually beneficial arrangement”. No joint declaration has set 2030 as a hard deadline. Greenland’s foreign‑affairs minister aims to open more overseas missions first. Legal scholars debate whether unilateral independence is compatible with NATO treaties. A multilateral working group on currency options has not convened. UN procedures for new‑state admission average two years from application. Overall, independence by 2030 remains possible but uncommitted and heavily contingent."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Multiple pathways exist, but no binding agreement fixates on 2030; outcome remains unsettled."
+    },
+    "metadata": {
+      "type": "politics",
+      "difficulty": "hard"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "Scotland will implement a nationwide universal basic income scheme in 2026.",
+      "evidence": [
+        {
+          "name": "Holyrood Economic Committee Minutes",
+          "result": "Four Scottish councils concluded UBI feasibility pilots in late 2024. Participants received £1 600 per month for two years under controlled conditions. Initial evaluations showed reductions in anxiety and higher entrepreneurship rates. Funding relied partly on dormant‑account reallocation. The Scottish Government lacks full fiscal autonomy to raise income‑tax bands unilaterally above certain thresholds. UK Treasury officials cautioned that block‑grant adjustments may apply. A citizens’ assembly recommended phased expansion beginning with under‑25s. Opposition parties expressed willingness to back the policy only if costed by the Scottish Fiscal Commission. The commission’s draft puts annual net cost at £13 billion. Oil‑revenue volatility complicates long‑term projections. EU examples such as Finland’s pilot inform design but differ in scale. Public consultations close in March 2025. Legislation would need passage before Christmas 2025 for a 2026 rollout. Civil‑service procurement timelines for payments infrastructure stretch 14 months. Advocates argue digital ID integration could shorten lead times. Polling shows 54 percent support but drops once tax rises are mentioned. Green Party MSPs link UBI to climate‑transition dividends. Labour MSPs seek targeted child‑poverty measures instead. No final bill text has yet entered Stage 1 scrutiny. Therefore, implementation by 2026 is plausible but far from assured."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Evidence outlines pilots and hurdles; a 2026 start is neither confirmed nor cancelled."
+    },
+    "metadata": {
+      "type": "economics",
+      "difficulty": "medium"
+    }
+  },
+  {
+    "inputs": {
+      "claim": "The 2026 Palme d'Or will be awarded to a debut director from India.",
+      "evidence": [
+        {
+          "name": "Cannes Film Market Trend Report",
+          "result": "The 2026 festival selection process has yet to begin; submissions open in November 2025. Industry buzz at this year's Marché du Film highlighted strong South‑Asian co‑productions. Cannes artistic director Thierry Frémaux praised recent Indian arthouse titles in a panel discussion, yet emphasised jury independence. Data on Palme d'Or winners show only one Indian director, Satyajit Ray, earning a major Cannes prize decades ago. Anupama Chopra reported that three debut Indian features have secured European distributors. Film‑fund insiders suggest at least one will premiere in Berlin instead. Historical analysis reveals only two debut features have won the Palme in the last fifteen years. Competition from established auteurs like Bong Joon‑ho and Céline Sciamma is expected. Oscilloscope Laboratories scouted a Gujarati‑language drama rumoured to have Palme potential. Financing delays often push debut releases outside Cannes deadlines. Jury composition for 2026 remains unknown; preferences can sway outcomes unpredictably. Streaming platforms plan simultaneous festival submissions, complicating premiere status. Weather‑related construction on the Palais could affect screening schedules. French press speculate next year’s theme may focus on Mediterranean cinema. No official shortlist will be announced until April 2026. The festival rarely telegraphs winners before closing night. Bookmakers have not issued odds yet. Insiders remind that post‑production schedules slip frequently. Therefore, awarding the Palme d'Or to an Indian debut is possible but far from certain."
+        }
+      ]
+    },
+    "outputs": {
+      "label": "unknown",
+      "justification": "Selection and jury factors remain undecided; claim is currently speculative."
+    },
+    "metadata": {
+      "type": "arts",
+      "difficulty": "medium"
+    }
+  },  
+  {
+    "inputs": {
       "claim": "The International Space Station (ISS) was deorbited in 2025.",
       "evidence": [
         {
@@ -372,8 +562,9 @@
     },
     "outputs": {
       "label": "false",
-      "justification": "Evidence shows totality misses the UK; only a high‑magnitude partial eclipse is expected."},
-      "metadata": {
+      "justification": "Evidence shows totality misses the UK; only a high‑magnitude partial eclipse is expected."
+    },
+    "metadata": {
       "type": "scientific",
       "difficulty": "medium"
     }
