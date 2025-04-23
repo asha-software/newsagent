@@ -11,7 +11,6 @@ from .models import UserTool, APIKey, SharedSearchResult, EmailVerification, Pen
 from .forms import UserToolForm
 from .utils import get_builtin_tools, send_verification_email, send_password_reset_email
 import json
-<<<<<<< HEAD
 import requests
 
 # Helper functions for API operations
@@ -91,9 +90,6 @@ def api_request(method, endpoint, api_key, json_data=None):
                 return False, f"Error: {response.status_code} - {response.text}"
     except Exception as e:
         return False, str(e)
-=======
-import datetime
->>>>>>> main
 
 def signin(request): 
     if request.user.is_authenticated:
