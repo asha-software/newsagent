@@ -11,7 +11,89 @@ from .models import UserTool, APIKey, SharedSearchResult, EmailVerification, Pen
 from .forms import UserToolForm
 from .utils import get_builtin_tools, send_verification_email, send_password_reset_email
 import json
+<<<<<<< HEAD
+import requests
+
+# Helper functions for API operations
+def get_user_api_key(request, redirect_url=None, redirect_kwargs=None):
+    """
+    Get the user's active API key.
+    Returns (api_key, error_response)
+    If there's an error, api_key will be None and error_response will be a redirect response.
+    """
+    api_key = APIKey.objects.filter(user=request.user, is_active=True).first()
+    if not api_key:
+        messages.error(request, "No active API key found. Please create an API key first.")
+        if redirect_kwargs:
+            return None, redirect(redirect_url, **redirect_kwargs)
+        else:
+            return None, redirect(redirect_url)
+    return api_key, None
+
+def prepare_tool_data_from_form(form):
+    """
+    Extract tool data from a form.
+    """
+    # Ensure param_mapping is a valid dictionary (not None)
+    param_mapping = form.cleaned_data.get('param_mapping', {})
+    if param_mapping is None:
+        param_mapping = {}
+    
+    return {
+        'name': form.cleaned_data['name'],
+        'description': form.cleaned_data['description'],
+        'method': form.cleaned_data['method'],
+        'url_template': form.cleaned_data['url_template'],
+        'headers': form.cleaned_data['headers'],
+        'default_params': form.cleaned_data['default_params'],
+        'data': form.cleaned_data['data'],
+        'json_payload': form.cleaned_data['json_payload'],
+        'docstring': form.cleaned_data['docstring'],
+        'target_fields': form.cleaned_data['target_fields'],
+        'param_mapping': param_mapping,
+        'is_active': form.cleaned_data['is_active'],
+        'is_preferred': form.cleaned_data['is_preferred']
+    }
+
+def api_request(method, endpoint, api_key, json_data=None):
+    """
+    Make an API request to the FastAPI backend.
+    Returns (success, response_or_error)
+    """
+    url = f"{settings.API_URL}{endpoint}"
+    headers = {'X-API-Key': api_key.key}
+    
+    try:
+        if method == 'GET':
+            response = requests.get(url, headers=headers)
+        elif method == 'POST':
+            response = requests.post(url, json=json_data, headers=headers)
+        elif method == 'DELETE':
+            response = requests.delete(url, headers=headers)
+        else:
+            return False, f"Unsupported method: {method}"
+        
+        if response.status_code in [200, 201]:
+            return True, response
+        else:
+            # Try to get the error detail from the response
+            try:
+                error_data = response.json()
+                # Check if the error is about a duplicate tool name
+                if response.status_code == 400 and 'detail' in error_data:
+                    if 'already exists' in error_data['detail']:
+                        return False, f"A tool with this name already exists."
+                    else:
+                        return False, error_data['detail']
+                else:
+                    return False, str(error_data)
+            except Exception:
+                return False, f"Error: {response.status_code} - {response.text}"
+    except Exception as e:
+        return False, str(e)
+=======
 import datetime
+>>>>>>> main
 
 def signin(request): 
     if request.user.is_authenticated:
@@ -623,11 +705,27 @@ def tool_create(request):
     if request.method == 'POST':
         form = UserToolForm(request.POST)
         if form.is_valid():
-            tool = form.save(commit=False)
-            tool.user = request.user
-            tool.save()
-            messages.success(request, f"Tool '{tool.name}' created successfully!")
-            return redirect('tool_list')
+            # Get the user's API key
+            api_key, error_response = get_user_api_key(request, 'tool_create')
+            if error_response:
+                return error_response
+            
+            # Prepare the tool data
+            tool_data = prepare_tool_data_from_form(form)
+            
+            # Make API call to create tool
+            success, result = api_request('POST', '/tools/custom', api_key, tool_data)
+            
+            if success:
+                messages.success(request, f"Tool '{tool_data['name']}' created successfully!")
+                return redirect('tool_list')
+            else:
+                # Show the error message on the form page
+                messages.error(request, f"Error creating tool: {result}")
+                return render(request, 'user_info/tool_form.html', {
+                    'form': form,
+                    'title': 'Create New Tool'
+                })
     else:
         form = UserToolForm()
     
@@ -643,9 +741,38 @@ def tool_edit(request, tool_id):
     if request.method == 'POST':
         form = UserToolForm(request.POST, instance=tool)
         if form.is_valid():
-            form.save()
-            messages.success(request, f"Tool '{tool.name}' updated successfully!")
-            return redirect('tool_list')
+            # Get the user's API key
+            api_key, error_response = get_user_api_key(request, 'tool_edit', {'tool_id': tool_id})
+            if error_response:
+                return error_response
+            
+            # Prepare the tool data
+            tool_data = prepare_tool_data_from_form(form)
+            
+            # Delete the existing tool
+            success, result = api_request('DELETE', f'/tools/custom/{tool_id}', api_key)
+            if not success:
+                # Show the error message on the form page
+                messages.error(request, f"Error updating tool: {result}")
+                return render(request, 'user_info/tool_form.html', {
+                    'form': form,
+                    'tool': tool,
+                    'title': f"Edit Tool: {tool.name}"
+                })
+            
+            # Create a new tool with the updated data
+            success, result = api_request('POST', '/tools/custom', api_key, tool_data)
+            if success:
+                messages.success(request, f"Tool '{tool_data['name']}' updated successfully!")
+                return redirect('tool_list')
+            else:
+                # Show the error message on the form page
+                messages.error(request, f"Error updating tool: {result}")
+                return render(request, 'user_info/tool_form.html', {
+                    'form': form,
+                    'tool': tool,
+                    'title': f"Edit Tool: {tool.name}"
+                })
     else:
         # Convert JSON fields to strings for the form
         initial_data = {
@@ -666,8 +793,20 @@ def tool_delete(request, tool_id):
     
     if request.method == 'POST':
         tool_name = tool.name
-        tool.delete()
-        messages.success(request, f"Tool '{tool_name}' deleted successfully!")
+        
+        # Get the user's API key
+        api_key, error_response = get_user_api_key(request, 'tool_list')
+        if error_response:
+            return error_response
+        
+        # Make API call to delete tool
+        success, result = api_request('DELETE', f'/tools/custom/{tool_id}', api_key)
+        
+        if success:
+            messages.success(request, f"Tool '{tool_name}' deleted successfully!")
+        else:
+            messages.error(request, f"Error deleting tool: {result}")
+        
         return redirect('tool_list')
     
     return render(request, 'user_info/tool_confirm_delete.html', {'tool': tool})

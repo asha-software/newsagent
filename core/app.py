@@ -381,6 +381,17 @@ async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depe
                     detail=f"A tool with the name '{tool.name}' already exists."
                 )
 
+            # Fetch the list of built-in tools
+            builtin_tools_response = await get_builtin_tools()
+            builtin_tools = [tool['name'] for tool in builtin_tools_response['tools']]
+
+            # Check if the tool name conflicts with built-in tools
+            if tool.name in builtin_tools:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"The tool name '{tool.name}' conflicts with a built-in tool name. Please choose a different name."
+                )
+
             # Insert the new tool
             cursor.execute(
                 """
