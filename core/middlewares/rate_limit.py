@@ -42,7 +42,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             The response, potentially with rate limit headers or a 429 status code
         """
         # Skip rate limiting for non-query endpoints
-        if not request.url.path.endswith('/query'):
+        if not request.url.path.endswith("/query"):
             return await call_next(request)
 
         # Get the API key from the header
@@ -54,7 +54,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         current_time = time.time()
         # Remove requests older than 1 minute
         self.request_history[api_key] = [
-            timestamp for timestamp in self.request_history[api_key]
+            timestamp
+            for timestamp in self.request_history[api_key]
             if current_time - timestamp < 60
         ]
 
@@ -71,9 +72,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
                     "rate_limit": {
                         "limit": self.requests_per_minute,
                         "remaining": 0,
-                        "reset_after_seconds": int(seconds_until_reset)
-                    }
-                }
+                        "reset_after_seconds": int(seconds_until_reset),
+                    },
+                },
             )
 
         # Add the current request to the history
@@ -83,6 +84,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         response.headers["X-Rate-Limit-Limit"] = str(self.requests_per_minute)
         response.headers["X-Rate-Limit-Remaining"] = str(
-            self.requests_per_minute - len(self.request_history[api_key]))
+            self.requests_per_minute - len(self.request_history[api_key])
+        )
 
         return response
