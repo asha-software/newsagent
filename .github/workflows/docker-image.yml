@@ -14,7 +14,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4.2.2
       - name: Create stub .env file
-      - run: touch core/.env
+      - run: |
+          touch core/.env
       - name: Run docker compose
         uses: hoverkraft-tech/compose-action@v2.0.1
         with:
