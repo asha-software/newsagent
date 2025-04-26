@@ -38,6 +38,7 @@ async def get_current_user(request: Request) -> dict[str, Any]:
         raise HTTPException(status_code=401, detail="Not authenticated")
     return user
 
+
 # API Key models
 
 
@@ -57,7 +58,7 @@ class APIKeyResponse(BaseModel):
 class CustomToolCreate(BaseModel):
     name: str
     description: str = ""
-    method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"]
     url_template: str
     headers: Optional[Dict[str, str]] = None
     default_params: Optional[Dict[str, str]] = None
@@ -65,7 +66,12 @@ class CustomToolCreate(BaseModel):
     json_payload: Optional[Dict[str, str]] = None
     docstring: str = ""
     target_fields: Optional[List[List[Union[str, int]]]] = None
-    param_mapping: Dict[str, Dict[str, Union[str, Literal['url_params', 'params', 'headers', 'data', 'json']]]] = Field(...)
+    param_mapping: Dict[
+        str,
+        Dict[
+            str, Union[str, Literal["url_params", "params", "headers", "data", "json"]]
+        ],
+    ] = Field(...)
     is_active: bool = True
     is_preferred: bool = False
 
@@ -80,10 +86,10 @@ class CustomToolResponse(BaseModel):
     is_active: bool
 
 
-
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
 
 @app.get("/tools/builtins")
 async def get_builtin_tools():
@@ -97,9 +103,9 @@ async def get_builtin_tools():
         {"name": "calculator", "display_name": "Calculator"},
         {"name": "wikipedia", "display_name": "Wikipedia"},
         {"name": "web_search", "display_name": "Web Search"},
-        {"name": "wolframalpha", "display_name": "Wolfram Alpha"}
+        {"name": "wolframalpha", "display_name": "Wolfram Alpha"},
     ]
-    
+
     return {"tools": tools}
 
 
@@ -110,39 +116,41 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     # Parse the request body
     req = await request.json()
 
-    text = req.get('body')
+    text = req.get("body")
 
     # Extract the sources array from the request
-    tools = req.get('sources')
+    tools = req.get("sources")
     print(f"Selected sources: {tools}")
 
     # Reject the query if tools is not properly formatted (should be a list)
     if tools is not None and not isinstance(tools, list):
         raise HTTPException(
-            status_code=400, detail="'sources' must be a list of tool names.")
-    
+            status_code=400, detail="'sources' must be a list of tool names."
+        )
+
     # If no tools are selected, use the default built-in tools
     if not tools:
         # Get the default built-in tools
         builtin_tools_response = await get_builtin_tools()
-        tools = [tool['name'] for tool in builtin_tools_response['tools']]
+        tools = [tool["name"] for tool in builtin_tools_response["tools"]]
         print(f"No tools selected, using default tools: {tools}")
 
     if not text:
-        raise HTTPException(
-            status_code=400, detail="Input {'body': str} is required.")
-    
+        raise HTTPException(status_code=400, detail="Input {'body': str} is required.")
+
     if len(text) > 3500:
         raise HTTPException(
             status_code=400,
-            detail="Input text exceeds the maximum allowed length of 3500 characters."
+            detail="Input text exceeds the maximum allowed length of 3500 characters.",
         )
-    
+
     user_tool_kwargs = await get_user_tool_params(user["id"], tools) if user else []
-    
+
     print(f"User tool parameters: {user_tool_kwargs}")
-    
-    verdict_results = await process_query(text, builtin_tools=tools, user_tool_kwargs=user_tool_kwargs)
+
+    verdict_results = await process_query(
+        text, builtin_tools=tools, user_tool_kwargs=user_tool_kwargs
+    )
     return verdict_results
 
 
@@ -152,15 +160,13 @@ async def get_user(user: dict[str, Any] = Depends(get_current_user)):
     Returns information about the authenticated user.
     This endpoint can be used to test if authentication is working.
     """
-    return {
-        "id": user["id"],
-        "username": user["username"],
-        "email": user["email"]
-    }
+    return {"id": user["id"], "username": user["username"], "email": user["email"]}
 
 
 @app.post("/api-keys")
-async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(get_current_user)):
+async def create_api_key(
+    api_key: APIKeyCreate, user: dict[str, Any] = Depends(get_current_user)
+):
     """
     Creates a new API key for the authenticated user.
     Limited to 3 API keys per user.
@@ -175,18 +181,19 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
                 SELECT COUNT(*) FROM user_info_apikey 
                 WHERE user_id = %s
                 """,
-                (user["id"],)
+                (user["id"],),
             )
             key_count = cursor.fetchone()[0]
 
             if key_count >= 3:
                 raise HTTPException(
                     status_code=400,
-                    detail="You can only have a maximum of 3 API keys per account."
+                    detail="You can only have a maximum of 3 API keys per account.",
                 )
 
             # Generate a new API key
             import uuid
+
             key = uuid.uuid4().hex
 
             # Insert the new API key
@@ -195,7 +202,7 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
                 INSERT INTO user_info_apikey (user_id, name, `key`, created_at, is_active) 
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                (user["id"], api_key.name, key, datetime.datetime.now(), True)
+                (user["id"], api_key.name, key, datetime.datetime.now(), True),
             )
             api_key_id = cursor.lastrowid
             connection.commit()
@@ -207,7 +214,7 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
                 FROM user_info_apikey 
                 WHERE id = %s
                 """,
-                (api_key_id,)
+                (api_key_id,),
             )
             row = cursor.fetchone()
 
@@ -217,13 +224,12 @@ async def create_api_key(api_key: APIKeyCreate, user: dict[str, Any] = Depends(g
                 "key": row[2],
                 "created_at": row[3],
                 "last_used_at": row[4],
-                "is_active": bool(row[5])
+                "is_active": bool(row[5]),
             }
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error creating API key: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error creating API key: {str(e)}")
     finally:
-        if 'connection' in locals() and connection:
+        if "connection" in locals() and connection:
             connection.close()
 
 
@@ -243,7 +249,7 @@ async def list_api_keys(user: dict[str, Any] = Depends(get_current_user)):
                 FROM user_info_apikey 
                 WHERE user_id = %s
                 """,
-                (user["id"],)
+                (user["id"],),
             )
             rows = cursor.fetchall()
 
@@ -254,20 +260,21 @@ async def list_api_keys(user: dict[str, Any] = Depends(get_current_user)):
                     "key": row[2],
                     "created_at": row[3],
                     "last_used_at": row[4],
-                    "is_active": bool(row[5])
+                    "is_active": bool(row[5]),
                 }
                 for row in rows
             ]
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error listing API keys: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error listing API keys: {str(e)}")
     finally:
-        if 'connection' in locals() and connection:
+        if "connection" in locals() and connection:
             connection.close()
 
 
 @app.delete("/api-keys/{api_key_id}")
-async def delete_api_key(api_key_id: int, user: dict[str, Any] = Depends(get_current_user)):
+async def delete_api_key(
+    api_key_id: int, user: dict[str, Any] = Depends(get_current_user)
+):
     """
     Deletes an API key for the authenticated user.
     """
@@ -281,31 +288,29 @@ async def delete_api_key(api_key_id: int, user: dict[str, Any] = Depends(get_cur
                 SELECT id FROM user_info_apikey 
                 WHERE id = %s AND user_id = %s
                 """,
-                (api_key_id, user["id"])
+                (api_key_id, user["id"]),
             )
             if not cursor.fetchone():
-                raise HTTPException(
-                    status_code=404, detail="API key not found")
+                raise HTTPException(status_code=404, detail="API key not found")
 
             # Delete the API key
-            cursor.execute(
-                "DELETE FROM user_info_apikey WHERE id = %s",
-                (api_key_id,)
-            )
+            cursor.execute("DELETE FROM user_info_apikey WHERE id = %s", (api_key_id,))
             connection.commit()
 
             return {"message": "API key deleted successfully"}
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(
-            status_code=500, detail=f"Error deleting API key: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error deleting API key: {str(e)}")
     finally:
-        if 'connection' in locals() and connection:
+        if "connection" in locals() and connection:
             connection.close()
 
+
 @app.post("/tools/preferences")
-async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(get_current_user)):
+async def set_tool_preferences(
+    request: Request, user: dict[str, Any] = Depends(get_current_user)
+):
     """
     Endpoint to update tool preferences for a user.
     Tools passed in the request will be marked as preferred, and all others will be unmarked.
@@ -331,7 +336,7 @@ async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(
                     SET is_preferred = TRUE
                     WHERE user_id = %s AND name IN %s
                     """,
-                    [user["id"], tuple(preferred_tool_names)]
+                    [user["id"], tuple(preferred_tool_names)],
                 )
 
             # Set is_preferred to False for all other tools
@@ -341,7 +346,7 @@ async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(
                 SET is_preferred = FALSE
                 WHERE user_id = %s AND name NOT IN %s
                 """,
-                [user["id"], tuple(preferred_tool_names)]
+                [user["id"], tuple(preferred_tool_names)],
             )
 
             connection.commit()
@@ -353,12 +358,14 @@ async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(
             status_code=500, detail=f"Error updating tool preferences: {str(e)}"
         )
     finally:
-        if 'connection' in locals() and connection:
+        if "connection" in locals() and connection:
             connection.close()
 
 
 @app.post("/tools/custom", response_model=CustomToolResponse)
-async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depends(get_current_user)):
+async def create_custom_tool(
+    tool: CustomToolCreate, user: dict[str, Any] = Depends(get_current_user)
+):
     """
     Creates a new custom tool for the authenticated user.
     This endpoint allows users to define tools programmatically through the API.
@@ -373,23 +380,23 @@ async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depe
                 SELECT id FROM user_info_usertool 
                 WHERE user_id = %s AND name = %s
                 """,
-                (user["id"], tool.name)
+                (user["id"], tool.name),
             )
             if cursor.fetchone():
                 raise HTTPException(
                     status_code=400,
-                    detail=f"A tool with the name '{tool.name}' already exists."
+                    detail=f"A tool with the name '{tool.name}' already exists.",
                 )
 
             # Fetch the list of built-in tools
             builtin_tools_response = await get_builtin_tools()
-            builtin_tools = [tool['name'] for tool in builtin_tools_response['tools']]
+            builtin_tools = [tool["name"] for tool in builtin_tools_response["tools"]]
 
             # Check if the tool name conflicts with built-in tools
             if tool.name in builtin_tools:
                 raise HTTPException(
                     status_code=400,
-                    detail=f"The tool name '{tool.name}' conflicts with a built-in tool name. Please choose a different name."
+                    detail=f"The tool name '{tool.name}' conflicts with a built-in tool name. Please choose a different name.",
                 )
 
             # Insert the new tool
@@ -402,8 +409,14 @@ async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depe
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
-                    user["id"], tool.name, tool.description, datetime.datetime.now(), datetime.datetime.now(),
-                    tool.is_active, tool.method, tool.url_template, 
+                    user["id"],
+                    tool.name,
+                    tool.description,
+                    datetime.datetime.now(),
+                    datetime.datetime.now(),
+                    tool.is_active,
+                    tool.method,
+                    tool.url_template,
                     json.dumps(tool.headers) if tool.headers else None,
                     json.dumps(tool.default_params) if tool.default_params else None,
                     json.dumps(tool.data) if tool.data else None,
@@ -411,8 +424,8 @@ async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depe
                     tool.docstring,
                     json.dumps(tool.target_fields) if tool.target_fields else None,
                     json.dumps(tool.param_mapping),
-                    tool.is_preferred
-                )
+                    tool.is_preferred,
+                ),
             )
             tool_id = cursor.lastrowid
             connection.commit()
@@ -424,7 +437,7 @@ async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depe
                 FROM user_info_usertool 
                 WHERE id = %s
                 """,
-                (tool_id,)
+                (tool_id,),
             )
             row = cursor.fetchone()
 
@@ -435,15 +448,16 @@ async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depe
                 "method": row[3],
                 "url_template": row[4],
                 "created_at": row[5],
-                "is_active": bool(row[6])
+                "is_active": bool(row[6]),
             }
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error creating custom tool: {str(e)}")
+            status_code=500, detail=f"Error creating custom tool: {str(e)}"
+        )
     finally:
-        if 'connection' in locals() and connection:
+        if "connection" in locals() and connection:
             connection.close()
 
 
@@ -464,7 +478,7 @@ async def list_custom_tools(user: dict[str, Any] = Depends(get_current_user)):
                 WHERE user_id = %s
                 ORDER BY created_at DESC
                 """,
-                (user["id"],)
+                (user["id"],),
             )
             rows = cursor.fetchall()
 
@@ -476,20 +490,23 @@ async def list_custom_tools(user: dict[str, Any] = Depends(get_current_user)):
                     "method": row[3],
                     "url_template": row[4],
                     "created_at": row[5],
-                    "is_active": bool(row[6])
+                    "is_active": bool(row[6]),
                 }
                 for row in rows
             ]
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error listing custom tools: {str(e)}")
+            status_code=500, detail=f"Error listing custom tools: {str(e)}"
+        )
     finally:
-        if 'connection' in locals() and connection:
+        if "connection" in locals() and connection:
             connection.close()
 
 
 @app.delete("/tools/custom/{tool_id}")
-async def delete_custom_tool(tool_id: int, user: dict[str, Any] = Depends(get_current_user)):
+async def delete_custom_tool(
+    tool_id: int, user: dict[str, Any] = Depends(get_current_user)
+):
     """
     Deletes a custom tool for the authenticated user.
     """
@@ -503,17 +520,13 @@ async def delete_custom_tool(tool_id: int, user: dict[str, Any] = Depends(get_cu
                 SELECT id FROM user_info_usertool 
                 WHERE id = %s AND user_id = %s
                 """,
-                (tool_id, user["id"])
+                (tool_id, user["id"]),
             )
             if not cursor.fetchone():
-                raise HTTPException(
-                    status_code=404, detail="Custom tool not found")
+                raise HTTPException(status_code=404, detail="Custom tool not found")
 
             # Delete the tool
-            cursor.execute(
-                "DELETE FROM user_info_usertool WHERE id = %s",
-                (tool_id,)
-            )
+            cursor.execute("DELETE FROM user_info_usertool WHERE id = %s", (tool_id,))
             connection.commit()
 
             return {"message": "Custom tool deleted successfully"}
@@ -521,11 +534,14 @@ async def delete_custom_tool(tool_id: int, user: dict[str, Any] = Depends(get_cu
         raise
     except Exception as e:
         raise HTTPException(
-            status_code=500, detail=f"Error deleting custom tool: {str(e)}")
+            status_code=500, detail=f"Error deleting custom tool: {str(e)}"
+        )
     finally:
-        if 'connection' in locals() and connection:
+        if "connection" in locals() and connection:
             connection.close()
+
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
