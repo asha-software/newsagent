@@ -9,7 +9,6 @@ permissions:
   pull-requests: write
 jobs:
   test:
-    if: false # Disable the test job for now
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -41,7 +40,6 @@ jobs:
           pytest-xml-coverage-path: coverage.xml
 
   lint:
-    if: false # Disable the lint job for now
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
