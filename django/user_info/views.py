@@ -709,6 +709,17 @@ def tool_create(request):
             # Prepare the tool data
             tool_data = prepare_tool_data_from_form(form)
             
+            # Check if the tool name conflicts with built-in tools (case-sensitive)
+            builtin_tools = get_builtin_tools()
+            builtin_tool_names = [tool['name'] for tool in builtin_tools]
+            
+            if any(tool_data['name'].lower() == builtin_name.lower() for builtin_name in builtin_tool_names):
+                messages.warning(request, f"The tool name '{tool_data['name']}' conflicts with a built-in tool name. Please choose a different name.")
+                return render(request, 'user_info/tool_form.html', {
+                    'form': form,
+                    'title': 'Create New Tool'
+                })
+            
             # Make API call to create tool
             success, result = api_request('POST', '/tools/custom', api_key, tool_data)
             
@@ -744,6 +755,20 @@ def tool_edit(request, tool_id):
             
             # Prepare the tool data
             tool_data = prepare_tool_data_from_form(form)
+            
+            # Check if the tool name conflicts with built-in tools (case-sensitive)
+            # Only check if the name has changed
+            if tool_data['name'] != tool.name:
+                builtin_tools = get_builtin_tools()
+                builtin_tool_names = [tool['name'] for tool in builtin_tools]
+                
+                if any(tool_data['name'].lower() == builtin_name.lower() for builtin_name in builtin_tool_names):
+                    messages.warning(request, f"The tool name '{tool_data['name']}' conflicts with a built-in tool name. Please choose a different name.")
+                    return render(request, 'user_info/tool_form.html', {
+                        'form': form,
+                        'tool': tool,
+                        'title': f"Edit Tool: {tool.name}"
+                    })
             
             # Delete the existing tool
             success, result = api_request('DELETE', f'/tools/custom/{tool_id}', api_key)
