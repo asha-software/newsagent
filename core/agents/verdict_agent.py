@@ -15,23 +15,22 @@ DIR = Path(__file__).parent.resolve()
 load_dotenv(DIR.parent / ".env", override=True)
 
 
-
 LLM_OUTPUT_FORMAT = {
     "type": "object",
     "properties": {
         "final_label": {
             "type": "string",
-            "enum": ["true", "false", "mixed", "unknown"]
+            "enum": ["true", "false", "mixed", "unknown"],
         },
-        "final_justification": {
-            "type": "string"
-        }
+        "final_justification": {"type": "string"},
     },
-    "required": ["final_label", "final_justification"]
+    "required": ["final_label", "final_justification"],
 }
 
-llm = get_chat_model(model_name=os.getenv(
-    "VERDICT_AGENT_MODEL", DEFAULT_MODEL), format_output=LLM_OUTPUT_FORMAT)
+llm = get_chat_model(
+    model_name=os.getenv("VERDICT_AGENT_MODEL", DEFAULT_MODEL),
+    format_output=LLM_OUTPUT_FORMAT,
+)
 
 
 class State(TypedDict):
@@ -50,10 +49,11 @@ system_message = SystemMessage(content=system_prompt)
 
 # Nodes definitions
 
+
 def prompt_prep_node(state: State) -> dict:
     claim_analysis = "### Claims Analysis\n\n"
     for i, (claim, label, justification) in enumerate(
-        zip(state['claims'], state['labels'], state['justifications'])
+        zip(state["claims"], state["labels"], state["justifications"])
     ):
         claim_analysis += f"Claim {i+1}:\n - Statement: {claim}\n - Verdict: {label}\n - Justification: {justification}\n\n"
 
@@ -67,12 +67,12 @@ def prompt_prep_node(state: State) -> dict:
 
 
 def verdict_node(state: State) -> dict:
-    response = llm.invoke(state['messages'])
+    response = llm.invoke(state["messages"])
     return {"messages": response}
 
 
 def postprocessing_node(state: State) -> dict:
-    response = state['messages'][-1]
+    response = state["messages"][-1]
 
     try:
         structured = json.loads(response.content)
@@ -82,12 +82,16 @@ def postprocessing_node(state: State) -> dict:
 
         structured = {
             "final_label": "unknown",
-            "final_justification": "Model did not return valid JSON."
+            "final_justification": "Model did not return valid JSON.",
         }
 
     return {
-        "final_label": structured.get("final_label", "Verdict Agent did not return a verdict."),
-        "final_justification": structured.get("final_justification", "Verdict Agent did not return a justification."),
+        "final_label": structured.get(
+            "final_label", "Verdict Agent did not return a verdict."
+        ),
+        "final_justification": structured.get(
+            "final_justification", "Verdict Agent did not return a justification."
+        ),
     }
 
 
