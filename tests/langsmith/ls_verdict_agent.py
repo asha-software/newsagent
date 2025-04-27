@@ -106,12 +106,15 @@ def main():
 
     args = argument_parser()
     ls_client = Client()
-    ls_client.evaluate(
-        target_function,
-        data="verdict_original",
-        evaluators=[label_match],
-        experiment_prefix=args.experiment_prefix
-    )
+
+    ls_datasets = ['verdict_multip']
+    for dataset in ls_datasets:
+        ls_client.evaluate(
+            target_function,
+            data=dataset,
+            evaluators=[label_match],
+            experiment_prefix=args.experiment_prefix
+        )
 
     # result = verdict_agent.invoke({
     #     "claims": ["The sky is blue.", "The grass is green."],
