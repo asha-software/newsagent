@@ -134,7 +134,7 @@ def postprocessing(state: State) -> State:
                         evidence.append(evidence_item)
                         break
 
-    return {'evidence': evidence}
+    return {'evidence': evidence,"messages": []}
 
 def create_agent(
         model: str,

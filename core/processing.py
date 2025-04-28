@@ -65,12 +65,6 @@ async def get_user_tool_params(user_id: int, tools: list[str]) -> list[dict[str,
             
     return user_tool_params
 
-
-def delete_messages(states: list[dict]):
-    for state in states:
-        del state['messages']
-
-
 def create_analyses(claims: list[str], labels: list[str],
                     justifications: list[str], evidence_lists: list[list[Evidence]]) -> list[Analysis]:
     """
@@ -117,13 +111,11 @@ async def process_query(text: str, builtin_tools: list, user_tool_kwargs: list =
         {"claim": claim},
         config={"run_name": "research_agent"}
     ) for claim in claims]
-    delete_messages(research_results)
 
     reasoning_results = [reasoning_agent.invoke(
         state,
         config={"run_name": "reasoning_agent"}
     ) for state in research_results]
-    delete_messages(reasoning_results)
 
     # Process reasoning results with verdict_agent
     verdict_results = verdict_agent.invoke({
@@ -134,7 +126,6 @@ async def process_query(text: str, builtin_tools: list, user_tool_kwargs: list =
     }, config={"run_name": "verdict_agent"})
 
     # Clean up messages in verdict_results
-    delete_messages([verdict_results])
     verdict_results['evidence'] = [res['evidence'] for res in research_results]
     verdict_results['claims'] = claims
 

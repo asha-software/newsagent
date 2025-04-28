@@ -85,7 +85,7 @@ def postprocessing(state: State) -> State:
 
     label = formatted_reasoning['label']
     justification = formatted_reasoning['justification']
-    return {"label": label, "justification": justification}
+    return {"label": label, "justification": justification, "messages": []}
 
 
 # Build the graph

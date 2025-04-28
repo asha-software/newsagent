@@ -80,7 +80,7 @@ def postprocessing(state: State) -> State:
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON from claim decomposer: {e}")
 
-    return {'claims': claims}
+    return {'claims': claims,"messages": []}
 
 
 builder = StateGraph(State)

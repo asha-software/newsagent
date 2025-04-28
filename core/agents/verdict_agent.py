@@ -88,6 +88,7 @@ def postprocessing_node(state: State) -> dict:
     return {
         "final_label": structured.get("final_label", "Verdict Agent did not return a verdict."),
         "final_justification": structured.get("final_justification", "Verdict Agent did not return a justification."),
+        "messages": []
     }
 
 
