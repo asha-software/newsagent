@@ -88,8 +88,7 @@ def postprocessing_node(state: State) -> dict:
     return {
         "final_label": structured.get("final_label", "Verdict Agent did not return a verdict."),
         "final_justification": structured.get("final_justification", "Verdict Agent did not return a justification."),
-        "messages": []
-    }
+        }
 
 
 # Graph definition
@@ -105,3 +104,18 @@ builder.add_edge("verdict", "postprocessing")
 builder.add_edge("postprocessing", END)
 
 verdict_agent = builder.compile()
+
+def verdict_node(state) -> dict:
+    """
+    Wrapper: invoke the verdict_agent sub-graph and hand off only
+    final_label & final_justification to the caller.
+    """
+    out = verdict_agent.invoke({
+        "claims": state["claims"],
+        "labels": state["labels"],
+        "justifications": state["justifications"]
+    })
+    return {
+        "final_label": out["final_label"],
+        "final_justification": out["final_justification"]
+    }

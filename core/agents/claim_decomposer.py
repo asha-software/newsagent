@@ -7,6 +7,9 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
+from langgraph.types import Command
+from typing_extensions import Literal
+
 
 DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
@@ -17,8 +20,6 @@ load_dotenv(DIR.parent / ".env", override=True)
 """
 Define State, LLM output schema, and LLM
 """
-
-
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     text: str
@@ -80,8 +81,12 @@ def postprocessing(state: State) -> State:
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON from claim decomposer: {e}")
 
-    return {'claims': claims,"messages": []}
+    return {'claims': claims}
 
+def claim_node(state: State) -> Command[Literal["research"]]:
+    """Wrapper: invoke the claim_decomposer subgraph, hand off only claims"""
+    out = claim_decomposer.invoke({"text": state["text"]})
+    return Command(goto="research", update={"claims": out["claims"]})
 
 builder = StateGraph(State)
 
@@ -97,6 +102,13 @@ builder.add_edge("assistant", "postprocessing")
 builder.add_edge("postprocessing", END)
 
 claim_decomposer = builder.compile()
+
+def claim_node(state: State) -> Command[Literal["research"]]:
+    """
+    Invoke the sub-graph and hand off ONLY the 'claims' to the next agent.
+    """
+    out = claim_decomposer.invoke({"text": state["text"]})
+    return Command(goto="research", update={"claims": out["claims"]})
 
 
 def main():
