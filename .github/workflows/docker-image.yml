@@ -11,9 +11,14 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-      - name: Build the Docker image
-        run: docker build . --file django/Dockerfile --tag my-image-name:$(date +%s)
-
+      - uses: actions/checkout@v4.2.2
+      - run: |
+          touch core/.env
+      - name: Run docker compose
+        uses: hoverkraft-tech/compose-action@v2.0.1
+        with:
+          services: "api"
+      - name: Execute tests in the running services
+        run: |
+          docker compose exec api python -m pytest tests/

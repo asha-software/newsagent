@@ -65,6 +65,7 @@ services:
       - '8001:8000'
     volumes:
       - ./core:/app/core
+      - ./tests:/app/tests
 
 volumes:
   mysql_data:
