@@ -86,3 +86,28 @@ variable "tags" {
     ManagedBy   = "terraform"
   }
 }
+
+# Ollama EC2 Instance Configuration
+variable "ollama_ami_id" {
+  description = "AMI ID for the Ollama EC2 instance (Ubuntu 22.04 recommended)"
+  type        = string
+  default     = "ami-0c65adc9a5c1b5d7c" # Ubuntu 22.04 LTS in us-west-2, update for your region
+}
+
+variable "ollama_model" {
+  description = "Ollama model to run"
+  type        = string
+  default     = "mistral-nemo"
+}
+
+variable "ollama_instance_name" {
+  description = "Name for the Ollama EC2 instance"
+  type        = string
+  default     = "ollama-gpu-instance"
+}
+
+variable "ollama_instance_type" {
+  description = "EC2 instance type for the Ollama instance"
+  type        = string
+  default     = "g4dn.xlarge"
+}

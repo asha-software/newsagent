@@ -1,0 +1,164 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: newsagent
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: newsagent
+      component: api
+  template:
+    metadata:
+      labels:
+        app: newsagent
+        component: api
+    spec:
+      containers:
+      - name: api
+        image: 501501935864.dkr.ecr.us-west-2.amazonaws.com/newsagent-api:latest
+        imagePullPolicy: IfNotPresent  # Use this for local development, change to Always for production
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        # Database configuration
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_HOST
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DB_PASSWORD
+        
+        # Model configuration
+        - name: CLAIM_DECOMPOSER_MODEL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: CLAIM_DECOMPOSER_MODEL
+        - name: RESEARCH_AGENT_MODEL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: RESEARCH_AGENT_MODEL
+        - name: REASONING_AGENT_MODEL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: REASONING_AGENT_MODEL
+        - name: VERDICT_AGENT_MODEL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: VERDICT_AGENT_MODEL
+        
+        # Ollama configuration
+        - name: OLLAMA_BASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: OLLAMA_BASE_URL
+        
+        # LangChain configuration
+        - name: LANGCHAIN_PROJECT
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: LANGCHAIN_PROJECT
+        - name: LANGCHAIN_TRACING_V2
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: LANGCHAIN_TRACING_V2
+        - name: LANGCHAIN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: LANGCHAIN_API_KEY
+        
+        # API keys
+        - name: WOLFRAM_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: WOLFRAM_APP_ID
+        - name: TAVILY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: TAVILY_API_KEY
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: OPENAI_API_KEY
+        
+        # AWS credentials
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: AWS_ACCESS_KEY_ID
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: AWS_SECRET_ACCESS_KEY
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: AWS_REGION
+        
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /docs
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 2
+          timeoutSeconds: 1
+        volumeMounts:
+        - name: core-volume
+          mountPath: /app/core
+      volumes:
+      - name: core-volume
+        emptyDir: {}
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nc -z mysql 3306; do echo waiting for mysql; sleep 2; done;']
+      - name: init-core
+        image: 501501935864.dkr.ecr.us-west-2.amazonaws.com/newsagent-api:latest
+        command: ['sh', '-c', 'cp -r /app/core/* /core-data/']
+        volumeMounts:
+        - name: core-volume
+          mountPath: /core-data
