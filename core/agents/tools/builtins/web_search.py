@@ -2,10 +2,11 @@ from langchain_core.tools import tool
 from tavily import TavilyClient
 from typing import Literal
 import os
+from core.agents.utils.common_types import Evidence
 
 
 @tool("web_search", parse_docstring=True)
-def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> list[dict]:
+def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> list[Evidence]:
     """
     Search the web. Use this when the claim refers to:
       - current events
@@ -32,34 +33,41 @@ def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> l
     client = TavilyClient(api_key=api_key)
 
     try:
-        response = client.search(query,
-                                 topic=topic,
-                                 max_results=3,
-                                 chunks_per_source=4,
-                                 include_images=False,
-                                 exclude_domains=["wikipedia.org"]
+        response = client.search(
+            query,
+            topic=topic,
+            max_results=3,
+            chunks_per_source=4,
+            include_images=False,
+            exclude_domains=["wikipedia.org"]
 
-                                 # Other optional parameters:
-                                 # include_answer=False, # Can ONLY be set during instantiation
-                                 # include_raw_content=False, # Can ONLY be set during instantiation
-                                 # include_image_descriptions=False,
-                                 # search_depth="basic", # alt: "advanced". Costs 2x more but returns more of the web pages
-                                 # time_range="day",
-                                 # include_domains=None,
-                                 )
+            # Other optional parameters:
+            # include_answer=False, # Can ONLY be set during instantiation
+            # include_raw_content=False, # Can ONLY be set during instantiation
+            # include_image_descriptions=False,
+            # search_depth="basic", # alt: "advanced". Costs 2x more but returns more of the web pages
+            # time_range="day",
+            # include_domains=None,
+        )
     except Exception as e:
         print(f"Error during Tavily search: {e}")
         return []
 
-    # Filter out metadata, format results for Evidence.results
-    return [{'content': res['content'], 'source': res['url']} for res in response['results']]
+    # Filter out metadata, format results for Evidence
+    return [
+        Evidence(
+            name="web_search",
+            args={"query": query, "topic": topic},
+            content=res['content'],
+            source=res['url']
+        )
+        for res in response['results']
+    ]
 
 
 if __name__ == "__main__":
     # Test the function
     results = tool_function.invoke(
         {"query": "Who lives in Gracie Mansion?", "topic": "general"})
-    for result in results:
-        print(f"Content: {result['content']}")
-        print(f"Source: {result['source']}")
-        print()
+    from pprint import pprint
+    pprint(results)

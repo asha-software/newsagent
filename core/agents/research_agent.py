@@ -5,6 +5,7 @@ from project root
 """
 
 from dotenv import load_dotenv
+import json
 import importlib
 import os
 from pathlib import Path
@@ -119,22 +120,40 @@ def postprocessing(state: State) -> State:
 
     #TODO there's possibly a smarter way to do this by matching tool call IDs
     """
-    evidence = []
+    all_evidence = []
     for i in range(len(state['messages'])):
         message = state['messages'][i]
-        if isinstance(message, AIMessage) and hasattr(message, 'tool_calls'):
-            for tool_call in message.tool_calls:
-                # Scan later messages for the corresponding ToolMessage
-                for j in range(i + 1, len(state['messages'])):
-                    next_message = state['messages'][j]
-                    if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
-                        # Found the corresponding ToolMessage
-                        evidence_item = Evidence(
-                            name=tool_call['name'], args=tool_call['args'], result=next_message.content)
-                        evidence.append(evidence_item)
-                        break
+        if isinstance(message, ToolMessage):
+            # Found a tool call
+            # evidence_item = Evidence(
+            #     name=message.tool_name, args=message.tool_args, result=message.content, source=message)
+            try:
+                evidence = json.loads(message.content)
+            except json.JSONDecodeError as e:
+                print(f"Error decoding JSON from tool call: {e}")
+                evidence = [message.content]
+            
+            all_evidence += evidence
 
-    return {'evidence': evidence}
+        # if isinstance(message, AIMessage) and hasattr(message, 'tool_calls'):
+        #     for tool_call in message.tool_calls:
+        #         # Scan later messages for the corresponding ToolMessage
+        #         for j in range(i + 1, len(state['messages'])):
+        #             next_message = state['messages'][j]
+        #             if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
+        #                 # Found the corresponding ToolMessage
+        #                 # evidence_item = Evidence(
+        #                 #     name=tool_call['name'], args=tool_call['args'], result=next_message.content, source=next_message)
+        #                 try:
+        #                     evidence = json.loads(next_message.content)
+        #                 except json.JSONDecodeError as e:
+        #                     print(f"Error decoding JSON from tool call: {e}")
+        #                     evidence = [next_message.content]
+                        
+        #                 all_evidence += evidence
+        #                 break
+
+    return {'evidence': all_evidence}
 
 def create_agent(
         model: str,
@@ -212,10 +231,11 @@ def main():
             }
         },
     }
+
     research_agent = create_agent(
         model='mistral-nemo',
-        builtin_tools=builtin_tools_wanted,
-        user_tool_kwargs=[]
+        builtin_tools=['wikipedia'],
+        # user_tool_kwargs=[]
     )
     claim = "Python was created by Guido van Rossum"
     final_state = research_agent.invoke({"claim": claim})
