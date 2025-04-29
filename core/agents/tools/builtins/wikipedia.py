@@ -1,8 +1,7 @@
-# Queries Wikipedia
 from langchain_core.tools import tool
 import wikipedia
-# from typeguard import check_type
 from core.agents.tools.builtins import tool_registry_globals
+from core.agents.utils.common_types import Evidence
 
 
 @tool("wikipedia", parse_docstring=True)
@@ -28,8 +27,16 @@ def tool_function(query_str: str) -> str:
         results: tuple[list[str], str] = wikipedia.search(
             query_str, results=10, suggestion=1
         )
-    except wikipedia.exceptions.WikipediaException:
-        return f"Could not search {query_str} from Wikipedia!"
+    except wikipedia.exceptions.WikipediaException as e:
+        message = f"Could not search {query_str} from Wikipedia!"
+        return [
+            Evidence(
+                name="wikipedia",
+                args={"query": query_str},
+                content=message,
+                source="wikipedia",
+            )
+        ]
     title: str
     if results[0]:
         # Use the first search result if one exists
@@ -40,15 +47,40 @@ def tool_function(query_str: str) -> str:
         title = results[1]
         print(f"Using search suggestion {title}")
     else:
-        return f"No page found for {query_str}!"
+        message = f"Could not find a page for {query_str}!"
+        return [
+            Evidence(
+                name="wikipedia",
+                args={"query": query_str},
+                content=message,
+                source="wikipedia",
+            )
+        ]
     try:
         # Pull the page from wikipedia
         page: wikipedia.WikipediaPage = wikipedia.page(
             title, auto_suggest=False, redirect=True
         )
     except wikipedia.exceptions.WikipediaException:
-        return f"Could not fetch page title {title} from Wikipedia!"
-    return page.content
+        message = f"Could not fetch page title {title} from Wikipedia!"
+        return [
+            Evidence(
+                name="wikipedia",
+                args={"query": query_str},
+                content=message,
+                source="wikipedia",
+            )
+        ]
+    content = page.content
+    source = page.url
+    return [
+        Evidence(
+            name="wikipedia",
+            args={"query": query_str},
+            content=content,
+            source=source,
+        )
+    ]
 
 
 if __name__ == "__main__":
