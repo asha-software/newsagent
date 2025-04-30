@@ -1,6 +1,206 @@
 [
   {
     "inputs": {
+      "text": "An online rumour claims that the 2025 Nobel Prize in Literature was secretly pre-awarded to an AI language model. The rumour states the Swedish Academy held a closed-door vote under pressure from tech lobbyists. Official Nobel press releases list no 2025 laureate yet because the decision is traditionally announced in October. Members of the Academy denied any preliminary vote when contacted by journalists. Literary scholars argue the prize rules currently require a human author. Legal analysts point out that copyright law has not settled AI authorship issues. The rumour references an anonymous Twitter account with no verifiable credentials. Newspapers in Sweden reported zero evidence supporting the story. Previous leaks about Nobel winners have proven unreliable. The Academy maintains that deliberations remain confidential until announcement day."
+    },
+    "outputs": {
+      "claims": [
+        "A rumour claims the 2025 Nobel Prize in Literature was pre-awarded to an AI language model.",
+        "The rumour alleges the Swedish Academy voted behind closed doors under tech-industry pressure.",
+        "Official Nobel press releases list no 2025 literature laureate before October.",
+        "Academy members told journalists they held no preliminary vote on the 2025 prize.",
+        "Prize rules presently require the laureate to be a human author.",
+        "Copyright law has not definitively resolved AI authorship questions.",
+        "The rumour originates from an anonymous Twitter account lacking verification.",
+        "Swedish newspapers found no evidence supporting the pre-award claim.",
+        "Past leaks about Nobel winners have often been inaccurate.",
+        "The Academy states deliberations stay confidential until the official announcement."
+      ]
+    },
+    "metadata": { "type": "multiple_statements-Fake_news" }
+  },
+  {
+    "inputs": {
+      "text": "Posts circulating on messaging apps allege that drinking a mixture of bleach and lemon juice can cure diabetes. The recipe instructs users to consume the solution every morning for a month. Medical professionals warn that ingesting bleach is highly toxic. The World Health Organization has issued repeated advisories against chemical ‘miracle cures’. No peer-reviewed study supports bleach as a diabetes treatment. Poison-control centres report rising calls linked to the trend. Social-media companies removed thousands of posts promoting the concoction. Influencers pushing the remedy often sell affiliate detox kits. Health regulators opened investigations into several vendors. Diabetes associations urge patients to follow evidence-based medical advice."
+    },
+    "outputs": {
+      "claims": [
+        "Messaging-app posts claim drinking bleach mixed with lemon juice cures diabetes.",
+        "The recipe instructs daily consumption of the mixture for a month.",
+        "Medical professionals state that ingesting bleach is highly toxic.",
+        "The World Health Organization has issued advisories against chemical ‘miracle cures’.",
+        "No peer-reviewed study supports using bleach as a diabetes treatment.",
+        "Poison-control centres have recorded increased calls related to the trend.",
+        "Social-media platforms removed posts promoting the bleach-and-lemon remedy.",
+        "Influencers promoting the mixture sell affiliate detox kits.",
+        "Health regulators launched investigations into vendors selling the remedy.",
+        "Diabetes associations advise patients to rely on evidence-based treatments."
+      ]
+    },
+    "metadata": { "type": "multiple_statements-Fake_news" }
+  },
+  {
+    "inputs": {
+      "text": "A conspiracy blog asserts that Leonardo da Vinci left a hidden code predicting a 2025 asteroid impact. The blog quotes lines it attributes to da Vinci’s notebooks describing ‘a fiery stone from the heavens’. Astronomers from the Minor Planet Center have found no asteroid on collision course with Earth in 2025. NASA’s Sentry database shows zero objects with Palermo Scale values above zero for that year. Planetary-defence experts explain that da Vinci wrote mainly about engineering and anatomy, not astronomy. Historians say the quoted lines are not present in authenticated manuscripts. The European Space Agency confirmed no impact threat exists for 2025. Social-media platforms added warning labels to posts about the prophecy. Some users continue to share the claim, calling space agencies part of a cover-up. Museums housing da Vinci’s notebooks report increased inquiries about alleged predictions."
+    },
+    "outputs": {
+      "claims": [
+        "A conspiracy blog claims Leonardo da Vinci predicted a 2025 asteroid impact.",
+        "The blog cites supposed notebook lines referencing ‘a fiery stone from the heavens’.",
+        "Astronomers at the Minor Planet Center report no asteroid on course to hit Earth in 2025.",
+        "NASA’s Sentry database lists no 2025 objects with Palermo Scale values above zero.",
+        "Planetary-defence experts state da Vinci did not focus on astronomy in his writings.",
+        "Historians assert the quoted lines are absent from authentic da Vinci manuscripts.",
+        "The European Space Agency says there is no impact threat for 2025.",
+        "Social-media platforms applied warning labels to posts about the alleged prophecy.",
+        "Some users claim space agencies are covering up the threat.",
+        "Museums report increased public inquiries about da Vinci’s supposed predictions."
+      ]
+    },
+    "metadata": { "type": "multiple_statements-Fake_news" }
+  },
+  {
+    "inputs": {
+      "text": "Several fringe websites insist that the 2024 Olympic marathon was secretly run on Mars. They argue that unusual terrain in televised footage proves the race took place off-planet. The sites cite colour shifts in the sky as evidence of a different atmosphere. NASA allegedly supplied rockets for transporting athletes in silence. The International Olympic Committee firmly denied the claim in a press release. Broadcasters confirmed the course was along the River Seine. GPS data from elite runners match Paris street maps. Spectators posted thousands of photos from roadside vantage points. No credible scientist supports the Mars theory. The hoax continues to circulate despite repeated debunking."
+    },
+    "outputs": {
+      "claims": [
+        "Fringe websites claim the 2024 Olympic marathon was held on Mars.",
+        "These websites cite colour shifts in the sky as evidence of non-Earth atmosphere.",
+        "The sites allege NASA secretly transported athletes to Mars.",
+        "The International Olympic Committee issued a press release denying the claim.",
+        "Broadcasters stated the marathon course followed the River Seine.",
+        "GPS tracking data from runners align with Paris street maps.",
+        "Spectators posted photos of the marathon taken from Paris streets.",
+        "No credible scientist endorses the claim that the marathon occurred on Mars.",
+        "The hoax continues to circulate online despite debunking.",
+        "Televised footage showed terrain some viewers misinterpreted as extraterrestrial."
+      ]
+    },
+    "metadata": { "type": "multiple_statements-Fake_news" }
+  },
+  {
+    "inputs": {
+      "text": "A viral social-media post claims that a secret UN treaty signed in 2025 forces every country to ban cash within two years. The post alleges that biometric payment chips will become mandatory by 2027. Supposed leaked documents mention a hidden enforcement agency called ‘Global Currency Task-Force’. Influencers say governments will deactivate passports for anyone who refuses the chip. The thread cites an unnamed whistle-blower from the IMF. No major news outlet has reported on the treaty. The actual UN treaty database lists no agreement on cash bans in 2025. Experts in international law note that UN treaties require public ratification by member states. Central banks worldwide continue printing new banknotes in 2025. Fact-checkers warn that the documents shown in the post are digitally altered."
+    },
+    "outputs": {
+      "claims": [
+        "A social-media post claims a secret UN treaty signed in 2025 mandates a global cash ban within two years.",
+        "The post alleges biometric payment chips will be mandatory worldwide by 2027.",
+        "Leaked documents supposedly reference a ‘Global Currency Task-Force’.",
+        "Influencers claim governments will deactivate passports for people who refuse the chip.",
+        "The thread cites an unnamed IMF whistle-blower as a source.",
+        "No major news outlet has reported on such a UN treaty.",
+        "The UN treaty database contains no cash-ban agreement dated 2025.",
+        "International-law experts state UN treaties require public ratification.",
+        "Central banks continued issuing new banknotes in 2025.",
+        "Fact-checking organisations say the documents circulated in the post are digitally altered."
+      ]
+    },
+    "metadata": { "type": "multiple_statements-Fake_news" }
+  },
+  {
+    "inputs": {
+      "text": "The Chicago Bulls completed a dramatic turnaround in the 2024-25 NBA season. After missing the playoffs the previous year, they finished second in the Eastern Conference. New head coach Becky Hammon implemented a fast-paced offence. Star guard Zach LaVine averaged twenty-seven points per game. Rookie centre Malik Okafor led all first-year players in rebounds. The team set a franchise record for three-point percentage at forty percent. Analysts credited improved perimeter defence for the surge. Ticket sales at the United Center hit a decade high. Local charities benefited from the Bulls’ new community-outreach programme. Sportswriters nominated Hammon for Coach of the Year."
+    },
+    "outputs": {
+      "claims": [
+        "The Chicago Bulls finished second in the Eastern Conference in the 2024-25 NBA season.",
+        "Becky Hammon served as the Bulls’ head coach during that season.",
+        "Becky Hammon introduced a fast-paced offensive system.",
+        "Zach LaVine averaged 27 points per game in 2024-25.",
+        "Rookie centre Malik Okafor led all first-year NBA players in rebounds.",
+        "The Bulls set a franchise record with a forty-percent three-point percentage.",
+        "Analysts attributed the team’s success partly to improved perimeter defence.",
+        "Ticket sales at the United Center reached a ten-year high that season.",
+        "The Bulls ran a new community-outreach programme benefiting local charities.",
+        "Sportswriters nominated Becky Hammon for NBA Coach of the Year."
+      ]
+    },
+    "metadata": { "type": "multiple_statements" }
+  },
+  {
+    "inputs": {
+      "text": "Germany’s Bundestag passed the Climate Action Package 2030 in June 2025. The law mandates a sixty-five percent emissions reduction from 1990 levels by 2030. A carbon price floor of fifty euros per tonne will apply to the transport sector. Revenue from the levy funds a household energy-rebate scheme. The package accelerates onshore-wind permitting by setting eight-month approval deadlines. It also requires all new public buildings to install rooftop solar panels. Opposition parties criticised the bill for lacking heavy-industry safeguards. The federal council, or Bundesrat, approved the measure after minor amendments. Environmental NGOs described the package as Germany’s most ambitious to date. Automotive manufacturers announced plans to expand electric-vehicle output in response."
+    },
+    "outputs": {
+      "claims": [
+        "Germany’s Bundestag passed the Climate Action Package 2030 in June 2025.",
+        "The law mandates a sixty-five percent emissions reduction from 1990 levels by 2030.",
+        "A carbon price floor of €50 per tonne will apply to the transport sector.",
+        "Revenue from the carbon levy will fund a household energy-rebate scheme.",
+        "The package shortens onshore-wind permitting to eight-month approval deadlines.",
+        "All new public buildings must install rooftop solar panels under the law.",
+        "Opposition parties said the bill lacks safeguards for heavy industry.",
+        "The Bundesrat approved the measure after minor amendments.",
+        "Environmental NGOs called the package Germany’s most ambitious climate policy so far.",
+        "German automotive manufacturers plan to increase electric-vehicle production in response."
+      ]
+    },
+    "metadata": { "type": "multiple_statements" }
+  },
+  {
+    "inputs": {
+      "text": "In 2024 Kenya’s national grid set a new record for renewable penetration. Geothermal plants supplied over forty percent of electricity that year. Wind farms at Lake Turkana operated at a thirty-eight percent capacity factor. The Garissa solar park reached full output during several noon peaks. Hydropower generation dipped during the short-rains season but remained stable overall. Kenya Power reported that fossil-fuel plants ran mainly as spinning reserve. Average wholesale prices fell by seven percent compared with 2023. Rural electrification expanded to an additional five hundred thousand households. The energy ministry launched a pilot battery-storage project near Naivasha. International investors committed funds for another geothermal block in Baringo."
+    },
+    "outputs": {
+      "claims": [
+        "Kenya’s national grid set a renewable-energy penetration record in 2024.",
+        "Geothermal plants supplied more than forty percent of Kenya’s electricity in 2024.",
+        "Lake Turkana wind farms operated at a thirty-eight percent capacity factor.",
+        "The Garissa solar park reached full output during several noon peaks.",
+        "Hydropower generation dipped during the short-rains season but was stable overall.",
+        "Kenya Power indicated fossil-fuel plants ran mainly as spinning reserve.",
+        "Average wholesale electricity prices in Kenya fell by seven percent versus 2023.",
+        "Rural electrification reached an extra five hundred thousand households in 2024.",
+        "The energy ministry started a battery-storage pilot project near Naivasha.",
+        "International investors committed funding for a new geothermal block in Baringo."
+      ]
+    },
+    "metadata": { "type": "multiple_statements" }
+  },
+  {
+    "inputs": {
+      "text": "The Metropolitan Museum of Art celebrated its 155th anniversary in 2025. A special exhibition showcased rarely loaned pieces from the Benin Bronzes. Attendance surpassed six million visitors for the first time since the pandemic. The museum’s new wing for modern African art opened to critical acclaim. Director Max Hollein announced an expanded restitution policy during the opening gala. Corporate sponsorship from a major tech firm funded half of the renovation cost. Conservation labs demonstrated 3D-printing techniques for artifact supports. The Met released an open-access database of two hundred thousand high-resolution images. Education programmes added virtual-reality tours in five languages. City officials praised the museum’s economic impact on New York."
+    },
+    "outputs": {
+      "claims": [
+        "The Metropolitan Museum of Art marked its 155th anniversary in 2025.",
+        "A special exhibition displayed Benin Bronzes that are rarely loaned.",
+        "Museum attendance exceeded six million visitors in 2025.",
+        "The Met opened a new wing dedicated to modern African art.",
+        "Director Max Hollein announced an expanded restitution policy at the gala.",
+        "A major tech firm sponsored roughly half of the renovation cost.",
+        "Conservation labs used 3D-printing techniques for artifact supports.",
+        "The Met released an open-access database containing about 200,000 high-resolution images.",
+        "Education programmes introduced virtual-reality tours in five languages.",
+        "New York City officials credited the museum with significant economic impact."
+      ]
+    },
+    "metadata": { "type": "multiple_statements" }
+  },
+  {
+    "inputs": {
+      "text": "The 2024 Summer Olympics opened in Paris with a ceremony along the Seine. More than ninety delegations paraded on boats instead of in a stadium. The IOC confirmed that this was the first river-based opening event in Olympic history. French President Emmanuel Macron declared the Games officially open. Skateboarding made its second Olympic appearance after debuting in Tokyo. Breakdancing joined the Olympic programme for the first time. The organisers installed temporary arenas at Place de la Concorde for urban sports. Paris used only one newly built permanent venue, the Aquatics Centre in Saint-Denis. Public transport operated free of charge on opening day for ticket-holders. Security forces deployed 30,000 officers to guard the ceremony."
+    },
+    "outputs": {
+      "claims": [
+        "The 2024 Summer Olympics opened in Paris with a ceremony along the Seine.",
+        "More than ninety delegations paraded on boats instead of in a stadium.",
+        "The IOC confirmed this was the first river-based opening event in Olympic history.",
+        "French President Emmanuel Macron declared the Games officially open.",
+        "Skateboarding made its second Olympic appearance after debuting in Tokyo.",
+        "Breakdancing joined the Olympic programme for the first time.",
+        "Organisers installed temporary arenas at Place de la Concorde for urban sports.",
+        "Paris used only one newly built permanent venue, the Aquatics Centre in Saint-Denis.",
+        "Public transport was free on opening day for ticket-holders.",
+        "Thirty thousand security officers were deployed to guard the ceremony."
+      ]
+    },
+    "metadata": { "type": "multiple_statements" }
+  },
+  {
+    "inputs": {
       "text": "The Apollo 11 mission landed humans on the Moon for the first time on July 20, 1969. Neil Armstrong was the first person to walk on the lunar surface. The mission was launched by NASA using a Saturn V rocket."
     },
     "outputs": {
