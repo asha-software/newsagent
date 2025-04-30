@@ -13,7 +13,7 @@ from pathlib import Path
 from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
 
-#Load required API keys and endpoint
+# Load required API keys and endpoint
 load_dotenv(".env", override=True)
 
 # rooth path
@@ -23,9 +23,10 @@ if str(project_root) not in sys.path:
 
 
 def argument_parser():
-    parser = argparse.ArgumentParser(description='Evaluate the reasoning agent')
-    parser.add_argument('--experiment_prefix', '-p',
-                        type=str, help='Prefix for the experiment name')
+    parser = argparse.ArgumentParser(description="Evaluate the reasoning agent")
+    parser.add_argument(
+        "--experiment_prefix", "-p", type=str, help="Prefix for the experiment name"
+    )
     return parser.parse_args()
 
 
@@ -36,14 +37,11 @@ def load_prompt(path):
 
 def target_function(inputs) -> dict:
     from core.agents.reasoning_agent import reasoning_agent
+
     result = reasoning_agent.invoke(inputs)
     return {
-        "output": {
-            "label": result["label"],
-            "justification": result["justification"]
-        }
+        "output": {"label": result["label"], "justification": result["justification"]}
     }
-
 
 
 def label_match(outputs: dict, reference_outputs: dict) -> dict:
@@ -53,7 +51,7 @@ def label_match(outputs: dict, reference_outputs: dict) -> dict:
     return {
         "key": "label_match",
         "score": predicted == reference,
-        "comment": f"Expected '{reference}', got '{predicted}'"
+        "comment": f"Expected '{reference}', got '{predicted}'",
     }
 
 
@@ -64,10 +62,8 @@ def justification_coherence(outputs: dict, reference_outputs: dict) -> dict:
 
     prompt_template = load_prompt("prompts/reasoning_coherence_prompt.txt")
     prompt = prompt_template.format(
-        predicted_label=predicted_label,
-        justification=justification
+        predicted_label=predicted_label, justification=justification
     )
-
 
     llm_eval = ChatOllama(
         model="llama3",
@@ -76,10 +72,10 @@ def justification_coherence(outputs: dict, reference_outputs: dict) -> dict:
             "type": "object",
             "properties": {
                 "coherent": {"type": "boolean"},
-                "reason": {"type": "string"}
+                "reason": {"type": "string"},
             },
-            "required": ["coherent", "reason"]
-        }
+            "required": ["coherent", "reason"],
+        },
     )
 
     response = llm_eval.invoke(prompt).content
@@ -88,14 +84,18 @@ def justification_coherence(outputs: dict, reference_outputs: dict) -> dict:
     return {
         "key": "justification_coherence",
         "score": eval_result["coherent"],
-        "comment": eval_result["reason"]
+        "comment": eval_result["reason"],
     }
 
 
 def main():
     load_dotenv("../.env", override=True)
-    assert "LANGCHAIN_API_KEY" in os.environ, "Please set LANGCHAIN_API_KEY environment variable"
-    assert os.environ["LANGCHAIN_TRACING_V2"] == "true", "Please set LANGCHAIN_TRACING_V2 environment variable to true"
+    assert (
+        "LANGCHAIN_API_KEY" in os.environ
+    ), "Please set LANGCHAIN_API_KEY environment variable"
+    assert (
+        os.environ["LANGCHAIN_TRACING_V2"] == "true"
+    ), "Please set LANGCHAIN_TRACING_V2 environment variable to true"
 
     args = argument_parser()
     ls_client = Client()
@@ -103,7 +103,7 @@ def main():
         target_function,
         data="my_dataset11",
         evaluators=[label_match, justification_coherence],
-        experiment_prefix=args.experiment_prefix
+        experiment_prefix=args.experiment_prefix,
     )
 
 
