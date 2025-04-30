@@ -56,34 +56,15 @@ The application requires various secrets and API keys to function properly. Thes
 
 **Important: Do not commit the secrets file to GitHub!**
 
-1. Create your own `app-secrets.yaml` file based on the template below:
+1. Create your own `app-secrets.yaml` file based on the provided template:
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: app-secrets
-  namespace: newsagent
-type: Opaque
-stringData:
-  # Database credentials
-  DB_PASSWORD: "your-db-password"
-  MYSQL_ROOT_PASSWORD: "your-mysql-root-password"
-  MYSQL_PASSWORD: "your-mysql-password"
-  
-  # API keys
-  WOLFRAM_APP_ID: "your-wolfram-app-id"
-  TAVILY_API_KEY: "your-tavily-api-key"
-  LANGCHAIN_API_KEY: "your-langchain-api-key"
-  OPENAI_API_KEY: "your-openai-api-key"
-  
-  # AWS credentials
-  AWS_ACCESS_KEY_ID: "your-aws-access-key-id"
-  AWS_SECRET_ACCESS_KEY: "your-aws-secret-access-key"
-  AWS_REGION: "your-aws-region"
+```bash
+# Copy the template file to create your own secrets file
+cp k8s/base/secrets/app-secrets.template.yaml k8s/base/secrets/app-secrets.yaml
 ```
 
-2. Replace all placeholder values with your actual credentials:
+2. Edit the `app-secrets.yaml` file to replace the placeholder values with your actual credentials:
+
    - Database passwords can be set to values of your choice
    - API keys need to be obtained from the respective services:
      - [Wolfram Alpha](https://developer.wolframalpha.com/)
@@ -92,7 +73,7 @@ stringData:
      - [OpenAI](https://platform.openai.com/)
    - AWS credentials should be from an IAM user with appropriate permissions
 
-3. Consider adding `k8s/base/secrets/app-secrets.yaml` to your `.gitignore` file to prevent accidentally committing it.
+3. The repository's `.gitignore` file has been configured to exclude `k8s/base/secrets/app-secrets.yaml` to prevent accidentally committing your secrets to GitHub.
 
 ### Step 3: Deploy the Application
 
