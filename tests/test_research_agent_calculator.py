@@ -44,11 +44,21 @@ def make_agent_with_calc_llm(model_name: str = "mistral-nemo"):
 
 INTEGRATION_CASES = [
     # expect_calc , claim text                                , expression , numeric_result
-    (True,  "The product of 7 and 8 is 56."                  , "7*8"  , 56),
-    (True,  "If you square 15 you get 225."                  , "15**2", 225),
-    (True,  "Twelve divided by three equals four."           , "12/3" , 4),
-    (False, "Marvel Studios will release 'Avengers: Secret Wars' as a two‑part film in 2026.", None    , None),
-    (False, "The EU’s planned 2035 ban on new internal‑combustion cars will be postponed."           , None    , None),
+    (True, "The product of 7 and 8 is 56.", "7*8", 56),
+    (True, "If you square 15 you get 225.", "15**2", 225),
+    (True, "Twelve divided by three equals four.", "12/3", 4),
+    (
+        False,
+        "Marvel Studios will release 'Avengers: Secret Wars' as a two‑part film in 2026.",
+        None,
+        None,
+    ),
+    (
+        False,
+        "The EU’s planned 2035 ban on new internal‑combustion cars will be postponed.",
+        None,
+        None,
+    ),
 ]
 
 
@@ -83,6 +93,7 @@ def test_research_agent_integration(expect_calc, claim, expr, result):
 # PART II –  Plumbing (stub / fast)            ─────────────────────
 # ==================================================================
 
+
 # ---------- Dummy calculator tool ---------------------------------
 def dummy_calculator():
     """
@@ -106,7 +117,9 @@ def make_ai_and_tool_msgs(expr: str, result: str):
     tool_call_id = "calc-1"
     ai = AIMessage(
         content="Let me calculate that.",
-        tool_calls=[{"id": tool_call_id, "name": "calculator", "args": {"expression": expr}}],
+        tool_calls=[
+            {"id": tool_call_id, "name": "calculator", "args": {"expression": expr}}
+        ],
     )
     tool_msg = ToolMessage(content=result, tool_call_id=tool_call_id)
     return [ai, tool_msg]
@@ -114,16 +127,16 @@ def make_ai_and_tool_msgs(expr: str, result: str):
 
 STUB_MATRIX = [
     # should_use , claim text                                , expression , expected
-    (True,  "The sum of 13 and 29 equals 42."                , "13+29", "42"),
-    (True,  "4.5 times 8.2 is 36.9."                         , "4.5*8.2", "36.9"),
-    (True,  "There are 365 days in a non-leap year."         , "360+5", "365"),
-    (True,  "Fifty minus seventeen is thirty-three."         , "50-17", "33"),
-    (True,  "9 squared equals 81."                           , "9**2", "81"),
-    (False, "Paris is the capital of France."                , "", ""),
-    (False, "Lionel Messi is an Argentine footballer."       , "", ""),
-    (False, "The Pacific Ocean is the largest ocean."        , "", ""),
-    (False, "Photosynthesis converts CO₂ into glucose."      , "", ""),
-    (False, "The Eiffel Tower is in Paris."                  , "", ""),
+    (True, "The sum of 13 and 29 equals 42.", "13+29", "42"),
+    (True, "4.5 times 8.2 is 36.9.", "4.5*8.2", "36.9"),
+    (True, "There are 365 days in a non-leap year.", "360+5", "365"),
+    (True, "Fifty minus seventeen is thirty-three.", "50-17", "33"),
+    (True, "9 squared equals 81.", "9**2", "81"),
+    (False, "Paris is the capital of France.", "", ""),
+    (False, "Lionel Messi is an Argentine footballer.", "", ""),
+    (False, "The Pacific Ocean is the largest ocean.", "", ""),
+    (False, "Photosynthesis converts CO₂ into glucose.", "", ""),
+    (False, "The Eiffel Tower is in Paris.", "", ""),
 ]
 
 
