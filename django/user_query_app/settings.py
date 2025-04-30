@@ -32,6 +32,25 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']  # Allow all hosts in development
 
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = [
+    'http://*.amazonaws.com',  # For AWS load balancer domains
+    'https://*.amazonaws.com',
+    'http://*.elb.amazonaws.com',  # For ELB domains
+    'https://*.elb.amazonaws.com',
+]
+
+# Add the following if you're using a custom domain
+# CSRF_TRUSTED_ORIGINS += ['https://yourdomain.com', 'http://yourdomain.com']
+
+# Cookie settings
+CSRF_COOKIE_SECURE = False  # Set to True in production with HTTPS
+SESSION_COOKIE_SECURE = False  # Set to True in production with HTTPS
+CSRF_COOKIE_SAMESITE = 'Lax'  # Prevents CSRF in modern browsers
+SESSION_COOKIE_SAMESITE = 'Lax'  # Prevents CSRF in modern browsers
+
+# If behind a proxy/load balancer that handles HTTPS
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
