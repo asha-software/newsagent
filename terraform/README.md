@@ -1,6 +1,6 @@
-# EKS Cluster with Ollama GPU Instance Deployment Guide
+# EKS Cluster with Ollama GPU Instance and ECR Repositories Deployment Guide
 
-This guide explains how to deploy an Amazon EKS cluster and an EC2 GPU instance running Ollama using Terraform.
+This guide explains how to deploy an Amazon EKS cluster, an EC2 GPU instance running Ollama, and ECR repositories for Docker images using Terraform.
 
 ## Prerequisites
 
@@ -20,7 +20,6 @@ The Terraform configuration consists of the following files:
 1. `main.tf` - Contains the actual resource definitions
 2. `variables.tf` - Contains all customizable parameters with default values
 3. `terraform.tfvars` - (Optional) Contains your specific variable values
-   - You can copy the provided `terraform.tfvars.example` file to `terraform.tfvars` and customize it
 
 ## Customizing Your Deployment
 
@@ -53,18 +52,12 @@ ollama_instance_name = "ollama-gpu-instance"
 
 To SSH into the EC2 instance running Ollama, you need to create and specify an SSH key pair:
 
-1. **Create an SSH key pair in AWS**:
-   ```bash
-   aws ec2 create-key-pair --key-name ollama-key --query 'KeyMaterial' --output text > ollama-key.pem
-   chmod 400 ollama-key.pem
-   ```
-
-2. **Specify the key name in your `terraform.tfvars` file**:
+1. **Specify the key name in your `terraform.tfvars` file**:
    ```hcl
    ssh_key_name = "ollama-key"
    ```
 
-If you don't specify an SSH key, the EC2 instance will still be created, but you won't be able to SSH into it directly. The Ollama service will still be installed and running, and EKS pods will be able to communicate with it.
+The key is automatically created for you an saved under the terraform directory.
 
 ## Deployment Steps
 
@@ -87,7 +80,7 @@ Follow these steps to deploy the EKS cluster:
    ```
    Type `yes` when prompted to confirm the deployment.
 
-   **Note**: The deployment process may take 15-20 minutes to complete.
+   **Note**: The deployment process may take 10-15 minutes to complete.
 
 4. **Configure kubectl**:
    After the deployment completes, configure kubectl to connect to your new EKS cluster:
@@ -102,25 +95,14 @@ Follow these steps to deploy the EKS cluster:
    ```
    This should display the worker nodes that have joined the cluster.
 
-6. **Connect to Ollama from EKS**:
-   After deployment, Terraform will output the private IP address of the Ollama instance and instructions for connecting to it from your EKS pods. You can use this information to configure your applications to use the Ollama API.
-
-   Example of connecting from a pod:
-   ```bash
-   kubectl run curl-test --image=curlimages/curl --rm -it -- \
-     curl -X POST http://<ollama-private-ip>:11434/api/generate \
-     -d '{"model": "mistral-nemo", "prompt": "Hello, world!"}'
-   ```
-   Replace `<ollama-private-ip>` with the private IP address output by Terraform.
-
-7. **SSH into the Ollama Instance** (if you configured an SSH key):
-   Since the Ollama instance is in a private subnet, you'll need to SSH through a bastion host or use AWS Systems Manager Session Manager. If you have a bastion host in the public subnet:
-   ```bash
-   # First, SSH to your bastion host
-   ssh -i /path/to/bastion-key.pem ec2-user@<bastion-public-ip>
+6. **Use ECR Repositories**:
+   The deployment creates two ECR repositories for your Docker images:
+   - `newsagent-api`: For the API service Docker image
+   - `newsagent-django`: For the Django service Docker image
    
-   # Then, from the bastion, SSH to the Ollama instance
-   ssh -i /path/to/ollama-key.pem ubuntu@<ollama-private-ip>
+   You can use the `k8s/deploy.sh` script with the `--build` and `--push-to-ecr`, and `deploy` options to build and push the images:
+   ```bash
+   ./k8s/deploy.sh --build --push-to-ecr --deploy
    ```
 
 ## Cleaning Up
@@ -132,3 +114,10 @@ terraform destroy
 ```
 
 Type `yes` when prompted to confirm the deletion of all resources.
+
+**Note**: This will also delete the ECR repositories and any images stored in them. If you want to preserve your Docker images, you should back them up before running `terraform destroy`.
+
+Alternatively, you can use the `k8s/deploy.sh` script with the `--delete` option to clean up Kubernetes resources and ECR repositories:
+```bash
+./k8s/deploy.sh --delete
+```

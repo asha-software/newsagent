@@ -6,6 +6,8 @@ This directory contains Kubernetes manifests for deploying the NewsAgent applica
 2. Django Web Application
 3. FastAPI Application (API)
 
+The application uses Amazon ECR (Elastic Container Registry) to store Docker images for the Django and API components. These ECR repositories are created and managed by Terraform.
+
 ## Prerequisites
 
 Before deploying, ensure you have:
@@ -33,21 +35,49 @@ Before deploying, ensure you have:
 
 ## Deploying the Application
 
+### Step 1: Create Infrastructure with Terraform
+
+Before deploying the application, you need to create the necessary infrastructure using Terraform:
+
+```bash
+cd terraform
+terraform init
+terraform apply
+```
+
+This will create:
+- EKS cluster
+- ECR repositories for Docker images
+- EC2 instance for Ollama
+
+### Step 2: Deploy the Application
+
 The `deploy.sh` script handles all deployment steps for you:
 
 ```bash
 # Build the necessary Docker images (Django and API)
 ./k8s/deploy.sh --build
 
+# Push images to ECR
+./k8s/deploy.sh --push-to-ecr
+
 # Deploy to Kubernetes
 ./k8s/deploy.sh --deploy
 ```
 
+You can also combine these steps:
+```bash
+./k8s/deploy.sh --build --push-to-ecr --deploy
+```
+
 The script will:
 1. Build the required Docker images
-2. Create the namespace
-3. Deploy all resources in the correct order
-4. Wait for the database to be ready before deploying dependent services
+2. Push the images to ECR (if --push-to-ecr is specified)
+3. Create the namespace
+4. Deploy all resources in the correct order
+5. Wait for the database to be ready before deploying dependent services
+
+**Note**: The ECR repositories must exist before pushing images. They are created by Terraform as part of the infrastructure setup.
 
 ## Accessing the Application
 
@@ -94,11 +124,31 @@ This script will display the current URLs for the Django frontend and API endpoi
 
 ## Cleanup
 
-To remove all resources:
+To remove all Kubernetes resources and ECR images:
 
 ```bash
 ./k8s/deploy.sh --delete
 ```
+
+To remove all infrastructure created by Terraform (including EKS cluster and ECR repositories):
+
+```bash
+cd terraform
+terraform destroy
+```
+
+**Note**: Running `terraform destroy` will delete the ECR repositories and all images stored in them. If you want to preserve your Docker images, you should back them up before running this command.
+
+## Ollama Integration
+
+The application uses an Ollama instance running on an EC2 instance for LLM inference. The connection to the Ollama instance is managed through a Kubernetes ExternalName service, which allows the application to connect to the Ollama instance using the service name `ollama`.
+
+During deployment, the `deploy.sh` script:
+1. Gets the private IP address of the EC2 instance running Ollama
+2. Updates the Ollama service configuration with this IP address
+3. Configures the application to connect to the Ollama service using the service name `ollama:11434`
+
+This approach ensures that the application can communicate with the Ollama instance even if the IP address changes.
 
 ## Troubleshooting
 
@@ -113,3 +163,6 @@ kubectl logs <pod-name> -n newsagent
 
 # Check all resources in the namespace
 kubectl get all -n newsagent
+
+# Test connectivity to the Ollama instance
+kubectl run curl-test --image=curlimages/curl --rm -it -- curl http://ollama:11434/api/tags

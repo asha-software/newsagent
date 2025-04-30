@@ -280,62 +280,39 @@ output "kubeconfig_update_command" {
   value = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.eks_cluster.name}"
 }
 
-# Private Subnet for Ollama EC2 Instance
-resource "aws_subnet" "ollama_private_subnet" {
+# Public Subnet for Ollama EC2 Instance
+resource "aws_subnet" "ollama_public_subnet" {
   vpc_id                  = aws_vpc.eks_vpc.id
   cidr_block              = cidrsubnet(var.vpc_cidr, 8, 10) # Using a different subnet range
-  map_public_ip_on_launch = false
+  map_public_ip_on_launch = true
   availability_zone       = data.aws_availability_zones.available.names[0]
   tags = merge(
     var.tags,
     {
-      Name = "${var.cluster_name}-ollama-private-subnet"
+      Name = "${var.cluster_name}-ollama-public-subnet"
     }
   )
 }
 
-# NAT Gateway for Private Subnet Internet Access
-resource "aws_eip" "nat_eip" {
-  domain = "vpc"
-  tags = merge(
-    var.tags,
-    {
-      Name = "${var.cluster_name}-nat-eip"
-    }
-  )
-}
-
-resource "aws_nat_gateway" "nat_gateway" {
-  allocation_id = aws_eip.nat_eip.id
-  subnet_id     = aws_subnet.eks_public_subnet[0].id
-  tags = merge(
-    var.tags,
-    {
-      Name = "${var.cluster_name}-nat-gateway"
-    }
-  )
-  depends_on = [aws_internet_gateway.eks_igw]
-}
-
-# Route Table for Private Subnet
-resource "aws_route_table" "ollama_private_rt" {
+# Route Table for Ollama Public Subnet
+resource "aws_route_table" "ollama_public_rt" {
   vpc_id = aws_vpc.eks_vpc.id
   route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway.id
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.eks_igw.id
   }
   tags = merge(
     var.tags,
     {
-      Name = "${var.cluster_name}-ollama-private-rt"
+      Name = "${var.cluster_name}-ollama-public-rt"
     }
   )
 }
 
-# Route Table Association for Private Subnet
-resource "aws_route_table_association" "ollama_private_rt_assoc" {
-  subnet_id      = aws_subnet.ollama_private_subnet.id
-  route_table_id = aws_route_table.ollama_private_rt.id
+# Route Table Association for Ollama Public Subnet
+resource "aws_route_table_association" "ollama_public_rt_assoc" {
+  subnet_id      = aws_subnet.ollama_public_subnet.id
+  route_table_id = aws_route_table.ollama_public_rt.id
 }
 
 # Security Group for Ollama EC2 Instance
@@ -344,22 +321,22 @@ resource "aws_security_group" "ollama_sg" {
   description = "Security group for Ollama EC2 instance"
   vpc_id      = aws_vpc.eks_vpc.id
 
-  # Allow SSH from within VPC
+  # Allow SSH from anywhere (you may want to restrict this to your IP)
   ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
-    description = "Allow SSH from within VPC"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow SSH from anywhere"
   }
 
-  # Allow Ollama API port from within VPC
+  # Allow Ollama API port from anywhere
   ingress {
     from_port   = 11434
     to_port     = 11434
     protocol    = "tcp"
-    cidr_blocks = [var.vpc_cidr]
-    description = "Allow Ollama API access from within VPC"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow Ollama API access from anywhere"
   }
 
   # Allow all outbound traffic
@@ -426,9 +403,10 @@ resource "aws_key_pair" "ollama_key_pair" {
 resource "aws_instance" "ollama_instance" {
   ami                    = var.ollama_ami_id
   instance_type          = var.ollama_instance_type
-  subnet_id              = aws_subnet.ollama_private_subnet.id
+  subnet_id              = aws_subnet.ollama_public_subnet.id
   vpc_security_group_ids = [aws_security_group.ollama_sg.id]
   iam_instance_profile   = aws_iam_instance_profile.ollama_profile.name
+  associate_public_ip_address = true
   
   # Use our generated key pair
   key_name               = aws_key_pair.ollama_key_pair.key_name
@@ -463,40 +441,76 @@ resource "aws_instance" "ollama_instance" {
     apt-get update
     apt-get install -y nvidia-container-toolkit
 
-    # Install Ollama
+    # Install required networking tools
+    apt-get install -y net-tools
+
+    # Create Ollama configuration directory and set binding to all interfaces
+    mkdir -p /etc/ollama
+    cat > /etc/ollama/config << 'EOL'
+    OLLAMA_HOST=0.0.0.0:11434
+    EOL
+    chmod 644 /etc/ollama/config
+
+    # Install Ollama with environment variable set to listen on all interfaces
+    export OLLAMA_HOST=0.0.0.0:11434
     curl -fsSL https://ollama.com/install.sh | sh
 
-    # Pull and run the Ollama model
-    systemctl enable ollama
-    systemctl start ollama
-    
-    # Wait for Ollama service to start
-    sleep 10
-    
-    # Pull the model
-    ollama pull ${var.ollama_model}
-    
-    # Create a systemd service to ensure Ollama starts on boot
-    cat > /etc/systemd/system/ollama-model.service << 'EOL'
+    # Verify Ollama installation
+    if [ ! -f /usr/bin/ollama ]; then
+      echo "Ollama installation failed. Retrying..."
+      curl -fsSL https://ollama.com/install.sh | sh
+    fi
+
+    # Create a systemd override to ensure Ollama listens on all interfaces
+    mkdir -p /etc/systemd/system/ollama.service.d/
+    cat > /etc/systemd/system/ollama.service.d/override.conf << 'EOL'
+    [Service]
+    Environment="OLLAMA_HOST=0.0.0.0:11434"
+    EOL
+
+    # Create a custom systemd service for Ollama
+    cat > /etc/systemd/system/ollama-custom.service << 'EOL'
     [Unit]
-    Description=Ollama Model Service
-    After=ollama.service
-    Requires=ollama.service
+    Description=Ollama API Service
+    After=network-online.target
+    Wants=network-online.target
 
     [Service]
-    Type=simple
-    User=root
+    Environment="OLLAMA_HOST=0.0.0.0:11434"
     ExecStart=/usr/bin/ollama serve
     Restart=always
-    RestartSec=10
+    RestartSec=3
+    User=root
+    LimitNOFILE=65536
 
     [Install]
     WantedBy=multi-user.target
     EOL
 
+    # Reload systemd, disable default service, enable and start custom service
     systemctl daemon-reload
-    systemctl enable ollama-model.service
-    systemctl start ollama-model.service
+    systemctl disable ollama.service
+    systemctl enable ollama-custom.service
+    systemctl start ollama-custom.service
+
+    # Wait for Ollama service to start
+    echo "Waiting for Ollama service to start..."
+    for i in {1..30}; do
+      if curl -s http://localhost:11434/api/tags > /dev/null; then
+        echo "Ollama service is up and running"
+        break
+      fi
+      echo "Waiting for Ollama service... ($i/30)"
+      sleep 2
+    done
+
+    # Verify Ollama is listening on all interfaces
+    echo "Checking Ollama binding..."
+    netstat -tulpn | grep 11434
+    
+    # Pull the model
+    echo "Pulling Ollama model: ${var.ollama_model}"
+    ollama pull ${var.ollama_model}
     
     # Tag the instance to indicate setup is complete
     INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
@@ -511,7 +525,7 @@ resource "aws_instance" "ollama_instance" {
     }
   )
 
-  depends_on = [aws_nat_gateway.nat_gateway]
+  depends_on = [aws_internet_gateway.eks_igw]
 }
 
 # Security Group Rule to allow EKS nodes to communicate with Ollama instance
@@ -529,10 +543,15 @@ resource "aws_security_group_rule" "eks_to_ollama" {
   depends_on = [aws_eks_cluster.eks_cluster]
 }
 
-# Output the Ollama instance private IP
+# Output the Ollama instance IPs
 output "ollama_instance_private_ip" {
   value = aws_instance.ollama_instance.private_ip
   description = "Private IP address of the Ollama instance"
+}
+
+output "ollama_instance_public_ip" {
+  value = aws_instance.ollama_instance.public_ip
+  description = "Public IP address of the Ollama instance"
 }
 
 # Output instructions for connecting to Ollama from EKS
@@ -565,8 +584,48 @@ output "ollama_ssh_instructions" {
        chmod 600 ${path.module}/ollama-key.pem
     
     3. Connect using:
-       ssh -i ${path.module}/ollama-key.pem ubuntu@${aws_instance.ollama_instance.private_ip}
-       
-    Note: Since the instance is in a private subnet, you'll need to connect through a bastion host or VPN.
+       ssh -i ${path.module}/ollama-key.pem ubuntu@${aws_instance.ollama_instance.public_ip}
   EOT
+}
+
+# ECR Repositories for Docker images
+resource "aws_ecr_repository" "newsagent_api" {
+  name                 = "newsagent-api"
+  image_tag_mutability = "MUTABLE"
+  
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+  
+  tags = merge(
+    var.tags,
+    {
+      Name = "newsagent-api"
+    }
+  )
+}
+
+resource "aws_ecr_repository" "newsagent_django" {
+  name                 = "newsagent-django"
+  image_tag_mutability = "MUTABLE"
+  
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+  
+  tags = merge(
+    var.tags,
+    {
+      Name = "newsagent-django"
+    }
+  )
+}
+
+# Output ECR repository URLs
+output "ecr_repository_urls" {
+  value = {
+    api    = aws_ecr_repository.newsagent_api.repository_url
+    django = aws_ecr_repository.newsagent_django.repository_url
+  }
+  description = "URLs of the ECR repositories for Docker images"
 }

@@ -109,11 +109,6 @@ fi
 if [ "$PUSH_TO_ECR" = true ]; then
   echo "Pushing Docker images to Amazon ECR..."
   
-  # Create ECR repositories if they don't exist
-  echo "Creating ECR repositories if they don't exist..."
-  aws ecr describe-repositories --repository-names newsagent-api >/dev/null 2>&1 || aws ecr create-repository --no-cli-pager --repository-name newsagent-api
-  aws ecr describe-repositories --repository-names newsagent-django >/dev/null 2>&1 || aws ecr create-repository --no-cli-pager --repository-name newsagent-django
-  
   # Login to ECR
   echo "Logging in to Amazon ECR..."
   aws ecr get-login-password | docker login --username AWS --password-stdin "${ECR_REGISTRY}"
@@ -153,7 +148,15 @@ update_ollama_config() {
     exit 1
   fi
   
-  # Get the private IP of the Ollama instance
+  # Get the public IP of the Ollama instance
+  OLLAMA_PUBLIC_IP=$(aws ec2 describe-instances --instance-ids "$OLLAMA_INSTANCE_ID" --query "Reservations[0].Instances[0].PublicIpAddress" --output text)
+  
+  if [ -z "$OLLAMA_PUBLIC_IP" ] || [ "$OLLAMA_PUBLIC_IP" == "None" ]; then
+    echo "Error: Could not get public IP of Ollama instance"
+    exit 1
+  fi
+  
+  # Also get the private IP for EKS internal communication
   OLLAMA_PRIVATE_IP=$(aws ec2 describe-instances --instance-ids "$OLLAMA_INSTANCE_ID" --query "Reservations[0].Instances[0].PrivateIpAddress" --output text)
   
   if [ -z "$OLLAMA_PRIVATE_IP" ] || [ "$OLLAMA_PRIVATE_IP" == "None" ]; then
@@ -161,21 +164,46 @@ update_ollama_config() {
     exit 1
   fi
   
-  echo "Found Ollama instance with ID $OLLAMA_INSTANCE_ID and private IP $OLLAMA_PRIVATE_IP"
+  echo "Found Ollama instance with ID $OLLAMA_INSTANCE_ID, public IP $OLLAMA_PUBLIC_IP, and private IP $OLLAMA_PRIVATE_IP"
   
-  # Update the ConfigMap with the Ollama instance private IP
-  echo "Updating ConfigMap with Ollama instance private IP..."
-  sed -i.bak "s|OLLAMA_BASE_URL: \"http://.*:11434\"|OLLAMA_BASE_URL: \"http://${OLLAMA_PRIVATE_IP}:11434\"|g" k8s/base/configmaps/app-config.yaml
+  # Update the ConfigMap to use the public IP of the Ollama instance
+  echo "Updating ConfigMap to use public IP of Ollama instance..."
+  sed -i.bak "s|\${OLLAMA_PUBLIC_IP}|${OLLAMA_PUBLIC_IP}|g" k8s/base/configmaps/app-config.yaml
+  
+  # Update the Ollama service with the public IP address
+  echo "Updating Ollama service with instance public IP..."
+  sed -i.bak "s|\${OLLAMA_PUBLIC_IP}|${OLLAMA_PUBLIC_IP}|g" k8s/base/services/ollama.yaml
   
   # Clean up backup files (if any exist)
   find k8s/base/configmaps/ -name "*.bak" -type f -delete 2>/dev/null || true
+  find k8s/base/services/ -name "*.bak" -type f -delete 2>/dev/null || true
   
-  echo "ConfigMap updated successfully."
+  echo "ConfigMap and Ollama service updated successfully."
 }
 
 # Deploy to Kubernetes if requested
 if [ "$DEPLOY" = true ]; then
   echo "Deploying to Kubernetes..."
+  
+  # Update kubeconfig to point to the EKS cluster
+  echo "Updating kubeconfig to point to the EKS cluster..."
+  CLUSTER_NAME=$(aws eks list-clusters --query "clusters[0]" --output text)
+  if [ -z "$CLUSTER_NAME" ] || [ "$CLUSTER_NAME" == "None" ]; then
+    echo "Error: Could not find any EKS clusters. Make sure you've run terraform apply first."
+    exit 1
+  fi
+  
+  echo "Found EKS cluster: $CLUSTER_NAME"
+  aws eks update-kubeconfig --name "$CLUSTER_NAME" --region "$AWS_REGION"
+  echo "Kubeconfig updated successfully."
+  
+  # Verify connection to the cluster
+  echo "Verifying connection to the cluster..."
+  kubectl cluster-info
+  if [ $? -ne 0 ]; then
+    echo "Error: Could not connect to the EKS cluster. Check your AWS credentials and try again."
+    exit 1
+  fi
   
   # Update Ollama configuration
   update_ollama_config
@@ -198,6 +226,9 @@ if [ "$DEPLOY" = true ]; then
   
   echo "Waiting for MySQL to be ready..."
   kubectl wait --for=condition=available --timeout=300s deployment/mysql -n newsagent
+  
+  echo "Deploying Ollama service..."
+  kubectl apply -f k8s/base/services/ollama.yaml
   
   echo "Deploying Django and API applications..."
   kubectl apply -f k8s/base/deployments/django.yaml

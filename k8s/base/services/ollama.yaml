@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: newsagent
+spec:
+  type: ClusterIP
+  ports:
+  - port: 11434
+    targetPort: 11434
+    name: http
+---
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: ollama
+  namespace: newsagent
+subsets:
+- addresses:
+  - ip: 44.246.197.141  # This will be replaced by the actual public IP during deployment
+  ports:
+  - port: 11434
+    name: http
