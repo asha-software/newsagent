@@ -7,7 +7,7 @@ set -e
 # Function to push Docker images with retry
 push_with_retry() {
   local image=$1
-  local max_attempts=3
+  local max_attempts=5
   local attempt=1
   
   while [ $attempt -le $max_attempts ]; do
@@ -96,10 +96,10 @@ if [ "$BUILD_IMAGES" = true ]; then
   docker buildx inspect --bootstrap
   
   echo "Building Django image for x86_64 architecture..."
-  DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t newsagent-django:latest -f django/Dockerfile django/
+  docker buildx build --platform=linux/amd64 --load -t newsagent-django:latest -f django/Dockerfile django/
   
   echo "Building API image for x86_64 architecture..."
-  DOCKER_DEFAULT_PLATFORM=linux/amd64 docker build -t newsagent-api:latest -f core/Dockerfile .
+  docker buildx build --platform=linux/amd64 --load -t newsagent-api:latest -f core/Dockerfile .
   
   echo "Docker images built successfully."
   echo "Note: MySQL uses the official mysql:8.0 image from Docker Hub, so no build is needed."
@@ -213,6 +213,68 @@ if [ "$DEPLOY" = true ]; then
   # Display resources
   echo "Resources in namespace 'newsagent':"
   kubectl get all -n newsagent
+  
+  # Wait for load balancers to be provisioned
+  echo ""
+  echo "Waiting for load balancers to be provisioned (this may take a few minutes)..."
+  
+  # Function to wait for external IP/hostname
+  wait_for_external_ip() {
+    local service_name=$1
+    local namespace=$2
+    local max_attempts=30
+    local attempt=1
+    local external_ip=""
+    
+    while [ $attempt -le $max_attempts ]; do
+      echo "Checking external IP for $service_name (attempt $attempt/$max_attempts)..."
+      external_ip=$(kubectl get service $service_name -n $namespace --template="{{range .status.loadBalancer.ingress}}{{.hostname}}{{end}}")
+      
+      if [ -n "$external_ip" ]; then
+        echo "External hostname found for $service_name: $external_ip"
+        return 0
+      else
+        echo "External hostname not yet available, waiting..."
+        sleep 10
+        attempt=$((attempt+1))
+      fi
+    done
+    
+    echo "Failed to get external hostname for $service_name after $max_attempts attempts"
+    return 1
+  }
+  
+  # Wait for Django and API services to get external IPs
+  wait_for_external_ip "django" "newsagent"
+  wait_for_external_ip "api" "newsagent"
+  
+  # Get and display the URLs
+  echo ""
+  echo "============================================================"
+  echo "                   ACCESS INFORMATION                       "
+  echo "============================================================"
+  echo "Your application is now accessible at the following URLs:"
+  echo ""
+  
+  # Get Django URL
+  DJANGO_HOSTNAME=$(kubectl get service django -n newsagent --template="{{range .status.loadBalancer.ingress}}{{.hostname}}{{end}}")
+  if [ -n "$DJANGO_HOSTNAME" ]; then
+    echo "Django Frontend: http://$DJANGO_HOSTNAME:8000"
+  else
+    echo "Django Frontend: URL not available yet. Run 'kubectl get service django -n newsagent' to check status."
+  fi
+  
+  # Get API URL
+  API_HOSTNAME=$(kubectl get service api -n newsagent --template="{{range .status.loadBalancer.ingress}}{{.hostname}}{{end}}")
+  if [ -n "$API_HOSTNAME" ]; then
+    echo "API Endpoint: http://$API_HOSTNAME:8001"
+    echo "API Documentation: http://$API_HOSTNAME:8001/docs"
+  else
+    echo "API Endpoint: URL not available yet. Run 'kubectl get service api -n newsagent' to check status."
+  fi
+  
+  echo "============================================================"
+  echo "Note: It may take a few minutes for DNS to propagate and for the services to be fully accessible."
 fi
 
 # Delete from Kubernetes if requested

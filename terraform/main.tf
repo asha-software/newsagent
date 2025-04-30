@@ -66,6 +66,47 @@ resource "aws_subnet" "eks_public_subnet" {
   )
 }
 
+# Security Group for EKS Cluster Load Balancers
+resource "aws_security_group" "eks_lb_sg" {
+  name        = "${var.cluster_name}-lb-sg"
+  description = "Security group for EKS cluster load balancers"
+  vpc_id      = aws_vpc.eks_vpc.id
+
+  # Allow HTTP traffic for Django (port 8000)
+  ingress {
+    from_port   = 8000
+    to_port     = 8000
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow Django HTTP traffic"
+  }
+
+  # Allow HTTP traffic for API (port 8001)
+  ingress {
+    from_port   = 8001
+    to_port     = 8001
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow API HTTP traffic"
+  }
+
+  # Allow all outbound traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+    description = "Allow all outbound traffic"
+  }
+
+  tags = merge(
+    var.tags,
+    {
+      Name = "${var.cluster_name}-lb-sg"
+    }
+  )
+}
+
 # Route Table for Public Subnets
 resource "aws_route_table" "eks_public_rt" {
   vpc_id = aws_vpc.eks_vpc.id
@@ -126,6 +167,7 @@ resource "aws_eks_cluster" "eks_cluster" {
     subnet_ids              = aws_subnet.eks_public_subnet[*].id
     endpoint_private_access = var.endpoint_private_access
     endpoint_public_access  = var.endpoint_public_access
+    security_group_ids      = [aws_security_group.eks_lb_sg.id]
   }
 
   depends_on = [

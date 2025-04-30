@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: django
   namespace: newsagent
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
 spec:
   selector:
     app: newsagent
@@ -11,4 +14,4 @@ spec:
   - port: 8000
     targetPort: 8000
     name: http
-  type: ClusterIP
+  type: LoadBalancer

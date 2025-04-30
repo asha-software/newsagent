@@ -70,7 +70,7 @@ spec:
           periodSeconds: 2
           timeoutSeconds: 1
         command:
-        - sh
+        - /bin/bash
         - -c
         - |
           python manage.py migrate &&

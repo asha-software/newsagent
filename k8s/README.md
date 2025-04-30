@@ -51,13 +51,46 @@ The script will:
 
 ## Accessing the Application
 
-After deployment, check the Ingress to get the application URL:
+After deployment, the `deploy.sh` script will automatically display the URLs for accessing your application:
 
-```bash
-kubectl get ingress -n newsagent
+```
+============================================================
+                   ACCESS INFORMATION                       
+============================================================
+Your application is now accessible at the following URLs:
+
+Django Frontend: http://<DJANGO-HOSTNAME>:8000
+API Endpoint: http://<API-HOSTNAME>:8001
+API Documentation: http://<API-HOSTNAME>:8001/docs
+============================================================
 ```
 
-The ADDRESS field will contain the ALB DNS name.
+The script will wait for the load balancers to be provisioned and display these URLs automatically. If for some reason the URLs are not displayed, you can manually check them with:
+
+```bash
+# Get the external hostnames for the Django and API services
+kubectl get services -n newsagent
+```
+
+Look for the `EXTERNAL-IP` column in the output. You'll see external hostnames for both the Django and API services:
+
+- Django frontend: `http://<DJANGO-EXTERNAL-IP>:8000`
+- API endpoint: `http://<API-EXTERNAL-IP>:8001`
+- API documentation: `http://<API-EXTERNAL-IP>:8001/docs`
+
+It may take a few minutes for the Load Balancers to be provisioned and for DNS to propagate. If you can't access the URLs immediately, wait a few minutes and try again.
+
+For class demonstrations, you can share these URLs with your audience to access the application.
+
+### Quick URL Check
+
+If you need to quickly check the URLs after deployment, you can use the provided script:
+
+```bash
+./k8s/get_urls.sh
+```
+
+This script will display the current URLs for the Django frontend and API endpoints, as well as the current status of all services.
 
 ## Cleanup
 
