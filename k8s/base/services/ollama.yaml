@@ -17,7 +17,7 @@ metadata:
   namespace: newsagent
 subsets:
 - addresses:
-  - ip: 44.246.197.141  # This will be replaced by the actual public IP during deployment
+  - ip: ${OLLAMA_PUBLIC_IP}  # This will be replaced by the actual public IP during deployment
   ports:
   - port: 11434
     name: http

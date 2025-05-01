@@ -171,8 +171,7 @@ resource "aws_eks_cluster" "eks_cluster" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.eks_cluster_policy,
-    aws_instance.ollama_instance  # Add dependency on EC2 instance to create it first
+    aws_iam_role_policy_attachment.eks_cluster_policy
   ]
 }
 
@@ -261,8 +260,7 @@ resource "aws_eks_node_group" "eks_node_group" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_worker_node_policy,
     aws_iam_role_policy_attachment.eks_cni_policy,
-    aws_iam_role_policy_attachment.eks_container_registry_policy,
-    aws_instance.ollama_instance  # Add dependency on EC2 instance to create it first
+    aws_iam_role_policy_attachment.eks_container_registry_policy
   ]
 }
 
@@ -416,108 +414,6 @@ resource "aws_instance" "ollama_instance" {
     volume_type = "gp3"
   }
 
-  user_data = <<-EOF
-    #!/bin/bash
-    # Update system
-    apt-get update -y
-    apt-get upgrade -y
-
-    # Install required packages
-    apt-get install -y \
-      ca-certificates \
-      curl \
-      gnupg \
-      lsb-release
-
-    # Install NVIDIA drivers and CUDA
-    apt-get install -y linux-headers-$(uname -r)
-    apt-get install -y nvidia-driver-535 nvidia-utils-535
-    
-    # Install NVIDIA container toolkit
-    curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-    curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-      sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-      tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-    apt-get update
-    apt-get install -y nvidia-container-toolkit
-
-    # Install required networking tools
-    apt-get install -y net-tools
-
-    # Create Ollama configuration directory and set binding to all interfaces
-    mkdir -p /etc/ollama
-    cat > /etc/ollama/config << 'EOL'
-    OLLAMA_HOST=0.0.0.0:11434
-    EOL
-    chmod 644 /etc/ollama/config
-
-    # Install Ollama with environment variable set to listen on all interfaces
-    export OLLAMA_HOST=0.0.0.0:11434
-    curl -fsSL https://ollama.com/install.sh | sh
-
-    # Verify Ollama installation
-    if [ ! -f /usr/bin/ollama ]; then
-      echo "Ollama installation failed. Retrying..."
-      curl -fsSL https://ollama.com/install.sh | sh
-    fi
-
-    # Create a systemd override to ensure Ollama listens on all interfaces
-    mkdir -p /etc/systemd/system/ollama.service.d/
-    cat > /etc/systemd/system/ollama.service.d/override.conf << 'EOL'
-    [Service]
-    Environment="OLLAMA_HOST=0.0.0.0:11434"
-    EOL
-
-    # Create a custom systemd service for Ollama
-    cat > /etc/systemd/system/ollama-custom.service << 'EOL'
-    [Unit]
-    Description=Ollama API Service
-    After=network-online.target
-    Wants=network-online.target
-
-    [Service]
-    Environment="OLLAMA_HOST=0.0.0.0:11434"
-    ExecStart=/usr/bin/ollama serve
-    Restart=always
-    RestartSec=3
-    User=root
-    LimitNOFILE=65536
-
-    [Install]
-    WantedBy=multi-user.target
-    EOL
-
-    # Reload systemd, disable default service, enable and start custom service
-    systemctl daemon-reload
-    systemctl disable ollama.service
-    systemctl enable ollama-custom.service
-    systemctl start ollama-custom.service
-
-    # Wait for Ollama service to start
-    echo "Waiting for Ollama service to start..."
-    for i in {1..30}; do
-      if curl -s http://localhost:11434/api/tags > /dev/null; then
-        echo "Ollama service is up and running"
-        break
-      fi
-      echo "Waiting for Ollama service... ($i/30)"
-      sleep 2
-    done
-
-    # Verify Ollama is listening on all interfaces
-    echo "Checking Ollama binding..."
-    netstat -tulpn | grep 11434
-    
-    # Pull the model
-    echo "Pulling Ollama model: ${var.ollama_model}"
-    ollama pull ${var.ollama_model}
-    
-    # Tag the instance to indicate setup is complete
-    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-    REGION=$(curl -s http://169.254.169.254/latest/meta-data/placement/region)
-    aws ec2 create-tags --resources $INSTANCE_ID --tags Key=OllamaSetupComplete,Value=true --region $REGION
-  EOF
-
   tags = merge(
     var.tags,
     {
@@ -526,6 +422,18 @@ resource "aws_instance" "ollama_instance" {
   )
 
   depends_on = [aws_internet_gateway.eks_igw]
+}
+
+# Output the path to the Ollama key file
+output "ollama_key_path" {
+  value = "${path.module}/ollama-key.pem"
+  description = "Path to the Ollama SSH key file"
+}
+
+# Output the name of the Ollama key pair
+output "ollama_key_pair_name" {
+  value = aws_key_pair.ollama_key_pair.key_name
+  description = "Name of the Ollama key pair"
 }
 
 # Security Group Rule to allow EKS nodes to communicate with Ollama instance
