@@ -76,34 +76,24 @@ Follow these steps to deploy the EKS cluster:
 
 3. **Apply the Configuration**:
    ```bash
-   terraform apply
+   terraform apply (optional --auto-approve)
    ```
    Type `yes` when prompted to confirm the deployment.
 
    **Note**: The deployment process may take 10-15 minutes to complete.
 
-4. **Configure kubectl**:
-   After the deployment completes, configure kubectl to connect to your new EKS cluster:
-   ```bash
-   aws eks update-kubeconfig --region <your-region> --name <your-cluster-name>
-   ```
-   Replace `<your-region>` with the AWS region and `<your-cluster-name>` with the cluster name you specified in your configuration.
-
-5. **Verify the Cluster**:
+4. **Verify the Cluster**:
    ```bash
    kubectl get nodes
    ```
    This should display the worker nodes that have joined the cluster.
 
-6. **Use ECR Repositories**:
+5. **Use ECR Repositories**:
    The deployment creates two ECR repositories for your Docker images:
    - `newsagent-api`: For the API service Docker image
    - `newsagent-django`: For the Django service Docker image
    
    You can use the `k8s/deploy.sh` script with the `--build` and `--push-to-ecr`, and `deploy` options to build and push the images:
-   ```bash
-   ./k8s/deploy.sh --build --push-to-ecr --deploy
-   ```
 
 ## Cleaning Up
 

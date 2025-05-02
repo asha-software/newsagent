@@ -16,23 +16,6 @@ Before deploying, ensure you have:
 2. `kubectl` installed and configured
 3. AWS CLI installed and configured
 
-## Connecting to AWS EKS
-
-1. Configure AWS CLI with your credentials:
-   ```bash
-   aws configure
-   ```
-
-2. Update your kubeconfig to connect to your EKS cluster:
-   ```bash
-   aws eks update-kubeconfig --region <your-region> --name <your-cluster-name>
-   ```
-
-3. Verify the connection:
-   ```bash
-   kubectl get nodes
-   ```
-
 ## Deploying the Application
 
 ### Step 1: Create Infrastructure with Terraform
@@ -42,7 +25,7 @@ Before deploying the application, you need to create the necessary infrastructur
 ```bash
 cd terraform
 terraform init
-terraform apply
+terraform apply (optional --auto-aprove)
 ```
 
 This will create:
@@ -90,10 +73,7 @@ The `deploy.sh` script handles all deployment steps for you:
 ./k8s/deploy.sh --deploy
 ```
 
-You can also combine these steps:
-```bash
-./k8s/deploy.sh --build --push-to-ecr --deploy
-```
+Now feel free to get yourself a coffee. This will take about 10 minutes to fully deploy
 
 The script will:
 1. Build the required Docker images
@@ -101,6 +81,7 @@ The script will:
 3. Create the namespace
 4. Deploy all resources in the correct order
 5. Wait for the database to be ready before deploying dependent services
+6. Install and configure Nvidia drivers, and Ollama on the EC2 instance
 
 **Note**: The ECR repositories must exist before pushing images. They are created by Terraform as part of the infrastructure setup.
 
@@ -134,18 +115,6 @@ Look for the `EXTERNAL-IP` column in the output. You'll see external hostnames f
 - API documentation: `http://<API-EXTERNAL-IP>:8001/docs`
 
 It may take a few minutes for the Load Balancers to be provisioned and for DNS to propagate. If you can't access the URLs immediately, wait a few minutes and try again.
-
-For class demonstrations, you can share these URLs with your audience to access the application.
-
-### Quick URL Check
-
-If you need to quickly check the URLs after deployment, you can use the provided script:
-
-```bash
-./k8s/get_urls.sh
-```
-
-This script will display the current URLs for the Django frontend and API endpoints, as well as the current status of all services.
 
 ## Cleanup
 
@@ -188,6 +157,3 @@ kubectl logs <pod-name> -n newsagent
 
 # Check all resources in the namespace
 kubectl get all -n newsagent
-
-# Test connectivity to the Ollama instance
-kubectl run curl-test --image=curlimages/curl --rm -it -- curl http://ollama:11434/api/tags

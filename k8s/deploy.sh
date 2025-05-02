@@ -47,7 +47,7 @@ ensure_skopeo_installed() {
 push_with_skopeo() {
   local source_image=$1
   local dest_image=$2
-  local max_attempts=5
+  local max_attempts=10
   local attempt=1
   
   # Get ECR registry from destination image
@@ -356,8 +356,8 @@ ensure_ollama_model_loaded() {
 setup_and_configure_ollama() {
   echo "Getting Ollama instance information..."
   
-  # Get the instance ID with the tag Name=ollama-gpu-instance
-  OLLAMA_INSTANCE_ID=$(aws ec2 describe-instances --no-cli-pager --filters "Name=tag:Name,Values=ollama-gpu-instance" --query "Reservations[0].Instances[0].InstanceId" --output text)
+  # Get the instance ID with the tag Name=ollama-gpu-instance and state=running
+  OLLAMA_INSTANCE_ID=$(aws ec2 describe-instances --no-cli-pager --filters "Name=tag:Name,Values=ollama-gpu-instance" "Name=instance-state-name,Values=running" --query "Reservations[0].Instances[0].InstanceId" --output text)
   
   if [ -z "$OLLAMA_INSTANCE_ID" ] || [ "$OLLAMA_INSTANCE_ID" == "None" ]; then
     echo "Error: Could not find Ollama instance with tag Name=ollama-gpu-instance"
@@ -438,6 +438,25 @@ else
     net-tools \
     ufw
     
+  # Install NVIDIA drivers and CUDA for GPU support
+  echo "Installing NVIDIA drivers and CUDA for GPU support..."
+  sudo apt-get install -y linux-headers-$(uname -r)
+  distribution=$(. /etc/os-release;echo $ID$VERSION_ID | sed -e 's/\.//g')
+  wget https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/cuda-keyring_1.0-1_all.deb
+  sudo dpkg -i cuda-keyring_1.0-1_all.deb
+  sudo apt-get update
+  sudo apt-get -y install cuda-drivers
+  sudo apt-get -y install cuda
+  
+  # Verify NVIDIA installation
+  echo "Verifying NVIDIA driver installation..."
+  if command -v nvidia-smi &> /dev/null; then
+    echo "NVIDIA drivers installed successfully:"
+    nvidia-smi
+  else
+    echo "WARNING: NVIDIA drivers installation may have failed. Ollama may not use GPU acceleration."
+  fi
+    
   # Configure firewall to allow Ollama port
   echo "Configuring firewall to allow port 11434..."
   sudo ufw allow 22/tcp
@@ -472,17 +491,32 @@ echo "Creating Ollama configuration..."
 sudo mkdir -p /etc/ollama
 sudo bash -c 'cat > /etc/ollama/config << EOL
 OLLAMA_HOST=0.0.0.0:11434
+# Enable GPU acceleration
+OLLAMA_CUDA=1
 EOL'
 sudo chmod 644 /etc/ollama/config
 cat /etc/ollama/config
 
-# Set environment variable globally and for current session
-echo "Setting OLLAMA_HOST environment variable..."
+# Set environment variables globally and for current session
+echo "Setting Ollama environment variables..."
 export OLLAMA_HOST=0.0.0.0:11434
+export OLLAMA_CUDA=1
 echo "export OLLAMA_HOST=0.0.0.0:11434" >> ~/.bashrc
+echo "export OLLAMA_CUDA=1" >> ~/.bashrc
 sudo bash -c 'echo "export OLLAMA_HOST=0.0.0.0:11434" >> /etc/profile'
+sudo bash -c 'echo "export OLLAMA_CUDA=1" >> /etc/profile'
 sudo bash -c 'echo "OLLAMA_HOST=0.0.0.0:11434" >> /etc/environment'
+sudo bash -c 'echo "OLLAMA_CUDA=1" >> /etc/environment'
 echo "Current OLLAMA_HOST value: $OLLAMA_HOST"
+echo "Current OLLAMA_CUDA value: $OLLAMA_CUDA"
+
+# Set up CUDA environment variables
+echo "Setting up CUDA environment variables..."
+sudo bash -c 'echo "export PATH=/usr/local/cuda/bin:\$PATH" > /etc/profile.d/cuda.sh'
+sudo bash -c 'echo "export LD_LIBRARY_PATH=/usr/local/cuda/lib64:\$LD_LIBRARY_PATH" >> /etc/profile.d/cuda.sh'
+sudo chmod +x /etc/profile.d/cuda.sh
+source /etc/profile.d/cuda.sh
+echo "PATH now includes CUDA: $PATH"
 
 # Install Ollama
 echo "Installing Ollama..."
@@ -492,7 +526,7 @@ curl -fsSL https://ollama.com/install.sh | sh
 OLLAMA_EXEC_PATH=$(which ollama)
 echo "Found Ollama executable at: $OLLAMA_EXEC_PATH"
 
-# Create a custom systemd service for Ollama that explicitly binds to all interfaces
+# Create a custom systemd service for Ollama that explicitly binds to all interfaces and enables GPU
 echo "Creating custom systemd service for Ollama..."
 sudo bash -c "cat > /etc/systemd/system/ollama-custom.service << EOL
 [Unit]
@@ -502,6 +536,9 @@ Wants=network-online.target
 
 [Service]
 Environment=\"OLLAMA_HOST=0.0.0.0:11434\"
+Environment=\"OLLAMA_CUDA=1\"
+Environment=\"PATH=/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"
+Environment=\"LD_LIBRARY_PATH=/usr/local/cuda/lib64\"
 ExecStart=$OLLAMA_EXEC_PATH serve
 Restart=always
 RestartSec=3
@@ -523,7 +560,7 @@ sudo systemctl restart ollama-custom.service
 # Verify the service is running with the correct configuration
 echo "Verifying Ollama service configuration..."
 sudo systemctl status ollama-custom.service
-sudo grep -r "OLLAMA_HOST" /etc/systemd/ /etc/ollama/ /etc/environment
+sudo grep -r "OLLAMA_HOST\|OLLAMA_CUDA" /etc/systemd/ /etc/ollama/ /etc/environment
 
 # Wait for Ollama service to start
 echo "Waiting for Ollama service to start..."
@@ -547,7 +584,7 @@ attempt=1
 
 while [ $attempt -le $max_attempts ]; do
   echo "Attempt $attempt of $max_attempts: Pulling Ollama model mistral-nemo"
-  if ollama pull mistral-nemo; then
+  if sudo OLLAMA_CUDA=1 ollama pull mistral-nemo; then
     echo "Successfully pulled mistral-nemo"
     break
   else
@@ -561,6 +598,38 @@ done
 if ! ollama list | grep -q "mistral-nemo"; then
   echo "Error: Failed to pull mistral-nemo after $max_attempts attempts"
   exit 1
+fi
+
+# Verify GPU usage
+echo "Verifying GPU usage by Ollama..."
+if nvidia-smi | grep -q ollama; then
+  echo "SUCCESS: Ollama is using the GPU"
+  nvidia-smi | grep ollama
+else
+  echo "WARNING: Ollama process not detected in nvidia-smi output. This may indicate Ollama is not using the GPU."
+  echo "Restarting Ollama service to ensure GPU detection..."
+  sudo systemctl restart ollama-custom.service
+  sleep 15
+  
+  # Check again after restart
+  if nvidia-smi | grep -q ollama; then
+    echo "SUCCESS: After restart, Ollama is now using the GPU"
+    nvidia-smi | grep ollama
+  else
+    echo "WARNING: Ollama still not detected in nvidia-smi output after restart."
+    echo "Running a test query to load the model into GPU memory..."
+    curl -s -X POST http://localhost:11434/api/generate -d '{"model":"mistral-nemo","prompt":"Hello, world!","stream":false}' > /dev/null
+    sleep 5
+    
+    # Check one more time
+    if nvidia-smi | grep -q ollama; then
+      echo "SUCCESS: After test query, Ollama is now using the GPU"
+      nvidia-smi | grep ollama
+    else
+      echo "WARNING: Ollama still not detected in nvidia-smi output after test query."
+      echo "This may indicate a configuration issue with GPU support."
+    fi
+  fi
 fi
 
 # Final verification
@@ -620,7 +689,7 @@ EOL
     ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'echo \"OLLAMA_HOST=0.0.0.0:11434\" > /etc/ollama/config'"
     ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'echo \"OLLAMA_HOST=0.0.0.0:11434\" >> /etc/environment'"
     
-    echo "Creating updated systemd service file with correct executable path..."
+    echo "Creating updated systemd service file with correct executable path and GPU support..."
     ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'cat > /etc/systemd/system/ollama-custom.service << EOL
 [Unit]
 Description=Ollama API Service
@@ -629,6 +698,7 @@ Wants=network-online.target
 
 [Service]
 Environment=\"OLLAMA_HOST=0.0.0.0:11434\"
+Environment=\"OLLAMA_CUDA=1\"
 ExecStart=$OLLAMA_PATH serve
 Restart=always
 RestartSec=3
@@ -688,6 +758,74 @@ EOL'"
   echo "Verifying model availability via API..."
   MODEL_LIST=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "curl -s http://localhost:11434/api/tags")
   echo "Available models: $MODEL_LIST"
+  
+  # Verify GPU usage
+  echo "Verifying GPU usage by Ollama..."
+  GPU_CHECK=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "nvidia-smi | grep -i ollama")
+  if [ -n "$GPU_CHECK" ]; then
+    echo "SUCCESS: Ollama is using the GPU:"
+    echo "$GPU_CHECK"
+  else
+    echo "WARNING: Ollama process not detected in nvidia-smi output. This may indicate Ollama is not using the GPU."
+    echo "Checking if any process is using the GPU..."
+    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "nvidia-smi"
+    
+    echo "Checking CUDA environment variables..."
+    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "grep -r OLLAMA_CUDA /etc/ollama/ /etc/environment /etc/systemd/system/ollama-custom.service"
+    
+    echo "Setting up CUDA environment variables..."
+    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'echo \"export PATH=/usr/local/cuda/bin:\\\$PATH\" > /etc/profile.d/cuda.sh'"
+    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'echo \"export LD_LIBRARY_PATH=/usr/local/cuda/lib64:\\\$LD_LIBRARY_PATH\" >> /etc/profile.d/cuda.sh'"
+    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo chmod +x /etc/profile.d/cuda.sh"
+    
+    echo "Updating Ollama service with CUDA paths..."
+    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'cat > /etc/systemd/system/ollama-custom.service << EOL
+[Unit]
+Description=Ollama API Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Environment=\"OLLAMA_HOST=0.0.0.0:11434\"
+Environment=\"OLLAMA_CUDA=1\"
+Environment=\"PATH=/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"
+Environment=\"LD_LIBRARY_PATH=/usr/local/cuda/lib64\"
+ExecStart=/usr/local/bin/ollama serve
+Restart=always
+RestartSec=3
+User=root
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+EOL'"
+    
+    echo "Restarting Ollama service with updated configuration..."
+    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo systemctl daemon-reload && sudo systemctl restart ollama-custom.service"
+    sleep 15
+    
+    # Check again after restart
+    GPU_CHECK_AFTER=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "nvidia-smi | grep -i ollama")
+    if [ -n "$GPU_CHECK_AFTER" ]; then
+      echo "SUCCESS: After restart, Ollama is now using the GPU:"
+      echo "$GPU_CHECK_AFTER"
+    else
+      echo "WARNING: Ollama still not detected in nvidia-smi output after restart."
+      echo "Running a test query to load the model into GPU memory..."
+      ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "curl -s -X POST http://localhost:11434/api/generate -d '{\"model\":\"mistral-nemo\",\"prompt\":\"Hello, world!\",\"stream\":false}' > /dev/null"
+      sleep 5
+      
+      # Check one more time
+      GPU_CHECK_FINAL=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "nvidia-smi | grep -i ollama")
+      if [ -n "$GPU_CHECK_FINAL" ]; then
+        echo "SUCCESS: After test query, Ollama is now using the GPU:"
+        echo "$GPU_CHECK_FINAL"
+      else
+        echo "WARNING: Ollama still not detected in nvidia-smi output after test query."
+        echo "This may indicate a configuration issue with GPU support."
+      fi
+    fi
+  fi
   
   if echo "$MODEL_LIST" | grep -q "mistral-nemo"; then
     echo "Model 'mistral-nemo' is available via the API."
