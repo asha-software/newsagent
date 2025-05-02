@@ -736,6 +736,13 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
     let apiUrl = API_URL;
     if (apiUrl.includes('api:8000')) {
       apiUrl = apiUrl.replace('api:8000', 'localhost:8001');
+    } else if (apiUrl.includes('${api_hostname}') || apiUrl.includes('${API_HOSTNAME}')) {
+      // If the API_URL still has the placeholder, log an error
+      console.error('API URL placeholder not substituted correctly:', apiUrl);
+      // Use a fallback approach - try to get the API URL from the server
+      // For now, we'll attempt to use the API service directly via relative URL
+      apiUrl = '/api/proxy/query';
+      console.log('Using proxy fallback URL:', apiUrl);
     }
     
     // Get the API key

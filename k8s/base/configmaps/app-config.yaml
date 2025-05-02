@@ -10,7 +10,7 @@ data:
   DB_USER: "fakenews_user"
   
   # API configuration
-  API_URL: "http://api:8001"
+  API_URL: "http://${API_HOSTNAME}:8001"
   
   # Model configuration
   CLAIM_DECOMPOSER_MODEL: "mistral-nemo"

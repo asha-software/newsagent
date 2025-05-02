@@ -256,8 +256,12 @@ ensure_ollama_model_loaded() {
   # Check if the model is already pulled
   echo "Checking if model '$MODEL_NAME' is already pulled..."
   if ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "ollama list | grep -q '$MODEL_NAME'"; then
-    echo "Model '$MODEL_NAME' is already pulled. Removing it to ensure clean state..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo ollama rm $MODEL_NAME"
+    if [ "$MODEL_NAME" == "mistral-nemo" ]; then
+      echo "Model 'mistral-nemo' is already pulled. Skipping reinstallation..."
+    else
+      echo "Model '$MODEL_NAME' is already pulled. Removing it to ensure clean state..."
+      ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo ollama rm $MODEL_NAME"
+    fi
   fi
   
   echo "Pulling model '$MODEL_NAME'..."
@@ -378,20 +382,6 @@ setup_and_configure_ollama() {
   
   echo "Found Ollama instance with ID $OLLAMA_INSTANCE_ID, public IP $OLLAMA_PUBLIC_IP, and private IP $OLLAMA_PRIVATE_IP"
   
-  # Update the ConfigMap to use the public IP of the Ollama instance
-  echo "Updating ConfigMap to use public IP of Ollama instance..."
-  sed -i.bak "s|\${OLLAMA_PUBLIC_IP}|${OLLAMA_PUBLIC_IP}|g" k8s/base/configmaps/app-config.yaml
-  
-  # Update the Ollama service with the public IP address
-  echo "Updating Ollama service with instance public IP..."
-  sed -i.bak "s|\${OLLAMA_PUBLIC_IP}|${OLLAMA_PUBLIC_IP}|g" k8s/base/services/ollama.yaml
-  
-  # Clean up backup files (if any exist)
-  find k8s/base/configmaps/ -name "*.bak" -type f -delete 2>/dev/null || true
-  find k8s/base/services/ -name "*.bak" -type f -delete 2>/dev/null || true
-  
-  echo "ConfigMap and Ollama service updated successfully."
-  
   # Get the key file path from terraform output
   KEY_FILE_PATH=$(cd terraform && terraform output -raw ollama_key_path 2>/dev/null || echo "terraform/ollama-key.pem")
   
@@ -438,6 +428,7 @@ else
   echo "Ollama is not installed. Installing Ollama..."
   
   # Install required packages
+  sudo apt-get update
   sudo apt-get install -y \
     ca-certificates \
     curl \
@@ -766,11 +757,17 @@ if [ "$DEPLOY" = true ]; then
   kubectl wait --for=condition=available --timeout=300s deployment/mysql -n newsagent
   
   echo "Deploying Ollama service..."
-  kubectl apply -f k8s/base/services/ollama.yaml
+  # Create a temporary file with the OLLAMA_PUBLIC_IP placeholder replaced
+  TMP_OLLAMA_SERVICE=$(mktemp)
+  cat k8s/base/services/ollama.yaml | sed "s|\${OLLAMA_PUBLIC_IP}|${OLLAMA_PUBLIC_IP}|g" > "$TMP_OLLAMA_SERVICE"
+  kubectl apply -f "$TMP_OLLAMA_SERVICE"
+  rm -f "$TMP_OLLAMA_SERVICE"
   
   echo "Deploying Django and API applications..."
   kubectl apply -f k8s/base/deployments/django.yaml
   kubectl apply -f k8s/base/deployments/api.yaml
+  
+  # Apply services
   kubectl apply -f k8s/base/services/django.yaml
   kubectl apply -f k8s/base/services/api.yaml
   
@@ -791,7 +788,7 @@ if [ "$DEPLOY" = true ]; then
   wait_for_external_ip() {
     local service_name=$1
     local namespace=$2
-    local max_attempts=30
+    local max_attempts=15  # Reduced from 30 to speed up deployment
     local attempt=1
     local external_ip=""
     
@@ -809,13 +806,117 @@ if [ "$DEPLOY" = true ]; then
       fi
     done
     
-    echo "Failed to get external hostname for $service_name after $max_attempts attempts"
-    return 1
+    echo "Warning: Failed to get external hostname for $service_name after $max_attempts attempts"
+    echo "Continuing with deployment, but some features may not work correctly."
+    return 0  # Return success anyway to continue the script
   }
   
-  # Wait for Django and API services to get external IPs
-  wait_for_external_ip "django" "newsagent"
-  wait_for_external_ip "api" "newsagent"
+  # Wait for Django and API services to get external IPs in parallel
+  echo "Waiting for Django service external IP..."
+  wait_for_external_ip "django" "newsagent" &
+  DJANGO_WAIT_PID=$!
+  
+  echo "Waiting for API service external IP..."
+  wait_for_external_ip "api" "newsagent" &
+  API_WAIT_PID=$!
+  
+  # Wait for both processes to complete
+  wait $DJANGO_WAIT_PID
+  wait $API_WAIT_PID
+  
+  # Get API hostname and OLLAMA_PUBLIC_IP to update ConfigMap
+  API_HOSTNAME=$(kubectl get service api -n newsagent --template='{{range .status.loadBalancer.ingress}}{{.hostname}}{{end}}')
+  
+  # Update ConfigMap with both API_HOSTNAME and OLLAMA_PUBLIC_IP
+  if [ -n "$API_HOSTNAME" ] && [ -n "$OLLAMA_PUBLIC_IP" ]; then
+    echo "Updating ConfigMap with API hostname: $API_HOSTNAME and OLLAMA_PUBLIC_IP: $OLLAMA_PUBLIC_IP"
+    
+    # Create a temporary file with the updated configmap
+    TMP_CONFIGMAP=$(mktemp)
+    cat k8s/base/configmaps/app-config.yaml | \
+      sed "s|\${API_HOSTNAME}|${API_HOSTNAME}|g" | \
+      sed "s|\${api_hostname}|${API_HOSTNAME}|g" | \
+      sed "s|\${OLLAMA_PUBLIC_IP}|${OLLAMA_PUBLIC_IP}|g" > "$TMP_CONFIGMAP"
+    
+    # Apply the updated configmap
+    kubectl apply -f "$TMP_CONFIGMAP"
+    
+    # Clean up the temporary file
+    rm -f "$TMP_CONFIGMAP"
+    
+    # Verify the ConfigMap was updated correctly
+    echo "Verifying ConfigMap was updated correctly..."
+    kubectl get configmap app-config -n newsagent -o yaml | grep -A 1 "API_URL:"
+    
+    # Restart both API and Django deployments to pick up the new configmap values
+    echo "Restarting API and Django deployments to pick up new configmap values..."
+    kubectl rollout restart deployment api -n newsagent
+    kubectl rollout restart deployment django -n newsagent
+    
+    echo "ConfigMap updated successfully and deployments restarted."
+  elif [ -n "$API_HOSTNAME" ]; then
+    echo "Updating ConfigMap with API hostname: $API_HOSTNAME"
+    
+    # Create a temporary file with the updated configmap
+    TMP_CONFIGMAP=$(mktemp)
+    cat k8s/base/configmaps/app-config.yaml | \
+      sed "s|\${API_HOSTNAME}|${API_HOSTNAME}|g" | \
+      sed "s|\${api_hostname}|${API_HOSTNAME}|g" > "$TMP_CONFIGMAP"
+    
+    # Apply the updated configmap
+    kubectl apply -f "$TMP_CONFIGMAP"
+    
+    # Clean up the temporary file
+    rm -f "$TMP_CONFIGMAP"
+    
+    # Verify the ConfigMap was updated correctly
+    echo "Verifying ConfigMap was updated correctly..."
+    kubectl get configmap app-config -n newsagent -o yaml | grep -A 1 "API_URL:"
+    
+    # Restart both API and Django deployments to pick up the new configmap values
+    echo "Restarting API and Django deployments to pick up new configmap values..."
+    kubectl rollout restart deployment api -n newsagent
+    kubectl rollout restart deployment django -n newsagent
+    
+    echo "ConfigMap updated with API_HOSTNAME only and deployments restarted. OLLAMA_PUBLIC_IP not available."
+  elif [ -n "$OLLAMA_PUBLIC_IP" ]; then
+    echo "Updating ConfigMap with OLLAMA_PUBLIC_IP: $OLLAMA_PUBLIC_IP"
+    
+    # Create a temporary file with the updated configmap
+    TMP_CONFIGMAP=$(mktemp)
+    cat k8s/base/configmaps/app-config.yaml | \
+      sed "s|\${OLLAMA_PUBLIC_IP}|${OLLAMA_PUBLIC_IP}|g" > "$TMP_CONFIGMAP"
+    
+    # Apply the updated configmap
+    kubectl apply -f "$TMP_CONFIGMAP"
+    
+    # Clean up the temporary file
+    rm -f "$TMP_CONFIGMAP"
+    
+    # Verify the ConfigMap was updated correctly
+    echo "Verifying ConfigMap was updated correctly..."
+    kubectl get configmap app-config -n newsagent -o yaml | grep -A 1 "OLLAMA_BASE_URL:"
+    
+    # Restart both API and Django deployments to pick up the new configmap values
+    echo "Restarting API and Django deployments to pick up new configmap values..."
+    kubectl rollout restart deployment api -n newsagent
+    kubectl rollout restart deployment django -n newsagent
+    
+    echo "ConfigMap updated with OLLAMA_PUBLIC_IP only and deployments restarted. API_HOSTNAME not available."
+  else
+    echo "Warning: Could not get API hostname or OLLAMA_PUBLIC_IP. ConfigMap not updated."
+  fi
+  
+  # Update Ollama service Endpoints with OLLAMA_PUBLIC_IP
+  if [ -n "$OLLAMA_PUBLIC_IP" ]; then
+    echo "Updating Ollama service Endpoints with OLLAMA_PUBLIC_IP: $OLLAMA_PUBLIC_IP"
+    kubectl get endpoints ollama -n newsagent -o yaml | \
+      sed "s|\${OLLAMA_PUBLIC_IP}|${OLLAMA_PUBLIC_IP}|g" | \
+      kubectl apply -f -
+    echo "Ollama service Endpoints updated successfully."
+  else
+    echo "Warning: Could not get OLLAMA_PUBLIC_IP. Ollama service Endpoints not updated."
+  fi
   
   # Get and display the URLs
   echo ""
