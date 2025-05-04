@@ -732,11 +732,9 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
 
   // Function to make the API call
   function makeApiCall() {
-    // Fix API URL for browser access
+    // Use the API URL provided by the server
     let apiUrl = API_URL;
-    if (apiUrl.includes('api:8000')) {
-      apiUrl = apiUrl.replace('api:8000', 'localhost:8001');
-    }
+    // No need to replace the URL as we're now using the correct LoadBalancer URL
     
     // Get the API key
     fetch('/api/api-keys/', {

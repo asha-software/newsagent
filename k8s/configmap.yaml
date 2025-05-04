@@ -20,10 +20,10 @@ data:
   # API configuration
   API_HOST: "0.0.0.0"
   API_PORT: "8000"
-  API_SERVICE_URL: "http://newsagent-api:8000"
+  API_SERVICE_URL: "http://newsagent-api.newsagent.svc.cluster.local:8000"
   
   # Ollama configuration
   OLLAMA_HOST: "newsagent-ollama"
   OLLAMA_PORT: "11434"
   OLLAMA_MODEL: "mistral-nemo"
-  OLLAMA_SERVICE_URL: "http://newsagent-ollama:11434"
+  OLLAMA_SERVICE_URL: "http://newsagent-ollama.newsagent.svc.cluster.local:11434"

@@ -5,10 +5,13 @@ metadata:
   namespace: newsagent
   labels:
     app: newsagent-api
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
 spec:
   type: LoadBalancer
   ports:
-  - port: 8000
+  - port: 8001
     targetPort: 8000
     name: http
   selector:
@@ -118,6 +121,13 @@ spec:
             configMapKeyRef:
               name: newsagent-config
               key: OLLAMA_SERVICE_URL
+        - name: API_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: API_SERVICE_URL
+        - name: OLLAMA_BASE_URL
+          value: "http://newsagent-ollama.newsagent.svc.cluster.local:11434"
         resources:
           requests:
             cpu: "500m"
@@ -157,4 +167,4 @@ spec:
           service:
             name: newsagent-api
             port:
-              number: 8000
+              number: 8001

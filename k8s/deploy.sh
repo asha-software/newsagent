@@ -441,81 +441,225 @@ deploy_kubernetes() {
   print_info "All Kubernetes resources deployed successfully."
 }
 
+# Apply LoadBalancer service changes
+apply_loadbalancer_changes() {
+  print_section "Applying LoadBalancer Service Changes"
+  
+  # Create a temporary directory for processed manifests
+  mkdir -p temp_manifests
+  
+  # Process the deployment files
+  print_info "Processing deployment files..."
+  for file in api-deployment.yaml django-deployment.yaml; do
+    print_info "Processing $file..."
+    cat $file | sed "s/\${AWS_ACCOUNT_ID}/$AWS_ACCOUNT_ID/g" | sed "s/\${AWS_REGION}/$AWS_REGION/g" > temp_manifests/$file
+  done
+  
+  print_info "Applying API LoadBalancer service..."
+  kubectl apply -f temp_manifests/api-deployment.yaml
+  
+  print_info "Applying Django LoadBalancer service..."
+  kubectl apply -f temp_manifests/django-deployment.yaml
+  
+  # Clean up temporary files
+  rm -rf temp_manifests
+  
+  print_info "LoadBalancer services applied successfully."
+  
+  # Wait for LoadBalancer services to be ready
+  print_info "Waiting for LoadBalancer services to be ready..."
+  kubectl rollout status deployment/newsagent-api -n newsagent
+  kubectl rollout status deployment/newsagent-django -n newsagent
+}
+
+# Update service URLs in configmap and environment variables
+update_service_urls() {
+  print_section "Updating service URLs for browser access"
+  
+  # Wait for LoadBalancer services to get external IPs
+  print_info "Waiting for LoadBalancer services to get external IPs..."
+  
+  # Initialize variables
+  API_URL=""
+  DJANGO_URL=""
+  
+  # Wait for API LoadBalancer to get external IP (timeout after 5 minutes)
+  print_info "Waiting for API LoadBalancer to get external IP..."
+  TIMEOUT=300
+  START_TIME=$(date +%s)
+  while [ -z "$API_URL" ] && [ $(($(date +%s) - START_TIME)) -lt $TIMEOUT ]; do
+    API_HOSTNAME=$(kubectl get svc newsagent-api -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+    if [ -n "$API_HOSTNAME" ]; then
+      API_URL="http://${API_HOSTNAME}:8001"
+      print_info "API LoadBalancer hostname: $API_HOSTNAME"
+      break
+    fi
+    
+    # Also check for IP (some cloud providers return IP instead of hostname)
+    API_IP=$(kubectl get svc newsagent-api -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+    if [ -n "$API_IP" ]; then
+      API_URL="http://${API_IP}:8001"
+      print_info "API LoadBalancer IP: $API_IP"
+      break
+    fi
+    
+    echo -n "."
+    sleep 5
+  done
+  
+  if [ -z "$API_URL" ]; then
+    print_info "Timed out waiting for API LoadBalancer to get external IP."
+    print_info "Using service name for internal access."
+    API_URL="http://newsagent-api.newsagent.svc.cluster.local:8000"
+  fi
+  
+  # Wait for Django LoadBalancer to get external IP (timeout after 5 minutes)
+  print_info "Waiting for Django LoadBalancer to get external IP..."
+  TIMEOUT=300
+  START_TIME=$(date +%s)
+  while [ -z "$DJANGO_URL" ] && [ $(($(date +%s) - START_TIME)) -lt $TIMEOUT ]; do
+    DJANGO_HOSTNAME=$(kubectl get svc newsagent-django -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+    if [ -n "$DJANGO_HOSTNAME" ]; then
+      DJANGO_URL="http://${DJANGO_HOSTNAME}:8000"
+      print_info "Django LoadBalancer hostname: $DJANGO_HOSTNAME"
+      break
+    fi
+    
+    # Also check for IP (some cloud providers return IP instead of hostname)
+    DJANGO_IP=$(kubectl get svc newsagent-django -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+    if [ -n "$DJANGO_IP" ]; then
+      DJANGO_URL="http://${DJANGO_IP}:8000"
+      print_info "Django LoadBalancer IP: $DJANGO_IP"
+      break
+    fi
+    
+    echo -n "."
+    sleep 5
+  done
+  
+  if [ -z "$DJANGO_URL" ]; then
+    print_info "Timed out waiting for Django LoadBalancer to get external IP."
+    print_info "Using service name for internal access."
+    DJANGO_URL="http://newsagent-django.newsagent.svc.cluster.local:8000"
+  fi
+  
+  print_info "Using API URL: $API_URL"
+  print_info "Using Django URL: $DJANGO_URL"
+  
+  # Update the configmap with the new URLs
+  print_info "Updating configmap with new service URLs..."
+  kubectl patch configmap newsagent-config -n newsagent --type=merge -p "{\"data\":{\"API_SERVICE_URL\":\"http://newsagent-api.newsagent.svc.cluster.local:8000\",\"OLLAMA_SERVICE_URL\":\"http://newsagent-ollama.newsagent.svc.cluster.local:11434\",\"DJANGO_ALLOWED_HOSTS\":\"*\"}}"
+  print_info "Using internal service name for API_SERVICE_URL in configmap: http://newsagent-api.newsagent.svc.cluster.local:8000"
+  print_info "Using internal service name for OLLAMA_SERVICE_URL in configmap: http://newsagent-ollama.newsagent.svc.cluster.local:11434"
+  
+  # Make sure the API deployment has the API_SERVICE_URL environment variable
+  print_info "Ensuring API deployment has the API_SERVICE_URL environment variable..."
+  kubectl patch deployment newsagent-api -n newsagent --type=json -p '[{"op":"add","path":"/spec/template/spec/containers/0/env/-","value":{"name":"API_SERVICE_URL","valueFrom":{"configMapKeyRef":{"key":"API_SERVICE_URL","name":"newsagent-config"}}}}]' || true
+  
+  # Override the OLLAMA_BASE_URL environment variable
+  print_info "Overriding OLLAMA_BASE_URL environment variable..."
+  kubectl patch deployment newsagent-api -n newsagent --type=json -p '[{"op":"add","path":"/spec/template/spec/containers/0/env/-","value":{"name":"OLLAMA_BASE_URL","value":"http://newsagent-ollama.newsagent.svc.cluster.local:11434"}}]' || true
+  
+  # Restart the API deployment to pick up the new configmap values
+  print_info "Restarting API deployment to pick up the new configmap values..."
+  kubectl rollout restart deployment/newsagent-api -n newsagent
+  
+  # Wait for the API deployment to be ready
+  print_info "Waiting for API deployment to be ready..."
+  kubectl rollout status deployment/newsagent-api -n newsagent
+  
+  # Update the API_URL environment variable in the Django deployment
+  print_info "Updating API_URL environment variable in Django deployment..."
+  
+  # Create a patch file for the Django deployment
+  cat > temp_patch.yaml << EOF
+spec:
+  template:
+    spec:
+      containers:
+      - name: django
+        env:
+        - name: API_URL
+          value: "$API_URL"
+EOF
+  
+  print_info "Setting API_URL to: $API_URL (port 8000)"
+  
+  # Apply the patch to the Django deployment
+  kubectl patch deployment newsagent-django -n newsagent --patch "$(cat temp_patch.yaml)"
+  
+  # Clean up temporary files
+  rm -f temp_patch.yaml
+  
+  # Restart the Django deployment to pick up the new environment variable
+  print_info "Restarting Django deployment to pick up the new environment variable..."
+  kubectl rollout restart deployment/newsagent-django -n newsagent
+  
+  # Wait for the Django deployment to be ready
+  print_info "Waiting for Django deployment to be ready..."
+  kubectl rollout status deployment/newsagent-django -n newsagent
+  
+  print_info "Service URLs updated successfully in configmap and environment variables"
+}
+
 # Get deployment information
 get_deployment_info() {
   print_section "Deployment Information"
   
-  # Get ingress URLs
+  # Get LoadBalancer service information
   print_info "Getting application URLs..."
   
-  # Get ALB hostnames
-  DJANGO_INGRESS=$(kubectl get ingress newsagent-django-ingress -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
-  API_INGRESS=$(kubectl get ingress newsagent-api-ingress -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+  # Initialize variables
+  API_URL=""
+  DJANGO_URL=""
   
-  if [ -z "$DJANGO_INGRESS" ] || [ -z "$API_INGRESS" ]; then
-    print_info "Ingress hostnames not found. Trying to get service information..."
-    
-    # Try to get service information
-    DJANGO_SERVICE=$(kubectl get svc newsagent-django -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
-    API_SERVICE=$(kubectl get svc newsagent-api -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
-    
-    if [ -n "$DJANGO_SERVICE" ]; then
-      DJANGO_INGRESS=$DJANGO_SERVICE
-    fi
-    
-    if [ -n "$API_SERVICE" ]; then
-      API_INGRESS=$API_SERVICE
+  # Get API LoadBalancer hostname or IP
+  API_HOSTNAME=$(kubectl get svc newsagent-api -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+  if [ -n "$API_HOSTNAME" ]; then
+    API_URL="http://${API_HOSTNAME}:8001"
+    print_info "API LoadBalancer hostname: $API_HOSTNAME"
+  else
+    # Try to get IP (some cloud providers return IP instead of hostname)
+    API_IP=$(kubectl get svc newsagent-api -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+    if [ -n "$API_IP" ]; then
+      API_URL="http://${API_IP}:8001"
+      print_info "API LoadBalancer IP: $API_IP"
+    else
+      print_info "API LoadBalancer hostname/IP not found."
+      API_URL="URL not found"
     fi
   fi
   
-  # Get ALB information from AWS CLI if still not found
-  if [ -z "$DJANGO_INGRESS" ] || [ -z "$API_INGRESS" ]; then
-    print_info "Trying to get ALB information from AWS CLI..."
-    
-    # Get all load balancers
-    LBS=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[*].{DNSName:DNSName,LoadBalancerArn:LoadBalancerArn}' --output json)
-    
-    # Get all target groups
-    TGS=$(aws elbv2 describe-target-groups --query 'TargetGroups[*].{TargetGroupArn:TargetGroupArn,LoadBalancerArns:LoadBalancerArns}' --output json)
-    
-    # Find target groups associated with our services
-    DJANGO_TG=$(kubectl get ingress newsagent-django-ingress -n newsagent -o jsonpath='{.metadata.annotations.alb\.ingress\.kubernetes\.io/target-group-arn}' 2>/dev/null)
-    API_TG=$(kubectl get ingress newsagent-api-ingress -n newsagent -o jsonpath='{.metadata.annotations.alb\.ingress\.kubernetes\.io/target-group-arn}' 2>/dev/null)
-    
-    # If we found target groups, find the associated load balancers
-    if [ -n "$DJANGO_TG" ]; then
-      DJANGO_LB=$(echo $TGS | jq -r --arg tg "$DJANGO_TG" '.[] | select(.TargetGroupArn==$tg) | .LoadBalancerArns[0]')
-      if [ -n "$DJANGO_LB" ]; then
-        DJANGO_INGRESS=$(echo $LBS | jq -r --arg lb "$DJANGO_LB" '.[] | select(.LoadBalancerArn==$lb) | .DNSName')
-      fi
-    fi
-    
-    if [ -n "$API_TG" ]; then
-      API_LB=$(echo $TGS | jq -r --arg tg "$API_TG" '.[] | select(.TargetGroupArn==$tg) | .LoadBalancerArns[0]')
-      if [ -n "$API_LB" ]; then
-        API_INGRESS=$(echo $LBS | jq -r --arg lb "$API_LB" '.[] | select(.LoadBalancerArn==$lb) | .DNSName')
-      fi
+  # Get Django LoadBalancer hostname or IP
+  DJANGO_HOSTNAME=$(kubectl get svc newsagent-django -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+  if [ -n "$DJANGO_HOSTNAME" ]; then
+    DJANGO_URL="http://${DJANGO_HOSTNAME}:8000"
+    print_info "Django LoadBalancer hostname: $DJANGO_HOSTNAME"
+  else
+    # Try to get IP (some cloud providers return IP instead of hostname)
+    DJANGO_IP=$(kubectl get svc newsagent-django -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null)
+    if [ -n "$DJANGO_IP" ]; then
+      DJANGO_URL="http://${DJANGO_IP}:8000"
+      print_info "Django LoadBalancer IP: $DJANGO_IP"
+    else
+      print_info "Django LoadBalancer hostname/IP not found."
+      DJANGO_URL="URL not found"
     fi
   fi
   
   echo -e "\n${GREEN}Deployment completed successfully!${NC}"
   echo -e "\n${GREEN}Application URLs:${NC}"
   
-  if [ -n "$DJANGO_INGRESS" ]; then
-    echo -e "${YELLOW}Django Application:${NC} http://$DJANGO_INGRESS:8000"
-  else
-    echo -e "${YELLOW}Django Application:${NC} URL not found. Run './get_urls.sh' later to check."
-  fi
-  
-  if [ -n "$API_INGRESS" ]; then
-    echo -e "${YELLOW}API Endpoint:${NC} http://$API_INGRESS:8000/api"
-  else
-    echo -e "${YELLOW}API Endpoint:${NC} URL not found. Run './get_urls.sh' later to check."
-  fi
+  echo -e "${YELLOW}Django Application:${NC} $DJANGO_URL"
+  echo -e "${YELLOW}API Endpoint:${NC} $API_URL/api"
   
   # Get pod status
   echo -e "\n${YELLOW}Pod Status:${NC}"
   kubectl get pods -n newsagent
+  
+  # Get service status
+  echo -e "\n${YELLOW}Service Status:${NC}"
+  kubectl get svc -n newsagent
 }
 
 # Delete AWS resources that might cause conflicts
@@ -659,6 +803,13 @@ main() {
   create_infrastructure
   build_and_push_images
   deploy_kubernetes
+  
+  # Apply LoadBalancer service changes
+  apply_loadbalancer_changes
+  
+  # Update service URLs in configmap and environment variables
+  update_service_urls
+  
   get_deployment_info
 }
 
