@@ -6,6 +6,7 @@ metadata:
   labels:
     app: newsagent-django
 spec:
+  type: LoadBalancer
   ports:
   - port: 8000
     targetPort: 8000

@@ -105,7 +105,25 @@ The deployment includes the NVIDIA device plugin for Kubernetes, which enables G
 
 ### Secrets
 
-The `secrets.yaml` file contains placeholders for sensitive information. In a production environment, you should use a secrets management solution like AWS Secrets Manager, HashiCorp Vault, or Kubernetes Secrets encrypted with sealed-secrets or external-secrets.
+The repository includes a `secrets-template.yaml` file that contains the structure of required secrets with placeholder values. To set up your environment:
+
+1. Copy `secrets-template.yaml` to `secrets.yaml`:
+   ```bash
+   cp k8s/secrets-template.yaml k8s/secrets.yaml
+   ```
+
+2. Edit `secrets.yaml` to replace the placeholder values with your actual credentials:
+   ```bash
+   # Example for database credentials
+   DB_PASSWORD: "your_actual_password"
+   
+   # Example for API keys
+   OPENAI_API_KEY: "sk-your_actual_openai_key"
+   ```
+
+3. The actual `secrets.yaml` file is excluded from version control via `.gitignore` to prevent accidental exposure of sensitive information.
+
+In a production environment, you should use a secrets management solution like AWS Secrets Manager, HashiCorp Vault, or Kubernetes Secrets encrypted with sealed-secrets or external-secrets.
 
 ### Configuration
 

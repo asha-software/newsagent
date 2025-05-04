@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Disable AWS CLI pagination to prevent interactive pager
+export AWS_PAGER=""
+
 # Display help message
 show_help() {
   echo "Usage: $0 [OPTIONS]"
@@ -443,22 +446,144 @@ get_deployment_info() {
   print_section "Deployment Information"
   
   # Get ingress URLs
-  print_info "Getting ingress URLs..."
-  DJANGO_INGRESS=$(kubectl get ingress newsagent-django-ingress -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-  API_INGRESS=$(kubectl get ingress newsagent-api-ingress -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+  print_info "Getting application URLs..."
+  
+  # Get ALB hostnames
+  DJANGO_INGRESS=$(kubectl get ingress newsagent-django-ingress -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+  API_INGRESS=$(kubectl get ingress newsagent-api-ingress -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+  
+  if [ -z "$DJANGO_INGRESS" ] || [ -z "$API_INGRESS" ]; then
+    print_info "Ingress hostnames not found. Trying to get service information..."
+    
+    # Try to get service information
+    DJANGO_SERVICE=$(kubectl get svc newsagent-django -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+    API_SERVICE=$(kubectl get svc newsagent-api -n newsagent -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null)
+    
+    if [ -n "$DJANGO_SERVICE" ]; then
+      DJANGO_INGRESS=$DJANGO_SERVICE
+    fi
+    
+    if [ -n "$API_SERVICE" ]; then
+      API_INGRESS=$API_SERVICE
+    fi
+  fi
+  
+  # Get ALB information from AWS CLI if still not found
+  if [ -z "$DJANGO_INGRESS" ] || [ -z "$API_INGRESS" ]; then
+    print_info "Trying to get ALB information from AWS CLI..."
+    
+    # Get all load balancers
+    LBS=$(aws elbv2 describe-load-balancers --query 'LoadBalancers[*].{DNSName:DNSName,LoadBalancerArn:LoadBalancerArn}' --output json)
+    
+    # Get all target groups
+    TGS=$(aws elbv2 describe-target-groups --query 'TargetGroups[*].{TargetGroupArn:TargetGroupArn,LoadBalancerArns:LoadBalancerArns}' --output json)
+    
+    # Find target groups associated with our services
+    DJANGO_TG=$(kubectl get ingress newsagent-django-ingress -n newsagent -o jsonpath='{.metadata.annotations.alb\.ingress\.kubernetes\.io/target-group-arn}' 2>/dev/null)
+    API_TG=$(kubectl get ingress newsagent-api-ingress -n newsagent -o jsonpath='{.metadata.annotations.alb\.ingress\.kubernetes\.io/target-group-arn}' 2>/dev/null)
+    
+    # If we found target groups, find the associated load balancers
+    if [ -n "$DJANGO_TG" ]; then
+      DJANGO_LB=$(echo $TGS | jq -r --arg tg "$DJANGO_TG" '.[] | select(.TargetGroupArn==$tg) | .LoadBalancerArns[0]')
+      if [ -n "$DJANGO_LB" ]; then
+        DJANGO_INGRESS=$(echo $LBS | jq -r --arg lb "$DJANGO_LB" '.[] | select(.LoadBalancerArn==$lb) | .DNSName')
+      fi
+    fi
+    
+    if [ -n "$API_TG" ]; then
+      API_LB=$(echo $TGS | jq -r --arg tg "$API_TG" '.[] | select(.TargetGroupArn==$tg) | .LoadBalancerArns[0]')
+      if [ -n "$API_LB" ]; then
+        API_INGRESS=$(echo $LBS | jq -r --arg lb "$API_LB" '.[] | select(.LoadBalancerArn==$lb) | .DNSName')
+      fi
+    fi
+  fi
   
   echo -e "\n${GREEN}Deployment completed successfully!${NC}"
-  echo -e "\n${YELLOW}Django Application:${NC} http://$DJANGO_INGRESS"
-  echo -e "${YELLOW}API Endpoint:${NC} http://$API_INGRESS/api"
+  echo -e "\n${GREEN}Application URLs:${NC}"
+  
+  if [ -n "$DJANGO_INGRESS" ]; then
+    echo -e "${YELLOW}Django Application:${NC} http://$DJANGO_INGRESS:8000"
+  else
+    echo -e "${YELLOW}Django Application:${NC} URL not found. Run './get_urls.sh' later to check."
+  fi
+  
+  if [ -n "$API_INGRESS" ]; then
+    echo -e "${YELLOW}API Endpoint:${NC} http://$API_INGRESS:8000/api"
+  else
+    echo -e "${YELLOW}API Endpoint:${NC} URL not found. Run './get_urls.sh' later to check."
+  fi
   
   # Get pod status
   echo -e "\n${YELLOW}Pod Status:${NC}"
   kubectl get pods -n newsagent
 }
 
+# Delete AWS resources that might cause conflicts
+delete_aws_resources() {
+  print_section "Deleting conflicting AWS resources"
+  
+  # Get cluster name from variables
+  CLUSTER_NAME="newsagent-eks-cluster"  # This should match var.cluster_name in variables.tf
+  
+  # Delete IAM roles that might cause conflicts
+  print_info "Checking and deleting IAM roles..."
+  
+  # Check if the cluster role exists
+  if aws iam get-role --role-name "${CLUSTER_NAME}-cluster-role" 2>/dev/null; then
+    print_info "Deleting IAM role: ${CLUSTER_NAME}-cluster-role"
+    
+    # First detach policies
+    for policy in "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy" "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"; do
+      print_info "Detaching policy: $policy"
+      aws iam detach-role-policy --role-name "${CLUSTER_NAME}-cluster-role" --policy-arn "$policy" || true
+    done
+    
+    # Delete the role
+    aws iam delete-role --role-name "${CLUSTER_NAME}-cluster-role" || true
+  else
+    print_info "IAM role ${CLUSTER_NAME}-cluster-role does not exist. Skipping."
+  fi
+  
+  # Check if the node role exists
+  if aws iam get-role --role-name "${CLUSTER_NAME}-node-role" 2>/dev/null; then
+    print_info "Deleting IAM role: ${CLUSTER_NAME}-node-role"
+    
+    # First detach policies
+    for policy in "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy" "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy" "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"; do
+      print_info "Detaching policy: $policy"
+      aws iam detach-role-policy --role-name "${CLUSTER_NAME}-node-role" --policy-arn "$policy" || true
+    done
+    
+    # Delete the role
+    aws iam delete-role --role-name "${CLUSTER_NAME}-node-role" || true
+  else
+    print_info "IAM role ${CLUSTER_NAME}-node-role does not exist. Skipping."
+  fi
+  
+  # Delete ECR repositories that might cause conflicts
+  print_info "Checking and deleting ECR repositories..."
+  
+  for repo in "newsagent-api" "newsagent-django" "newsagent-db" "newsagent-ollama"; do
+    if aws ecr describe-repositories --repository-names "$repo" --region $AWS_REGION 2>/dev/null; then
+      print_info "Deleting ECR repository: $repo"
+      aws ecr delete-repository --repository-name "$repo" --region $AWS_REGION --force || true
+    else
+      print_info "ECR repository $repo does not exist. Skipping."
+    fi
+  done
+  
+  print_info "AWS resource cleanup completed."
+}
+
 # Delete all Kubernetes resources
 delete_kubernetes_resources() {
   print_section "Deleting Kubernetes resources"
+  
+  # Check if we can connect to the Kubernetes cluster
+  if ! kubectl cluster-info &> /dev/null; then
+    print_info "Unable to connect to Kubernetes cluster. Skipping Kubernetes resource deletion."
+    return
+  fi
   
   # Remove toleration from CoreDNS deployment
   print_info "Removing toleration from CoreDNS deployment..."
@@ -526,6 +651,7 @@ main() {
   if [ "$DELETE_MODE" = true ]; then
     print_info "Running in DELETE mode"
     delete_kubernetes_resources
+    delete_aws_resources
     print_info "Delete operation completed. Run the script without --delete to redeploy."
     exit 0
   fi
