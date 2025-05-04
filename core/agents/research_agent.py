@@ -30,6 +30,7 @@ load_dotenv(DIR.parent / '.env', override=True)
 # Import prefix for builtin tools
 MODULE_PREFIX = "core.agents.tools.builtins."
 
+
 def import_builtin(module_name):
     """Dynamically imports a function from a module.
 
@@ -82,16 +83,24 @@ def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
             print(f"Error creating tool with kwargs {kwargs}:\n{e}")
     return tools
 
+
 """
 Static graph components
 """
+
+
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
     evidence: list[Evidence]
 
+
 with open(DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
     sys_msg = SystemMessage(content=f.read())
+
+with open(DIR / 'prompts/research_agent_filter_evidence_prompt.txt', 'r') as f:
+    filter_sys_msg = SystemMessage(content=f.read())
+
 
 def preprocessing(state: State):
     """
@@ -102,6 +111,7 @@ def preprocessing(state: State):
     state['messages'] = [sys_msg, HumanMessage(content=state['claim'])]
     return state
 
+
 def get_assistant_node(llm: BaseChatModel) -> Callable:
     """
     Given reference to LLM, returns an assistant node using that LLM
@@ -109,11 +119,11 @@ def get_assistant_node(llm: BaseChatModel) -> Callable:
     def assistant(state: State) -> State:
         response = llm.invoke(state['messages'])
         return {"messages": response}
-    
+
     return assistant
 
 
-def postprocessing(state: State) -> State:
+def gather_evidence(state: State) -> State:
     """
     Scan the message history to extract tool calls and results into tuples:
     (tool_name, tool_args, tool_result) for the 'evidence' list in the state
@@ -124,36 +134,53 @@ def postprocessing(state: State) -> State:
     for i in range(len(state['messages'])):
         message = state['messages'][i]
         if isinstance(message, ToolMessage):
-            # Found a tool call
-            # evidence_item = Evidence(
-            #     name=message.tool_name, args=message.tool_args, result=message.content, source=message)
+            # TODO: pass the list[Evidence] through the tool_message.artifact
             try:
                 evidence = json.loads(message.content)
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON from tool call: {e}")
                 evidence = [message.content]
-            
+
             all_evidence += evidence
 
-        # if isinstance(message, AIMessage) and hasattr(message, 'tool_calls'):
-        #     for tool_call in message.tool_calls:
-        #         # Scan later messages for the corresponding ToolMessage
-        #         for j in range(i + 1, len(state['messages'])):
-        #             next_message = state['messages'][j]
-        #             if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
-        #                 # Found the corresponding ToolMessage
-        #                 # evidence_item = Evidence(
-        #                 #     name=tool_call['name'], args=tool_call['args'], result=next_message.content, source=next_message)
-        #                 try:
-        #                     evidence = json.loads(next_message.content)
-        #                 except json.JSONDecodeError as e:
-        #                     print(f"Error decoding JSON from tool call: {e}")
-        #                     evidence = [next_message.content]
-                        
-        #                 all_evidence += evidence
-        #                 break
-
     return {'evidence': all_evidence}
+
+
+def get_filter_evidence_node(llm: BaseChatModel) -> Callable:
+    def filter_evidence(state: State) -> State:
+        """
+        Iterate over the evidence list, filtering out any evidence that is not relevant to the claim
+        """
+        # set up a system prompt, SystemMessage
+        filtered_evidence = []
+        for evidence in state['evidence']:
+            prompt = "Claim:\n" + state['claim'] + "\nEvidence:\n" + evidence.content
+            messages = [filter_sys_msg, HumanMessage(content=prompt)]
+            response = llm.invoke(messages)
+
+            # Load the JSON response
+            try:
+                response_json = json.loads(response.content)
+            except json.JSONDecodeError as e:
+                print(f"Error decoding JSON from filter response: {e}")
+                # Fall back to using the original evidence
+                filtered_evidence.append(evidence)
+                continue
+
+            # Check if the evidence is relevant
+            if response_json['isRelevant']:
+                filtered_evidence_item = Evidence(
+                    name=evidence.name,
+                    args=evidence.args,
+                    content=response.content,
+                    source=evidence.source
+                )
+                filtered_evidence.append(filtered_evidence_item)
+        state['evidence'] = filtered_evidence
+        return state
+
+    return filter_evidence
+
 
 def create_agent(
         model: str,
@@ -186,23 +213,26 @@ def create_agent(
         model = os.getenv("RESEARCH_AGENT_MODEL", DEFAULT_MODEL)
     llm = get_chat_model(model_name=model).bind_tools(tools)
     assistant = get_assistant_node(llm)
+    filter_evidence = get_filter_evidence_node(llm)
 
     # Build graph
     builder = StateGraph(State)
     builder.add_node("preprocessing", preprocessing)
     builder.add_node("assistant", assistant)
     builder.add_node("tools", ToolNode(tools))
-    builder.add_node("postprocessing", postprocessing)
+    builder.add_node("gather_evidence", gather_evidence)
+    builder.add_node("filter_evidence", filter_evidence)
 
     builder.add_edge(START, "preprocessing")
     builder.add_edge("preprocessing", "assistant")
     builder.add_conditional_edges(
         source="assistant",
         path=tools_condition,
-        path_map={'tools': 'tools', '__end__': 'postprocessing'}
+        path_map={'tools': 'tools', '__end__': 'gather_evidence'},
     )
     builder.add_edge("tools", "assistant")
-    builder.add_edge("postprocessing", END)
+    builder.add_edge("gather_evidence", filter_evidence)
+    builder.add_edge("filter_evidence", END)
 
     agent = builder.compile()
     return agent
