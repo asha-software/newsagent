@@ -11,6 +11,7 @@ from core.agents.research_agent import create_agent
 # Helpers / fixtures
 ###############################################################################
 
+
 class _MockHTTPResponse:
     """Very small stub that mimics the part of the *requests* response we need."""
 
@@ -52,6 +53,7 @@ def capture_requests(monkeypatch):  # noqa: D401 – pytest fixture
 ###############################################################################
 # Tiny helper to exercise the agent exactly once
 ###############################################################################
+
 
 def _run_agent_once(agent):
     return agent.invoke({"claim": "integration"})["evidence"]
@@ -102,8 +104,12 @@ def test_agent_mixed_param_locations(capture_requests):
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
-        agent = create_agent("irrelevant", builtin_tools=[], user_tool_kwargs=[tool_def])
+    with mock.patch(
+        "core.agents.research_agent.get_chat_model", return_value=mocked_llm
+    ):
+        agent = create_agent(
+            "irrelevant", builtin_tools=[], user_tool_kwargs=[tool_def]
+        )
 
     _run_agent_once(agent)
     captured = capture_requests
@@ -151,7 +157,9 @@ def test_multiple_user_tools_register_and_execute_sequentially(monkeypatch):
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
+    with mock.patch(
+        "core.agents.research_agent.get_chat_model", return_value=mocked_llm
+    ):
         agent = create_agent("model‑x", builtin_tools=[], user_tool_kwargs=tool_kwargs)
 
     evidence = _run_agent_once(agent)
@@ -186,8 +194,12 @@ def test_agent_list_index_extract_fields(monkeypatch):
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
-        agent = create_agent("irrelevant", builtin_tools=[], user_tool_kwargs=[tool_def])
+    with mock.patch(
+        "core.agents.research_agent.get_chat_model", return_value=mocked_llm
+    ):
+        agent = create_agent(
+            "irrelevant", builtin_tools=[], user_tool_kwargs=[tool_def]
+        )
 
     evidence = _run_agent_once(agent)
     assert _deserialize_tool_result(evidence[0]["result"]) == ["alpha"]
@@ -200,7 +212,9 @@ def test_agent_object_attribute_extract_fields(monkeypatch):
         def __init__(self) -> None:
             self.answer = 42
 
-    monkeypatch.setattr("requests.request", lambda *_a, **_kw: _MockHTTPResponse(_Obj()))
+    monkeypatch.setattr(
+        "requests.request", lambda *_a, **_kw: _MockHTTPResponse(_Obj())
+    )
 
     tool_def = {
         "name": "attr_tool",
@@ -210,14 +224,18 @@ def test_agent_object_attribute_extract_fields(monkeypatch):
         "param_mapping": {},
     }
 
-    first_turn = AIMessage(content="call", tool_calls=[{"id": "c1", "name": "attr_tool", "args": {}}])
+    first_turn = AIMessage(
+        content="call", tool_calls=[{"id": "c1", "name": "attr_tool", "args": {}}]
+    )
     second_turn = AIMessage(content="done", tool_calls=[])
 
     mocked_llm = mock.MagicMock()
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
+    with mock.patch(
+        "core.agents.research_agent.get_chat_model", return_value=mocked_llm
+    ):
         agent = create_agent("x", builtin_tools=[], user_tool_kwargs=[tool_def])
 
     evidence = _run_agent_once(agent)
@@ -244,7 +262,9 @@ def test_agent_json_param_mapping(capture_requests):
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
+    with mock.patch(
+        "core.agents.research_agent.get_chat_model", return_value=mocked_llm
+    ):
         agent = create_agent("x", builtin_tools=[], user_tool_kwargs=[tool_def])
 
     evidence = _run_agent_once(agent)
