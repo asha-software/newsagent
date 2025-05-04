@@ -45,7 +45,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: core/Dockerfile
     restart: always
     depends_on:
       db:
