@@ -21,7 +21,11 @@ def tool_function(expression: str) -> str:
         - "pi * 2" (using constants)
     """
     local_dict: dict[str, float] = {
-        "pi": math.pi, "e": math.e, "tau": math.tau, "euler_gamma": float(numpy.euler_gamma)}
+        "pi": math.pi,
+        "e": math.e,
+        "tau": math.tau,
+        "euler_gamma": float(numpy.euler_gamma),
+    }
     try:
         return str(
             numexpr.evaluate(
