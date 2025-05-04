@@ -1,86 +1,69 @@
-import unittest.mock
 import ast
+import unittest.mock as mock
+from typing import Any, Dict
+
 import pytest
 from langchain_core.messages import AIMessage
+
 from core.agents.research_agent import create_agent
 
-
-#############################
-# Helper / Mock definitions #
-#############################
+###############################################################################
+# Helpers / fixtures
+###############################################################################
 
 class _MockHTTPResponse:
     """Very small stub that mimics the part of the *requests* response we need."""
 
-    def __init__(self, payload):
+    def __init__(self, payload: Any):
         self._payload = payload
 
-    def json(self):  # noqa: D401 – short & sweet
+    def json(self) -> Any:  # noqa: D401 – short & sweet
         return self._payload
 
-    # Fallback so that ``str(response)`` is still readable when LangGraph casts
-    def __str__(self):  # pragma: no cover – representation only
+    def __str__(self) -> str:  # pragma: no cover – representation only
         return str(self._payload)
 
 
-########################
-# Pytest‑level fixtures #
-########################
-
-@pytest.fixture()
-def dummy_tool_kwargs():
-    """Return *kwargs used to create a very small service tool.
-
-    The tool will hit ``https://dummy.api/item`` but we monkey‑patch
-    ``requests.request`` in the tests so no outbound traffic is ever made.
-    """
-
-    return {
-        "name": "dummy_service",
-        "method": "GET",
-        "url_template": "https://dummy.api/item",
-        "docstring": "Fetches a dummy field from a mock API and returns it as a list.",
-        # Pull out the single scalar so the return type is JSON‑serialisable / str‑able.
-        "target_fields": [["field"]],
-        "param_mapping": {},  # ← no runtime parameters required for this very simple case
-    }
+def _deserialize_tool_result(result_str: str | Any) -> Any:
+    """Convert *ToolMessage* string‑payloads back to Python if possible."""
+    if not isinstance(result_str, str):
+        return result_str
+    try:
+        return ast.literal_eval(result_str)
+    except (SyntaxError, ValueError):
+        return result_str
 
 
 @pytest.fixture()
-def patched_requests(monkeypatch):
-    """Monkey‑patch *requests.request* so no real HTTP occurs."""
+def capture_requests(monkeypatch):  # noqa: D401 – pytest fixture
+    """Capture arguments to *requests.request* and allow the test body to inspect them."""
 
-    def _fake_request(*_args, **_kwargs):  # noqa: D401 – tiny helper
-        return _MockHTTPResponse({"field": "dummy_value"})
+    captured: Dict[str, Any] = {}
 
-    monkeypatch.setattr("requests.request", _fake_request, raising=False)
-    # The test body can now run without touching the network.
-
-
-#####################
-# Integration tests #
-
-###############################
-# Extra coverage for api_caller
-###############################
-
-def test_agent_mixed_param_locations(monkeypatch):
-    """Full agent run exercising header/param/data/json mapping"""
-
-    captured_call = {}
-
-    def _fake_request(method, url, headers=None, params=None, data=None, json=None):
-        captured_call.update({
-            "method": method,
-            "url": url,
-            "headers": headers,
-            "params": params,
-            "data": data,
-            "json": json,
-        })
-        return _MockHTTPResponse({"ok": True})
+    def _fake_request(method: str, url: str, **kwargs: Any):  # noqa: D401 – helper
+        captured.update({"method": method, "url": url, **kwargs})
+        # Echo the JSON payload back so the test can assert on it if required.
+        return _MockHTTPResponse(kwargs.get("json", {"ok": True}))
 
     monkeypatch.setattr("requests.request", _fake_request)
+    return captured
+
+
+###############################################################################
+# Tiny helper to exercise the agent exactly once
+###############################################################################
+
+def _run_agent_once(agent):
+    return agent.invoke({"claim": "integration"})["evidence"]
+
+
+###############################################################################
+# Tests
+###############################################################################
+
+
+def test_agent_mixed_param_locations(capture_requests):
+    """A header/param/data/json/url‑param mapping smoke‑test."""
 
     tool_def = {
         "name": "mixed_tool",
@@ -96,9 +79,6 @@ def test_agent_mixed_param_locations(monkeypatch):
         },
     }
 
-    # --------------------
-    # Mock assistant steps
-    # --------------------
     first_turn = AIMessage(
         content="Trigger mixed_tool",
         tool_calls=[
@@ -115,264 +95,160 @@ def test_agent_mixed_param_locations(monkeypatch):
             }
         ],
     )
+
     second_turn = AIMessage(content="done", tool_calls=[])
 
-    mocked_llm = unittest.mock.MagicMock()
+    mocked_llm = mock.MagicMock()
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with unittest.mock.patch(
-            "core.agents.research_agent.get_chat_model", return_value=mocked_llm
-    ):
-        agent = create_agent(
-            model="whatever",
-            builtin_tools=[],
-            user_tool_kwargs=[tool_def],
-        )
+    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
+        agent = create_agent("irrelevant", builtin_tools=[], user_tool_kwargs=[tool_def])
 
-    # Run the graph – should execute into ToolNode and make HTTP request
-    agent.invoke({"claim": "irrelevant"})
+    _run_agent_once(agent)
+    captured = capture_requests
 
-    # Validate HTTP mapping
-    assert captured_call["method"] == "POST"
-    assert captured_call["url"] == "https://api.example.com/users/alice"
-    assert captured_call["headers"]["Accept"] == "application/json"
-    assert captured_call["headers"]["token"] == "secrettoken"
-    assert captured_call["params"] == {"verbose": True}
-    assert captured_call["json"] == {"bio": "Hello!"}
-    assert captured_call["data"] == {"note": "something"}
+    assert captured["method"] == "POST"
+    assert captured["url"] == "https://api.example.com/users/alice"
+    assert captured["headers"]["Accept"] == "application/json"
+    assert captured["headers"]["token"] == "secrettoken"
+    assert captured["params"] == {"verbose": True}
+    assert captured["json"] == {"bio": "Hello!"}
+    assert captured["data"] == {"note": "something"}
 
 
-
-def _deserialize_tool_result(result_str: str):
-    """Tool messages arrive as *strings*. Convert to Python safely if possible."""
-    try:
-        return ast.literal_eval(result_str)
-    except (SyntaxError, ValueError):
-        return result_str
-
-
-
-def test_multiple_user_tools_register_and_execute_sequentially(
-        dummy_tool_kwargs, patched_requests
-):
-    """create_agent with two tools -> both results captured."""
-
-    tool_kwargs_one = dummy_tool_kwargs.copy()
-    tool_kwargs_two = dummy_tool_kwargs.copy()
-    tool_kwargs_one["name"] = "service_one"
-    tool_kwargs_one["target_fields"] = [["field1"]]
-    tool_kwargs_two["name"] = "service_two"
-    tool_kwargs_two["target_fields"] = [["field2"]]
+def test_multiple_user_tools_register_and_execute_sequentially(monkeypatch):
+    """Two user‑defined tools register and their results are captured independently."""
 
     def _fake_request(*_args, **_kwargs):
         return _MockHTTPResponse({"field1": "value‑one", "field2": "value‑two"})
 
-    with unittest.mock.patch("requests.request", _fake_request):
-        first_turn = AIMessage(
-            content="Need both pieces of information…",
-            tool_calls=[
-                {"id": "c1", "name": "service_one", "args": {}},
-                {"id": "c2", "name": "service_two", "args": {}},
-            ],
-        )
-        second_turn = AIMessage(content="done", tool_calls=[])
+    monkeypatch.setattr("requests.request", _fake_request)
 
-        mocked_llm = unittest.mock.MagicMock()
-        mocked_llm.bind_tools.return_value = mocked_llm
-        mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
-
-        with unittest.mock.patch(
-                "core.agents.research_agent.get_chat_model", return_value=mocked_llm
-        ):
-            agent = create_agent(
-                model="any‑model",
-                builtin_tools=[],
-                user_tool_kwargs=[tool_kwargs_one, tool_kwargs_two],
-            )
-
-        state = agent.invoke({"claim": "collect info"})
-        ev_list = state["evidence"]
-        assert {e["name"] for e in ev_list} == {"service_one", "service_two"}
-
-        # Safely parse the list‑string coming from the ToolMessage.
-        parsed_results = {
-            e["name"]: _deserialize_tool_result(e["result"])
-            for e in ev_list
+    def _tool(name: str, field: str):
+        kw = {
+            "name": name,
+            "method": "GET",
+            "url_template": "https://dummy.api/item",
+            "docstring": "dummy",
+            "target_fields": [[field]],
+            "param_mapping": {},
         }
-        assert parsed_results["service_one"][0] == "value‑one"
-        assert parsed_results["service_two"][0] == "value‑two"
+        return kw
 
-import unittest.mock
-import pytest
+    tool_kwargs = [_tool("service_one", "field1"), _tool("service_two", "field2")]
 
-from langchain_core.messages import AIMessage
+    first_turn = AIMessage(
+        content="Need both pieces …",
+        tool_calls=[
+            {"id": "c1", "name": "service_one", "args": {}},
+            {"id": "c2", "name": "service_two", "args": {}},
+        ],
+    )
+    second_turn = AIMessage(content="done", tool_calls=[])
 
-from core.agents.research_agent import create_agent
+    mocked_llm = mock.MagicMock()
+    mocked_llm.bind_tools.return_value = mocked_llm
+    mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-###############################################################################
-# Tiny helper: fake *requests* response object                                #
-###############################################################################
+    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
+        agent = create_agent("model‑x", builtin_tools=[], user_tool_kwargs=tool_kwargs)
 
-class _MockResponse:
-    """Mimic the minimal surface of *requests.Response* used by api_caller."""
+    evidence = _run_agent_once(agent)
+    parsed = {e["name"]: _deserialize_tool_result(e["result"])[0] for e in evidence}
 
-    def __init__(self, payload):
-        self._payload = payload
+    assert parsed == {"service_one": "value‑one", "service_two": "value‑two"}
 
-    def json(self):  # noqa: D401 – concise helper
-        return self._payload
-
-    def __str__(self):  # pragma: no cover – representational only
-        return str(self._payload)
-
-###############################################################################
-# Utility to run an agent once and capture its evidence                        #
-###############################################################################
-
-def _run_agent_once(agent):
-    """Run *agent.invoke* exactly once for a dummy claim and return evidence list."""
-    state = agent.invoke({"claim": "integration"})
-    return state["evidence"]
-
-###############################################################################
-# 1. INT‑INDEX path of *extract_fields* (line ~27) via agent                   #
-###############################################################################
 
 def test_agent_list_index_extract_fields(monkeypatch):
-    """Full graph run hitting the *int index* branch inside *extract_fields*."""
+    """Extraction from a list‑payload via positional index and key."""
 
-    # ------------------------------------------------------------------
-    # Patch *requests.request* so the tool receives a JSON list payload
-    # ------------------------------------------------------------------
     def _fake_request(*_args, **_kwargs):
-        return _MockResponse([
-            {"value": "alpha"},
-            {"value": "bravo"},
-        ])
+        return _MockHTTPResponse([{"value": "alpha"}, {"value": "bravo"}])
 
     monkeypatch.setattr("requests.request", _fake_request)
 
-    # -------------------------------
-    # Define the user tool for agent
-    # -------------------------------
     tool_def = {
         "name": "list_tool",
         "method": "GET",
         "url_template": "https://example.com/items",
-        "target_fields": [[0, "value"]],  # ← starts with *int* so branch executes
+        "target_fields": [[0, "value"]],
         "param_mapping": {},
     }
 
-    # ---------------------------------------------
-    # Mock the LLM so it immediately calls list_tool
-    # ---------------------------------------------
     first_turn = AIMessage(
         content="call list_tool",
-        tool_calls=[{
-            "id": "call‑1",
-            "name": "list_tool",
-            "args": {},
-        }],
+        tool_calls=[{"id": "call‑1", "name": "list_tool", "args": {}}],
     )
     second_turn = AIMessage(content="done", tool_calls=[])
 
-    mocked_llm = unittest.mock.MagicMock()
+    mocked_llm = mock.MagicMock()
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with unittest.mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
-        agent = create_agent(model="irrelevant", builtin_tools=[], user_tool_kwargs=[tool_def])
+    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
+        agent = create_agent("irrelevant", builtin_tools=[], user_tool_kwargs=[tool_def])
 
     evidence = _run_agent_once(agent)
+    assert _deserialize_tool_result(evidence[0]["result"]) == ["alpha"]
 
-    import ast
-    parsed = ast.literal_eval(evidence[0]["result"]) if isinstance(evidence[0]["result"], str) else evidence[0]["result"]
-    assert parsed == ["alpha"]
-
-###############################################################################
-# 2. hasattr / object attribute branch (line ~31) via agent                    #
-###############################################################################
 
 def test_agent_object_attribute_extract_fields(monkeypatch):
-    """Full graph run hitting *hasattr* → *getattr* path in *extract_fields*."""
+    """Extraction from an object attribute (uses *hasattr* path)."""
 
     class _Obj:
-        def __init__(self):
+        def __init__(self) -> None:
             self.answer = 42
 
-    def _fake_request(*_args, **_kwargs):
-        return _MockResponse(_Obj())
-
-    monkeypatch.setattr("requests.request", _fake_request)
+    monkeypatch.setattr("requests.request", lambda *_a, **_kw: _MockHTTPResponse(_Obj()))
 
     tool_def = {
         "name": "attr_tool",
         "method": "GET",
         "url_template": "https://example.com/answer",
-        "target_fields": [["answer"]],  # triggers hasattr branch
+        "target_fields": [["answer"]],
         "param_mapping": {},
     }
 
-    first_turn = AIMessage(
-        content="call attr_tool",
-        tool_calls=[{"id": "c1", "name": "attr_tool", "args": {}}],
-    )
+    first_turn = AIMessage(content="call", tool_calls=[{"id": "c1", "name": "attr_tool", "args": {}}])
     second_turn = AIMessage(content="done", tool_calls=[])
 
-    mocked_llm = unittest.mock.MagicMock()
+    mocked_llm = mock.MagicMock()
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with unittest.mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
-        agent = create_agent(model="x", builtin_tools=[], user_tool_kwargs=[tool_def])
+    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
+        agent = create_agent("x", builtin_tools=[], user_tool_kwargs=[tool_def])
 
     evidence = _run_agent_once(agent)
-    import ast
-    parsed = ast.literal_eval(evidence[0]["result"]) if isinstance(evidence[0]["result"], str) else evidence[0]["result"]
-    assert parsed == [42]
+    assert _deserialize_tool_result(evidence[0]["result"]) == [42]
 
-###############################################################################
-# 3. param_mapping into *json* body branch (line ~104) via agent               #
-###############################################################################
 
-def test_agent_json_param_mapping(monkeypatch):
-    """Ensure param routed to JSON payload when *param_mapping for == 'json'*."""
-
-    captured = {}
-
-    def _fake_request(method, url, json=None, **_kwargs):
-        captured.update({"method": method, "url": url, "json": json})
-        return _MockResponse({"ok": True})
-
-    monkeypatch.setattr("requests.request", _fake_request)
+def test_agent_json_param_mapping(capture_requests):
+    """Parameters flagged for *json* location land in the request body."""
 
     tool_def = {
         "name": "json_tool",
         "method": "POST",
         "url_template": "https://example.com/post",
-        "param_mapping": {
-            "foo": {"type": "str", "for": "json"},
-        },
+        "param_mapping": {"foo": {"type": "str", "for": "json"}},
     }
 
     first_turn = AIMessage(
         content="post with foo",
-        tool_calls=[{"id": "call‑json", "name": "json_tool", "args": {"foo": "bar"}}],
+        tool_calls=[{"id": "call", "name": "json_tool", "args": {"foo": "bar"}}],
     )
     second_turn = AIMessage(content="done", tool_calls=[])
 
-    mocked_llm = unittest.mock.MagicMock()
+    mocked_llm = mock.MagicMock()
     mocked_llm.bind_tools.return_value = mocked_llm
     mocked_llm.invoke.side_effect = [[first_turn], [second_turn]]
 
-    with unittest.mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
-        agent = create_agent(model="m", builtin_tools=[], user_tool_kwargs=[tool_def])
+    with mock.patch("core.agents.research_agent.get_chat_model", return_value=mocked_llm):
+        agent = create_agent("x", builtin_tools=[], user_tool_kwargs=[tool_def])
 
     evidence = _run_agent_once(agent)
 
-    # Basic correctness check
-    import ast
-    parsed_result = ast.literal_eval(evidence[0]["result"]) if isinstance(evidence[0]["result"], str) else evidence[0]["result"].json()
-    assert parsed_result["ok"] is True
-    assert captured["json"] == {"foo": "bar"}  # mapping landed in payload
+    # The fake request echoes JSON back so the agent result contains it directly.
+    assert _deserialize_tool_result(evidence[0]["result"])["foo"] == "bar"
+    assert capture_requests["json"] == {"foo": "bar"}
