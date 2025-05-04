@@ -154,7 +154,7 @@ def get_filter_evidence_node(llm: BaseChatModel) -> Callable:
         # set up a system prompt, SystemMessage
         filtered_evidence = []
         for evidence in state['evidence']:
-            prompt = "Claim:\n" + state['claim'] + "\nEvidence:\n" + evidence.content
+            prompt = "Claim:\n" + state['claim'] + "\nEvidence:\n" + evidence['content']
             messages = [filter_sys_msg, HumanMessage(content=prompt)]
             response = llm.invoke(messages)
 
@@ -170,10 +170,10 @@ def get_filter_evidence_node(llm: BaseChatModel) -> Callable:
             # Check if the evidence is relevant
             if response_json['isRelevant']:
                 filtered_evidence_item = Evidence(
-                    name=evidence.name,
-                    args=evidence.args,
-                    content=response.content,
-                    source=evidence.source
+                    name=evidence['name'],
+                    args=evidence['args'],
+                    content=response_json['content'],
+                    source=evidence['source']
                 )
                 filtered_evidence.append(filtered_evidence_item)
         state['evidence'] = filtered_evidence
@@ -231,7 +231,7 @@ def create_agent(
         path_map={'tools': 'tools', '__end__': 'gather_evidence'},
     )
     builder.add_edge("tools", "assistant")
-    builder.add_edge("gather_evidence", filter_evidence)
+    builder.add_edge("gather_evidence", "filter_evidence")
     builder.add_edge("filter_evidence", END)
 
     agent = builder.compile()
