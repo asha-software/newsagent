@@ -35,7 +35,7 @@ def _deserialize_tool_result(result_str: str | Any) -> Any:
         return result_str
 
 
-@pytest.fixture()
+@pytest.fixture
 def capture_requests(monkeypatch):  # noqa: D401 – pytest fixture
     """Capture arguments to *requests.request* and allow the test body to inspect them."""
 

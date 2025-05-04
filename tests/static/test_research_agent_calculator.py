@@ -68,8 +68,7 @@ STUB_MATRIX = [
     (False, "The Eiffel Tower is in Paris.", "", ""),
 ]
 
-
-@pytest.mark.parametrize("should_use,claim,expr,expected", STUB_MATRIX)
+@pytest.mark.parametrize(("should_use","claim","expr","expected"), STUB_MATRIX)
 def test_research_agent_stub(monkeypatch, should_use, claim, expr, expected):
     """
     Fast unit-test layer.
