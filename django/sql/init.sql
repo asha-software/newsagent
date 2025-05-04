@@ -1,6 +1,19 @@
 -- Connect to the database
 USE fakenews_db;
 
+-- Create auth_user table if it doesn't exist (simplified version for development)
+CREATE TABLE IF NOT EXISTS auth_user (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(128) NOT NULL,
+    email VARCHAR(254) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    is_staff BOOLEAN DEFAULT FALSE,
+    is_superuser BOOLEAN DEFAULT FALSE,
+    date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- Create user_tool table
 CREATE TABLE IF NOT EXISTS user_tool (
     id INT AUTO_INCREMENT PRIMARY KEY,

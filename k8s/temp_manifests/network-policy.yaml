@@ -1,0 +1,73 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: newsagent-network-policy
+  namespace: newsagent
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from pods in the same namespace
+  - from:
+    - podSelector: {}
+  # Allow traffic from ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+  egress:
+  # Allow traffic to pods in the same namespace
+  - to:
+    - podSelector: {}
+  # Allow DNS resolution
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow external API calls
+  - to:
+    - ipBlock:
+        cidr: 0.0.0.0/0
+        except:
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+---
+# Specific network policy for Ollama to allow GPU access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ollama-network-policy
+  namespace: newsagent
+spec:
+  podSelector:
+    matchLabels:
+      app: newsagent-ollama
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow traffic from API and Django services
+  - from:
+    - podSelector:
+        matchLabels:
+          app: newsagent-api
+    - podSelector:
+        matchLabels:
+          app: newsagent-django
+    ports:
+    - protocol: TCP
+      port: 11434
+  egress:
+  # Allow all outbound traffic for GPU access and model downloads
+  - {}

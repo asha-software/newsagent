@@ -1,0 +1,106 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: newsagent-ollama
+  namespace: newsagent
+  labels:
+    app: newsagent-ollama
+spec:
+  ports:
+  - port: 11434
+    targetPort: 11434
+    name: http
+  selector:
+    app: newsagent-ollama
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-models-pvc
+  namespace: newsagent
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: gp2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: newsagent-ollama
+  namespace: newsagent
+  labels:
+    app: newsagent-ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: newsagent-ollama
+  template:
+    metadata:
+      labels:
+        app: newsagent-ollama
+    spec:
+      serviceAccountName: newsagent-service-account
+      # Use node selector to ensure this pod is scheduled on a GPU node
+      nodeSelector:
+        accelerator: nvidia
+      # Remove the taint to allow this pod to be scheduled on the GPU node
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      containers:
+      - name: ollama
+        image: ollama/ollama:latest
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            ollama serve &
+            sleep 10
+            ollama pull mistral-nemo
+            wait
+        ports:
+        - containerPort: 11434
+        env:
+        - name: OLLAMA_HOST
+          value: "0.0.0.0"
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: "all"
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: "compute,utility"
+        - name: API_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: API_SERVICE_URL
+        volumeMounts:
+        - name: ollama-models
+          mountPath: /root/.ollama
+        resources:
+          limits:
+            # Request GPU resources
+            nvidia.com/gpu: 1
+          requests:
+            cpu: "1"
+            memory: "4Gi"
+        readinessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 120
+          periodSeconds: 30
+          timeoutSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /api/tags
+            port: 11434
+          initialDelaySeconds: 180
+          periodSeconds: 60
+          timeoutSeconds: 10
+      volumes:
+      - name: ollama-models
+        emptyDir: {}

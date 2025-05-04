@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: newsagent-config
+  namespace: newsagent
+data:
+  # Database configuration
+  DB_HOST: "newsagent-db"
+  DB_PORT: "3306"
+  DB_NAME: "fakenews_db"
+  DB_USER: "fakenews_user"
+  MYSQL_DATABASE: "fakenews_db"
+  MYSQL_USER: "fakenews_user"
+  
+  # Django configuration
+  DJANGO_ALLOWED_HOSTS: "*"
+  DJANGO_DEBUG: "False"
+  DJANGO_SECRET_KEY: "${DJANGO_SECRET_KEY}"
+  
+  # API configuration
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  API_SERVICE_URL: "http://newsagent-api:8000"
+  
+  # Ollama configuration
+  OLLAMA_HOST: "newsagent-ollama"
+  OLLAMA_PORT: "11434"
+  OLLAMA_MODEL: "mistral-nemo"
+  OLLAMA_SERVICE_URL: "http://newsagent-ollama:11434"

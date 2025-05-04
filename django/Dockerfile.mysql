@@ -1,0 +1,16 @@
+FROM mysql:8.0
+
+# Copy initialization SQL script
+COPY django/sql/init.sql /docker-entrypoint-initdb.d/
+
+# Set environment variables
+ENV MYSQL_ROOT_PASSWORD=root
+ENV MYSQL_DATABASE=fakenews_db
+ENV MYSQL_USER=fakenews_user
+ENV MYSQL_PASSWORD=password
+
+# Expose MySQL port
+EXPOSE 3306
+
+# Set healthcheck
+HEALTHCHECK --interval=5s --timeout=5s --retries=3 CMD mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD}

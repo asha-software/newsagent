@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: newsagent-db
+  namespace: newsagent
+  labels:
+    app: newsagent-db
+spec:
+  ports:
+  - port: 3306
+    targetPort: 3306
+    name: mysql
+  selector:
+    app: newsagent-db
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: newsagent
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: gp2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: newsagent-db
+  namespace: newsagent
+  labels:
+    app: newsagent-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: newsagent-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: newsagent-db
+    spec:
+      serviceAccountName: newsagent-service-account
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      containers:
+      - name: mysql
+        image: mysql:8.0
+        ports:
+        - containerPort: 3306
+          name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: newsagent-secrets
+              key: MYSQL_ROOT_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: MYSQL_DATABASE
+        - name: MYSQL_USER
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: MYSQL_USER
+        - name: MYSQL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: newsagent-secrets
+              key: MYSQL_PASSWORD
+        volumeMounts:
+        - name: mysql-persistent-storage
+          mountPath: /var/lib/mysql
+        - name: mysql-initdb
+          mountPath: /docker-entrypoint-initdb.d
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+      volumes:
+      - name: mysql-persistent-storage
+        emptyDir: {}
+      - name: mysql-initdb
+        configMap:
+          name: mysql-initdb-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-initdb-config
+  namespace: newsagent
+data:
+  init.sql: |
+    -- Connect to the database
+    USE fakenews_db;
+
+    -- Create auth_user table if it doesn't exist (simplified version for development)
+    CREATE TABLE IF NOT EXISTS auth_user (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        username VARCHAR(150) NOT NULL UNIQUE,
+        password VARCHAR(128) NOT NULL,
+        email VARCHAR(254) NOT NULL,
+        is_active BOOLEAN DEFAULT TRUE,
+        is_staff BOOLEAN DEFAULT FALSE,
+        is_superuser BOOLEAN DEFAULT FALSE,
+        date_joined TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP NULL
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+    -- Create user_tool table
+    CREATE TABLE IF NOT EXISTS user_tool (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        is_active BOOLEAN DEFAULT TRUE,
+        method ENUM('GET', 'POST', 'PUT', 'DELETE', 'PATCH') NOT NULL,
+        url_template VARCHAR(500) NOT NULL,
+        headers JSON,
+        default_params JSON,
+        data JSON,
+        json_payload JSON,
+        docstring TEXT,
+        target_fields JSON,
+        param_mapping JSON,
+        FOREIGN KEY (user_id) REFERENCES auth_user(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+    -- Add index for better performance
+    CREATE INDEX idx_user_tool_user_id ON user_tool(user_id);

@@ -1,0 +1,169 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: newsagent-django
+  namespace: newsagent
+  labels:
+    app: newsagent-django
+spec:
+  ports:
+  - port: 8000
+    targetPort: 8000
+    name: http
+  selector:
+    app: newsagent-django
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: newsagent-django
+  namespace: newsagent
+  labels:
+    app: newsagent-django
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: newsagent-django
+  template:
+    metadata:
+      labels:
+        app: newsagent-django
+    spec:
+      serviceAccountName: newsagent-service-account
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "true"
+        effect: "NoSchedule"
+      containers:
+      - name: django
+        image: ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/newsagent-django:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: DB_PORT
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: DB_USER
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: newsagent-secrets
+              key: DB_PASSWORD
+        - name: DJANGO_ALLOWED_HOSTS
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: DJANGO_ALLOWED_HOSTS
+        - name: DJANGO_DEBUG
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: DJANGO_DEBUG
+        - name: DJANGO_SECRET_KEY
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: DJANGO_SECRET_KEY
+        - name: WOLFRAM_APP_ID
+          valueFrom:
+            secretKeyRef:
+              name: newsagent-secrets
+              key: WOLFRAM_APP_ID
+        - name: TAVILY_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: newsagent-secrets
+              key: TAVILY_API_KEY
+        - name: LANGCHAIN_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: newsagent-secrets
+              key: LANGCHAIN_API_KEY
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: newsagent-secrets
+              key: OPENAI_API_KEY
+        - name: OLLAMA_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: OLLAMA_HOST
+        - name: OLLAMA_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: OLLAMA_PORT
+        - name: OLLAMA_MODEL
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: OLLAMA_MODEL
+        - name: OLLAMA_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: OLLAMA_SERVICE_URL
+        - name: API_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: newsagent-config
+              key: API_SERVICE_URL
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "1Gi"
+          limits:
+            cpu: "1"
+            memory: "2Gi"
+        readinessProbe:
+          httpGet:
+            path: /admin/login/
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /admin/login/
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 20
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: newsagent-django-ingress
+  namespace: newsagent
+  annotations:
+    kubernetes.io/ingress.class: "alb"
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/target-type: "ip"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: newsagent-django
+            port:
+              number: 8000
