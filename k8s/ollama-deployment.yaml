@@ -72,6 +72,10 @@ spec:
           value: "all"
         - name: NVIDIA_DRIVER_CAPABILITIES
           value: "compute,utility"
+        - name: OLLAMA_CUDA_MALLOC
+          value: "true"
+        - name: OLLAMA_NUM_THREADS
+          value: "4"
         - name: API_SERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -84,6 +88,8 @@ spec:
           limits:
             # Request GPU resources
             nvidia.com/gpu: 1
+            cpu: "2"
+            memory: "8Gi"
           requests:
             cpu: "1"
             memory: "4Gi"
