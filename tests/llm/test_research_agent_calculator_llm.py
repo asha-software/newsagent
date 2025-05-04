@@ -50,7 +50,7 @@ INTEGRATION_CASES = [
 ]
 
 
-@pytest.mark.parametrize("expect_calc,claim,expr,result", INTEGRATION_CASES)
+@pytest.mark.parametrize(("expect_calc", "claim", "expr", "result"), INTEGRATION_CASES)
 def test_research_agent_integration(expect_calc, claim, expr, result):
     """
     Hit the **real** LLM + real calculator.
