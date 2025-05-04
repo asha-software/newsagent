@@ -27,5 +27,23 @@ COPY . .
 # Expose port
 EXPOSE 8000
 
+# Create a startup script
+RUN echo '#!/bin/bash\n\
+echo "Waiting for database to be ready..."\n\
+while ! python django/manage.py check --database default 2>&1; do\n\
+  sleep 2\n\
+  echo "Waiting for database connection..."\n\
+done\n\
+echo "Database is ready!"\n\
+\n\
+echo "Applying database migrations..."\n\
+python django/manage.py migrate\n\
+\n\
+echo "Starting Django server..."\n\
+python django/manage.py runserver 0.0.0.0:8000\n\
+' > /app/start.sh
+
+RUN chmod +x /app/start.sh
+
 # Command to run the application
-CMD ["python", "django/manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["/app/start.sh"]

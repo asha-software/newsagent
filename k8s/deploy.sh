@@ -191,7 +191,7 @@ push_image_with_retry() {
   local source_image=$1
   local dest_image=$2
   local repo_name=$3
-  local max_retries=5
+  local max_retries=10
   local retry_count=0
   local success=false
 
