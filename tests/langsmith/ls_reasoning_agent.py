@@ -13,13 +13,13 @@ from pathlib import Path
 from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
 
-#Load required API keys and endpoint
+# Load required API keys and endpoint
 load_dotenv(".env", override=True)
 
 # rooth path
-project_root = Path(__file__).resolve().parent.parent.parent
-if str(project_root) not in sys.path:
-    sys.path.insert(0, str(project_root))
+# project_root = Path(__file__).resolve().parent.parent.parent
+# if str(project_root) not in sys.path:
+#     sys.path.insert(0, str(project_root))
 
 
 def argument_parser():
@@ -45,7 +45,6 @@ def target_function(inputs) -> dict:
     }
 
 
-
 def label_match(outputs: dict, reference_outputs: dict) -> dict:
     """Check if the predicted label matches the reference label."""
     predicted = outputs["output"]["label"]
@@ -58,7 +57,10 @@ def label_match(outputs: dict, reference_outputs: dict) -> dict:
 
 
 def justification_coherence(outputs: dict, reference_outputs: dict) -> dict:
-    """Check if the justification logically supports the predicted label (using LLM evaluation)."""
+    """
+    Check if the justification logically supports the predicted label (using LLM evaluation).
+    TODO: to get this working will take some prompt engineering and testing
+    """
     predicted_label = outputs["output"]["label"]
     justification = outputs["output"]["justification"]
 
@@ -67,7 +69,6 @@ def justification_coherence(outputs: dict, reference_outputs: dict) -> dict:
         predicted_label=predicted_label,
         justification=justification
     )
-
 
     llm_eval = ChatOllama(
         model="llama3",
@@ -101,8 +102,8 @@ def main():
     ls_client = Client()
     experiment_results = ls_client.evaluate(
         target_function,
-        data="my_dataset11",
-        evaluators=[label_match, justification_coherence],
+        data="reasoning_indirect_evidence",
+        evaluators=[label_match],
         experiment_prefix=args.experiment_prefix
     )
 
