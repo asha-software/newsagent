@@ -63,12 +63,13 @@ def api_request(method, endpoint, api_key, json_data=None):
     headers = {'X-API-Key': api_key.key}
     
     try:
+        # Set a longer timeout for API requests (180 seconds - 3 minutes)
         if method == 'GET':
-            response = requests.get(url, headers=headers)
+            response = requests.get(url, headers=headers, timeout=180)
         elif method == 'POST':
-            response = requests.post(url, json=json_data, headers=headers)
+            response = requests.post(url, json=json_data, headers=headers, timeout=180)
         elif method == 'DELETE':
-            response = requests.delete(url, headers=headers)
+            response = requests.delete(url, headers=headers, timeout=180)
         else:
             return False, f"Unsupported method: {method}"
         

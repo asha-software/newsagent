@@ -111,6 +111,9 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     req = await request.json()
 
     text = req.get('body')
+    
+    # Set a longer timeout for the request processing
+    request.state.timeout = 180  # 180 seconds timeout (3 minutes)
 
     # Extract the sources array from the request
     tools = req.get('sources')

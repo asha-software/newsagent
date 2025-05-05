@@ -86,6 +86,7 @@ def get_chat_model(
             "model": model_name,
             "temperature": 0,
             "base_url": ollama_base_url,
+            "timeout": 180,  # Increase timeout to 180 seconds (3 minutes)
             **kwargs
         }
         if format_output:
