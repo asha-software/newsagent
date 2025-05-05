@@ -24,6 +24,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy only the core/ directory into the container
 COPY core/ /app/core/
+# Install test dependencies
+RUN pip install coverage pytest-cov pytest
 
 # Install your package in editable mode
 RUN pip install -e .
