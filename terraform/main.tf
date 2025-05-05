@@ -72,39 +72,42 @@ resource "aws_security_group" "eks_lb_sg" {
   description = "Security group for EKS cluster load balancers"
   vpc_id      = aws_vpc.eks_vpc.id
 
-  # Allow HTTP traffic for Django (port 8000)
-  ingress {
-    from_port   = 8000
-    to_port     = 8000
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow Django HTTP traffic"
-  }
-
-  # Allow HTTP traffic for API (port 8001)
-  ingress {
-    from_port   = 8001
-    to_port     = 8001
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow API HTTP traffic"
-  }
-
-  # Allow all outbound traffic
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound traffic"
-  }
-
   tags = merge(
     var.tags,
     {
       Name = "${var.cluster_name}-lb-sg"
     }
   )
+}
+
+resource "aws_security_group_rule" "eks_lb_allow_django" {
+  type              = "ingress"
+  from_port         = 8000
+  to_port           = 8000
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow Django HTTP traffic"
+  security_group_id = aws_security_group.eks_lb_sg.id
+}
+
+resource "aws_security_group_rule" "eks_lb_allow_api" {
+  type              = "ingress"
+  from_port         = 8001
+  to_port           = 8001
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow API HTTP traffic"
+  security_group_id = aws_security_group.eks_lb_sg.id
+}
+
+resource "aws_security_group_rule" "eks_lb_allow_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow all outbound traffic"
+  security_group_id = aws_security_group.eks_lb_sg.id
 }
 
 # Route Table for Public Subnets
@@ -319,39 +322,42 @@ resource "aws_security_group" "ollama_sg" {
   description = "Security group for Ollama EC2 instance"
   vpc_id      = aws_vpc.eks_vpc.id
 
-  # Allow SSH from anywhere (you may want to restrict this to your IP)
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow SSH from anywhere"
-  }
-
-  # Allow Ollama API port from anywhere
-  ingress {
-    from_port   = 11434
-    to_port     = 11434
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow Ollama API access from anywhere"
-  }
-
-  # Allow all outbound traffic
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-    description = "Allow all outbound traffic"
-  }
-
   tags = merge(
     var.tags,
     {
       Name = "${var.cluster_name}-ollama-sg"
     }
   )
+}
+
+resource "aws_security_group_rule" "ollama_allow_ssh" {
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow SSH from anywhere"
+  security_group_id = aws_security_group.ollama_sg.id
+}
+
+resource "aws_security_group_rule" "ollama_allow_api" {
+  type              = "ingress"
+  from_port         = 11434
+  to_port           = 11434
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow Ollama API access from anywhere"
+  security_group_id = aws_security_group.ollama_sg.id
+}
+
+resource "aws_security_group_rule" "ollama_allow_all_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  description       = "Allow all outbound traffic"
+  security_group_id = aws_security_group.ollama_sg.id
 }
 
 # IAM Role for Ollama EC2 Instance - Use a unique name to avoid conflicts
