@@ -16,11 +16,6 @@ from dotenv import load_dotenv
 # Load required API keys and endpoint
 load_dotenv(".env", override=True)
 
-# rooth path
-# project_root = Path(__file__).resolve().parent.parent.parent
-# if str(project_root) not in sys.path:
-#     sys.path.insert(0, str(project_root))
-
 
 def argument_parser():
     parser = argparse.ArgumentParser(description='Evaluate the reasoning agent')
