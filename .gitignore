@@ -95,3 +95,11 @@ logs/
 tmp/
 temp/
 Thumbs.db
+
+# Secrets
+app-secrets.yaml
+*.pem
+
+# Terraform
+.terraform*
+*.tfstate*

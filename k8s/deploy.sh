@@ -138,7 +138,7 @@ cd "$PROJECT_ROOT"
 
 # Get AWS account ID
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --no-cli-pager --query Account --output text)
-AWS_REGION=$(aws configure get region)
+AWS_REGION=us-east-1
 ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 
 # Build Docker images if requested

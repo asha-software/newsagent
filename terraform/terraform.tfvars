@@ -1,5 +1,5 @@
 # AWS Region
-aws_region = "us-west-2"
+aws_region = "us-east-1"
 
 # Kubernetes Version
 kubernetes_version = "1.32"
@@ -24,7 +24,7 @@ ssh_key_name = "ollama-key"  # Using the key that was created in the AWS console
 # source_security_group_ids = ["sg-12345678"]
 
 # Ollama EC2 Instance Configuration
-ollama_ami_id = "ami-0c65adc9a5c1b5d7c" # Ubuntu 22.04 LTS in us-west-2, update for your region
+ollama_ami_id = "ami-00ca0754cabb20b45" # Ubuntu 22.04 LTS in us-east-1, update for your region
 ollama_model = "mistral-nemo"
 ollama_instance_name = "ollama-gpu-instance"
 ollama_instance_type = "g4dn.xlarge"  # You can change this to another GPU instance type if needed

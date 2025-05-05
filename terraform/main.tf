@@ -421,7 +421,10 @@ resource "aws_instance" "ollama_instance" {
     }
   )
 
-  depends_on = [aws_internet_gateway.eks_igw]
+  depends_on = [
+    aws_internet_gateway.eks_igw,
+    aws_route_table_association.ollama_public_rt_assoc
+  ]
 }
 
 # Output the path to the Ollama key file
