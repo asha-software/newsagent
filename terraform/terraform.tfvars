@@ -1,6 +1,3 @@
-# AWS Region
-aws_region = "us-west-2"
-
 # Kubernetes Version
 kubernetes_version = "1.32"
 
