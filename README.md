@@ -1,231 +1,249 @@
-# Newsagent - Fact Checking Application
+# NewsAgent: Kubernetes and Terraform Deployment Guide
 
-## Overview
+This guide explains how to deploy the NewsAgent application using Terraform for infrastructure provisioning and Kubernetes for application deployment.
 
-Newsagent is a fact-checking application that uses AI and various tools to verify claims. The system leverages multiple sources including web search, Wikipedia, calculator, and Wolfram Alpha to provide accurate verdicts on user queries.
+## System Components
 
-The project consists of three main components:
+The NewsAgent application consists of:
 
-1. A Django web application for user authentication and search interface
-2. A backend for processing and analyzing claims accessible via API
-3. A MySQL database for storage
+1. **Infrastructure (provisioned by Terraform)**:
+   - Amazon EKS (Elastic Kubernetes Service) cluster
+   - ECR (Elastic Container Registry) repositories for Docker images
+   - EC2 GPU instance running Ollama for LLM inference
 
-## Docker Compose Setup (for local usage)
+2. **Application (deployed to Kubernetes)**:
+   - MySQL Database (using the official mysql:8.0 image)
+   - Django Web Application
+   - FastAPI Application (API)
 
-The project is containerized using Docker Compose with three services:
+## Prerequisites
 
-- Django web application
-- FastAPI backend
-- MySQL database
+Before deploying, ensure you have:
 
-### Prerequisites
+1. **AWS Credentials** - You can provide these in two ways:
+   - **Option 1:** Using the core/.env file (recommended)
+   - **Option 2:** Using AWS CLI configured with appropriate credentials
+2. **Terraform** (version 1.0.0 or later) installed
+3. **kubectl** installed and configured
+4. **AWS CLI** installed and configured
+5. **Docker** installed (for building images)
 
-- Docker and Docker Compose installed on your system
-- Git (to clone the repository)
-- [Ollama](https://ollama.com/download) installed for local LLM deployment (follow the [Ollama installation instructions](https://ollama.com/download))
-- Install `mistral-nemo` using `ollama pull mistral-nemo`
-- A [Tavily API Key](https://tavily.com/) to enable NewsAgent web access
+## Deployment Process
 
-### Getting Started
+You can deploy the NewsAgent application either locally using Docker Compose or to AWS using Kubernetes and Terraform.
 
-1. Clone the repository:
+### Local Deployment with Docker Compose
 
-   ```bash
-   git clone https://github.com/asha-software/newsagent.git
-   cd newsagent
-   ```
-
-1. Make sure Ollama is running in the background (this is required for the LLM functionality)
-
-1. Create a file `core/.env` and enter `TAVILY_API_KEY=<your-api-key>`
-
-1. Start the Docker containers:
-
-   ```bash
-   docker compose up
-   ```
-
-1. Create a superuser for the Django admin (optional):
-
-   ```bash
-   docker compose exec django python manage.py createsuperuser
-   ```
-
-1. Access the application:
-   - Django web interface: http://localhost:8000
-   - FastAPI backend: http://localhost:8001
-   - FastAPI documentation: http://localhost:8001/docs
-
-### API Usage
-
-The application provides a REST API for programmatic access. You can:
-
-1. Create API keys through the web interface
-2. Use these keys to authenticate API requests
-3. Submit queries for fact-checking
-4. Create and manage custom tools
-
-See the API documentation at `http://localhost:8001/docs` when the application is running.
-
-
-## Developer Info
-
-### Services
-
-#### Django Web Application (port 8000)
-
-- Provides user authentication (signup, signin, logout)
-- Search interface for fact-checking claims
-- Communicates with the FastAPI backend for claim analysis
-- Create and manage API Keys
-- Create and manage custom tools
-
-#### FastAPI Backend (port 8001)
-
-- Processes claims using various agent components
-- Provides a `/query` endpoint for claim analysis
-- Returns analysis results to the Django frontend
-
-#### MySQL Database
-
-- Stores user information, api keys, custom tools, and application data
-- Accessible within the Docker network
-
-### Environment Variables
-
-The application uses environment variables for configuration. For local development with default settings, you don't need to create any additional files as the docker-compose.yml provides sensible defaults.
-
-**For production or custom configurations**, create a `.env` file in the project root with any of the following variables:
-
-- Database configuration:
-
-  - `MYSQL_ROOT_PASSWORD`: Database root (default: `password`) - **Change this for production!**
-  - `MYSQL_DATABASE`: Database name (default: `fakenews_db`)
-  - `MYSQL_USER`: Database username (default: `fakenews_user`)
-  - `MYSQL_PASSWORD`: Database password (default: `password`) - **Change this for production!**
-
-- Django configuration:
-
-  - `DB_HOST`: Database hostname (default: `db`)
-  - `DB_NAME`: Database name (default: `fakenews_db`)
-  - `DB_USER`: Database username (default: `fakenews_user`)
-  - `DB_PASSWORD`: Database password (default: `password`) - **Change this for production!**
-
-- API configuration:
-
-  - `API_URL`: URL for the FastAPI service (default: `http://api:8000`)
-
-- Email configuration:
-  - `EMAIL_HOST`: SMTP server hostname
-  - `EMAIL_PORT`: SMTP server port (default: `465`)
-  - `EMAIL_USE_TLS`: Whether to use TLS (default: `True`)
-  - `EMAIL_HOST_USER`: Email username/address
-  - `EMAIL_HOST_PASSWORD`: Email password
-  - `EMAIL_VERIFICATION_ENABLED`: Toggle email verification (default: `True`). Set to `False` for local development to bypass email verification.
-
-**Important**: For security, make sure to change the default passwords in your `.env` file before deploying to production.
-
-### Database Initialization
-
-The database is initialized automatically in two steps:
-
-1. The MySQL container creates the database and user based on environment variables
-2. Django's migration system (`python manage.py migrate`) creates all necessary tables when the Django container starts
-
-This approach ensures that the database schema is properly managed by Django's migration system, which handles table creation, relationships, and any future schema changes.
-
-### LLM Configuration
-
-The application uses Ollama to run language models locally:
-
-- **Setup (Already done in Prerequisites)**:
-
-  1. Install [Ollama](https://ollama.com/download)
-  2. Pull the mistral-nemo model: `ollama pull mistral-nemo`
-  3. Ensure Ollama is running
-
-- **Default Configuration**:
-  The application is pre-configured to use `mistral-nemo` for all components. If you've completed the Prerequisites section, no further configuration is needed.
-
-- **Advanced Configuration (Optional)**:
-  If you want to use different models, you can modify the `core/.env` file:
-
-  - `CLAIM_DECOMPOSER_MODEL`: Model for breaking down claims
-  - `RESEARCH_AGENT_MODEL`: Model for research (must support tool usage)
-  - `REASONING_AGENT_MODEL`: Model for reasoning
-  - `VERDICT_AGENT_MODEL`: Model for final verdict
-
-  You can find more models with tool support at: `https://ollama.com/search?c=tools`
-
-### API Keys Configuration
-
-The core backend requires several API keys to function properly. These should be configured in the `core/.env` file:
-
-- `WOLFRAM_APP_ID`: API key for Wolfram Alpha integration
-- `TAVILY_API_KEY`: API key for Tavily search engine
-- `OPENAI_API_KEY`: API key for OpenAI services (if using OpenAI models)
-- `LANGCHAIN_API_KEY`: API key for LangChain integration
-- `LANGCHAIN_PROJECT`: LangChain project name
-- `LANGCHAIN_TRACING_V2`: Enable LangChain tracing (set to `true` or `false`)
-
-You can obtain these API keys from their respective services:
-
-- Wolfram Alpha: [https://developer.wolframalpha.com/portal/myapps/](https://developer.wolframalpha.com/portal/myapps/)
-- Tavily: [https://tavily.com/](https://tavily.com/)
-- OpenAI: [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
-- LangChain: [https://smith.langchain.com/](https://smith.langchain.com/)
-
-### Development
-
-For development purposes, the application code is mounted as volumes in the containers, so changes to the code will be reflected without rebuilding the containers.
-
-To rebuild the containers after making changes to the Dockerfiles:
+For local development or testing, you can use Docker Compose:
 
 ```bash
-docker compose build
-docker compose up
+# Start all services locally
+docker compose up -d
+
+# Stop all services
+docker compose down
+
+# View logs
+docker compose logs -f
 ```
 
-### Custom Tools
+This will start the MySQL database, Django web application, and FastAPI service on your local machine.
 
-The application supports creating custom tools to extend its capabilities. These tools allow you to connect to external APIs without writing backend code. See `core/README_CUSTOM_TOOLS.md` for detailed instructions on creating and using custom tools.
+#### Local Environment Configuration
 
-### User Authentication
+For local deployment, you can configure the application using environment variables in a `.env` file or by setting them directly in the `docker compose.yml` file. The main environment variables include:
 
-The application includes a complete user authentication system with:
+```
+# Database configuration
+MYSQL_ROOT_PASSWORD=rootpassword
+MYSQL_DATABASE=fakenews_db
+MYSQL_USER=fakenews_user
+MYSQL_PASSWORD=password
 
-- User registration with email verification
-- Password reset functionality
-- API key management for programmatic access
-- User-specific tool preferences and history
+# API configuration
+DB_HOST=db
+DB_NAME=fakenews_db
+DB_USER=fakenews_user
+DB_PASSWORD=password
+API_URL=http://api:8000
 
-### Troubleshooting
+# LLM configuration
+CLAIM_DECOMPOSER_MODEL=mistral-nemo
+RESEARCH_AGENT_MODEL=mistral-nemo
+REASONING_AGENT_MODEL=mistral-nemo
+VERDICT_AGENT_MODEL=mistral-nemo
+```
 
-- If you encounter database connection issues, ensure the MySQL container is running and healthy:
+For local development, you'll also need to create a `core/.env` file with your API keys for external services.
 
-  ```bash
-  docker compose ps
-  ```
+### Cloud Deployment with Kubernetes and Terraform
 
-- To view logs for a specific service:
+For production deployment to AWS, the entire process can be handled with a single script:
 
-  ```bash
-  docker compose logs django
-  docker compose logs api
-  docker compose logs db
-  ```
+```bash
+# Deploy everything (infrastructure, build, push to ECR, and deploy to Kubernetes)
+./k8s/deploy.sh --terraform --build --push-to-ecr --deploy
 
-- To restart a specific service:
+# Deploy without provisioning infrastructure (if already created with Terraform)
+./k8s/deploy.sh --build --push-to-ecr --deploy
 
-  ```bash
-  docker compose restart django
-  ```
+# To delete everything (Kubernetes resources and Terraform infrastructure)
+./k8s/deploy.sh --delete
+```
 
-- If email verification is causing issues during local development, you can disable it by setting `EMAIL_VERIFICATION_ENABLED=False` in your `.env` file.
+### Available Options
 
-- If you encounter LLM-related issues:
-  1. Ensure Ollama is running: Check if the Ollama application is running in the background
-  2. Verify the mistral-nemo model is installed: Run `ollama list` to see installed models
-  3. If needed, reinstall the model: `ollama pull mistral-nemo`
-  4. Check Ollama logs for any errors
+The deploy.sh script supports the following options:
 
+- `--terraform`: Run Terraform init, plan, and apply to provision infrastructure
+- `--build`: Build Docker images for Django and API components
+- `--push-to-ecr`: Push Docker images to Amazon ECR
+- `--deploy`: Deploy the application to Kubernetes
+- `--delete`: Delete Kubernetes resources and destroy Terraform infrastructure
+
+### Behind the Scenes
+
+The deployment process involves several steps:
+
+1. **Infrastructure Provisioning with Terraform**:
+   - Creates an EKS cluster
+   - Sets up ECR repositories
+   - Provisions an EC2 GPU instance for Ollama
+   - Configures networking and security
+
+2. **Docker Image Building and Publishing**:
+   - Builds Docker images for Django and API components
+   - Pushes images to ECR repositories
+
+3. **Kubernetes Deployment**:
+   - Creates the necessary namespace
+   - Deploys ConfigMaps and Secrets
+   - Sets up Storage Classes and Persistent Volumes
+   - Deploys MySQL, Django, and API services
+   - Configures Ollama integration
+
+## Configuration
+
+### Terraform Configuration
+
+All Terraform configuration is done through variables defined in `terraform/variables.tf`. You can set these variables in a `terraform.tfvars` file:
+
+```hcl
+# AWS Region
+aws_region = "us-west-2"
+
+# Kubernetes Version
+kubernetes_version = "1.32"
+
+# Cluster Name
+cluster_name = "my-eks-cluster"
+
+# Node Group Configuration
+node_instance_type = "t3.medium"
+node_desired_size = 2
+node_max_size = 3
+node_min_size = 1
+
+# Ollama Configuration
+ollama_model = "mistral-nemo"
+ollama_instance_name = "ollama-gpu-instance"
+```
+
+### Kubernetes Secrets Configuration
+
+The application requires various secrets and API keys to function properly. These are stored in `k8s/base/secrets/app-secrets.yaml`.
+
+**Important: Do not commit the secrets file to GitHub!**
+
+1. Create your own `app-secrets.yaml` file based on the provided template:
+
+```bash
+# Copy the template file to create your own secrets file
+cp k8s/base/secrets/app-secrets.template.yaml k8s/base/secrets/app-secrets.yaml
+```
+
+2. Edit the `app-secrets.yaml` file to replace the placeholder values with your actual credentials:
+
+   - Database passwords can be set to values of your choice
+   - API keys need to be obtained from the respective services:
+     - [Wolfram Alpha](https://developer.wolframalpha.com/)
+     - [Tavily](https://tavily.com/)
+     - [LangChain](https://langchain.com/)
+     - [OpenAI](https://platform.openai.com/)
+   - AWS credentials should be from an IAM user with appropriate permissions
+
+## SSH Key Pair Configuration
+
+To SSH into the EC2 instance running Ollama, you need to create and specify an SSH key pair:
+
+1. **Specify the key name in your `terraform.tfvars` file**:
+   ```hcl
+   ssh_key_name = "ollama-key"
+   ```
+
+The key is automatically created for you and saved under the terraform directory.
+
+## Accessing the Application
+
+After deployment, the `deploy.sh` script will automatically display the URLs for accessing your application:
+
+```
+============================================================
+                   ACCESS INFORMATION                       
+============================================================
+Your application is now accessible at the following URLs:
+
+Django Frontend: http://<DJANGO-HOSTNAME>:8000
+API Endpoint: http://<API-HOSTNAME>:8001
+API Documentation: http://<API-HOSTNAME>:8001/docs
+============================================================
+```
+
+It may take a few minutes for the Load Balancers to be provisioned and for DNS to propagate. If you can't access the URLs immediately, wait a few minutes and try again.
+
+## Ollama Integration
+
+The application uses an Ollama instance running on an EC2 instance for LLM inference. The connection to the Ollama instance is managed through a Kubernetes ExternalName service, which allows the application to connect to the Ollama instance using the service name `ollama`.
+
+During deployment, the `deploy.sh` script:
+1. Gets the private IP address of the EC2 instance running Ollama
+2. Updates the Ollama service configuration with this IP address
+3. Configures the application to connect to the Ollama service using the service name `ollama:11434`
+
+This approach ensures that the application can communicate with the Ollama instance even if the IP address changes.
+
+## Cleanup
+
+To remove all resources:
+
+```bash
+# This will delete Kubernetes resources, ECR repositories, and all infrastructure
+./k8s/deploy.sh --delete
+```
+
+**Note**: Running the delete command will remove all infrastructure created by Terraform, including the EKS cluster and ECR repositories. If you want to preserve your Docker images, you should back them up before running this command.
+
+## Troubleshooting
+
+If you encounter issues:
+
+```bash
+# Check pod status
+kubectl get pods -n newsagent
+
+# View logs for a specific pod
+kubectl logs <pod-name> -n newsagent
+
+# Check all resources in the namespace
+kubectl get all -n newsagent
+```
+
+For Terraform-related issues:
+
+```bash
+# Check Terraform state
+cd terraform
+terraform state list
+
+# Get details about a specific resource
+terraform state show <resource_name>

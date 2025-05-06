@@ -94,6 +94,7 @@ BUILD_IMAGES=false
 DEPLOY=false
 DELETE=false
 PUSH_TO_ECR=false
+RUN_TERRAFORM=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -121,9 +122,14 @@ while [[ $# -gt 0 ]]; do
       echo "  --build         Build Docker images"
       echo "  --push-to-ecr   Push Docker images to Amazon ECR"
       echo "  --deploy        Deploy to Kubernetes"
-      echo "  --delete        Delete from Kubernetes"
+      echo "  --delete        Delete from Kubernetes and destroy Terraform infrastructure"
+      echo "  --terraform     Run Terraform init, plan, and apply before deployment"
       echo "  --help          Show this help message"
       exit 0
+      ;;
+    --terraform)
+      RUN_TERRAFORM=true
+      shift
       ;;
     *)
       echo "Unknown option: $1"
@@ -135,6 +141,31 @@ done
 # Set the project root directory
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
+
+# Run Terraform if requested
+if [ "$RUN_TERRAFORM" = true ]; then
+  echo "Running Terraform to provision infrastructure..."
+  
+  # Change to the terraform directory
+  cd "$PROJECT_ROOT/terraform"
+  
+  # Initialize Terraform
+  echo "Initializing Terraform..."
+  terraform init
+  
+  # Plan the deployment
+  echo "Planning Terraform deployment..."
+  terraform plan
+  
+  # Apply the Terraform configuration
+  echo "Applying Terraform configuration..."
+  terraform apply -auto-approve
+  
+  # Change back to the project root directory
+  cd "$PROJECT_ROOT"
+  
+  echo "Terraform infrastructure provisioning completed."
+fi
 
 # Get AWS account ID
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --no-cli-pager --query Account --output text)
@@ -1133,6 +1164,12 @@ if [ "$DELETE" = true ]; then
   # Delete ECR repositories and their images
   delete_ecr_repository "newsagent-api"
   delete_ecr_repository "newsagent-django"
+  
+  # Run Terraform destroy to clean up infrastructure
+  echo "Running Terraform destroy to clean up infrastructure..."
+  cd "$PROJECT_ROOT/terraform"
+  terraform destroy -auto-approve
+  cd "$PROJECT_ROOT"
   
   echo "Deletion completed successfully."
 fi
