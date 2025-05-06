@@ -25,7 +25,7 @@ Before deploying the application, you need to create the necessary infrastructur
 ```bash
 cd terraform
 terraform init
-terraform apply (optional --auto-aprove)
+terraform apply # --auto-approve
 ```
 
 This will create:
