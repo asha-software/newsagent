@@ -231,10 +231,15 @@ if [ "$PUSH_TO_ECR" = true ]; then
   # Update deployment files to use ECR images
   echo "Updating deployment files to use ECR images..."
   # Update main container and init container in API deployment
-  sed -i.bak "s|image: newsagent-api:latest|image: ${ECR_REGISTRY}/newsagent-api:latest|g" k8s/base/deployments/api.yaml
+  sed -i.bak "s|image: .*dkr.ecr.*amazonaws.com/newsagent-api:latest|image: ${ECR_REGISTRY}/newsagent-api:latest|g" k8s/base/deployments/api.yaml
   
   # Update Django deployment
-  sed -i.bak "s|image: newsagent-django:latest|image: ${ECR_REGISTRY}/newsagent-django:latest|g" k8s/base/deployments/django.yaml
+  sed -i.bak "s|image: .*dkr.ecr.*amazonaws.com/newsagent-django:latest|image: ${ECR_REGISTRY}/newsagent-django:latest|g" k8s/base/deployments/django.yaml
+  
+  # Update AWS_REGION in secrets files
+  echo "Updating AWS_REGION in secrets files..."
+  sed -i.bak "s|AWS_REGION: \".*\"|AWS_REGION: \"${AWS_REGION}\"|g" k8s/secrets.yaml
+  sed -i.bak "s|AWS_REGION: \".*\"|AWS_REGION: \"${AWS_REGION}\"|g" k8s/base/secrets/app-secrets.yaml
   
   # Clean up backup files (if any exist)
   find k8s/base/deployments/ -name "*.bak" -type f -delete 2>/dev/null || true
