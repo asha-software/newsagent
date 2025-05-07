@@ -98,6 +98,22 @@ def justification_coherence(outputs: dict, reference_outputs: dict, example) -> 
             "comment": f"Error during evaluation: {e}"
         }
 
+def f1_score_summary_evaluator(outputs: list[dict], reference_outputs: list[dict]) -> dict:
+    """
+    Calculate F1 score for the evaluation results.
+    """
+    true_positives = sum(1 for output, reference in zip(outputs, reference_outputs) if output["output"]["final_label"] == reference["final_label"])
+    false_positives = sum(1 for output, reference in zip(outputs, reference_outputs) if output["output"]["final_label"] != reference["final_label"])
+    false_negatives = sum(1 for output, reference in zip(outputs, reference_outputs) if reference["final_label"] != output["output"]["final_label"])
+
+    precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0
+    recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0
+    f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) > 0 else 0
+
+    return {
+        "key": "f1_score",
+        "score": round(f1_score, 4)
+    }
 
 def main():
     load_dotenv("../.env", override=True)
@@ -113,6 +129,7 @@ def main():
             target_function,
             data=dataset,
             evaluators=[label_match],
+            summary_evaluators=[f1_score_summary_evaluator],
             experiment_prefix=args.experiment_prefix
         )
 

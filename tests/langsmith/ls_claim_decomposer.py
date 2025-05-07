@@ -44,12 +44,11 @@ def main():
     assert "LANGCHAIN_API_KEY" in os.environ, "Please set the LANGCHAIN_API_KEY environment variable"
     assert os.environ["LANGCHAIN_TRACING_V2"] == "true", "Please set the LANGCHAIN_TRACING_V2 environment variable to true"
 
-    
     args = argument_parser()
     ls_client = Client()
     experiment_results = ls_client.evaluate(
         target_function,
-        data="claim_decomposer_all_examples",
+        data="claim_decomp_multiple",
         evaluators=[number_of_claims_diff],
         experiment_prefix=args.experiment_prefix
     )

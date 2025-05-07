@@ -1,6 +1,6 @@
 # Ignore training/eval datasets and result files
 datasets/
-**/evaluation/*.jsonl
+**/*.jsonl
 
 # Ignore secrets
 secrets.yaml
