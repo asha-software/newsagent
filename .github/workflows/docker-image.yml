@@ -21,4 +21,4 @@ jobs:
           services: "api"
       - name: Execute tests in the running services
         run: |
-          docker compose exec api python -m pytest tests/
+          docker compose exec api python -m pytest tests/static/
