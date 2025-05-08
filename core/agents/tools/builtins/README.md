@@ -6,7 +6,7 @@ Builtin tools follow a common interface:
 
 - One file per tool
 - Each file defines a `tool_function` which implements the tool using Google-style docstrings
-- The `tool_function` can have any parameters but it returns one or more items of `Evidence` (see `core.agents.utils.common_types`)
+- The `tool_function` can have any parameters but it returns a list (one or more) of `Evidence` (see `core.agents.utils.common_types`)
 - The `tool_function` receives the `langchain_core.tools.tool` decorator with `parse_docstring=True` to generate input validation model
 
 ## Creating Custom Tools

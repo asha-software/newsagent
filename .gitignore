@@ -2,7 +2,7 @@
 datasets/
 **/*.jsonl
 
-# Ignore secrets
+# Ignore secrets and keys
 secrets.yaml
 *.pem
 
