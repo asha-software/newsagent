@@ -48,6 +48,8 @@ with open(DIR / "prompts/reasoning_agent_system_prompt.txt", "r") as f:
     system_prompt = f.read()
 
 # Define agent graph nodes
+
+
 def preprocessing(state: State) -> State:
     """
     Formats the system prompt template with the evidence, then supplies the claim
@@ -56,7 +58,7 @@ def preprocessing(state: State) -> State:
     """
     # Format system prmopt template: unwind the evidence list to a bullet list
     evidence_str = "\n".join(
-        [f"* {ev['name']}: {ev['result']}" for ev in state["evidence"]])
+        [f"* {ev['name']}: {ev['content']}" for ev in state["evidence"]])
     formatted_prompt = system_prompt.format(evidence=evidence_str)
 
     # Set system and human messages in the state

@@ -2,8 +2,9 @@
 datasets/
 **/*.jsonl
 
-# Ignore secrets
+# Ignore secrets and keys
 secrets.yaml
+*.pem
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

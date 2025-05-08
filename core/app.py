@@ -97,7 +97,7 @@ async def get_builtin_tools():
         {"name": "calculator", "display_name": "Calculator"},
         {"name": "wikipedia", "display_name": "Wikipedia"},
         {"name": "web_search", "display_name": "Web Search"},
-        {"name": "wolframalpha", "display_name": "Wolfram Alpha"}
+        # {"name": "wolframalpha", "display_name": "Wolfram Alpha"}
     ]
     
     return {"tools": tools}

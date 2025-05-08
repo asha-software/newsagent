@@ -213,7 +213,7 @@ def create_agent(
         model = os.getenv("RESEARCH_AGENT_MODEL", DEFAULT_MODEL)
     llm = get_chat_model(model_name=model).bind_tools(tools)
     assistant = get_assistant_node(llm)
-    filter_evidence = get_filter_evidence_node(llm)
+    # filter_evidence = get_filter_evidence_node(llm)
 
     # Build graph
     builder = StateGraph(State)
@@ -221,7 +221,7 @@ def create_agent(
     builder.add_node("assistant", assistant)
     builder.add_node("tools", ToolNode(tools))
     builder.add_node("gather_evidence", gather_evidence)
-    builder.add_node("filter_evidence", filter_evidence)
+    # builder.add_node("filter_evidence", filter_evidence)
 
     builder.add_edge(START, "preprocessing")
     builder.add_edge("preprocessing", "assistant")
@@ -231,8 +231,9 @@ def create_agent(
         path_map={'tools': 'tools', '__end__': 'gather_evidence'},
     )
     builder.add_edge("tools", "assistant")
-    builder.add_edge("gather_evidence", "filter_evidence")
-    builder.add_edge("filter_evidence", END)
+    builder.add_edge("gather_evidence", END)
+    # builder.add_edge("gather_evidence", "filter_evidence")
+    # builder.add_edge("filter_evidence", END)
 
     agent = builder.compile()
     return agent

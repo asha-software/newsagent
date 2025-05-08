@@ -14,10 +14,12 @@ class Evidence(TypedDict):
     content: str | dict | list
     source: str
 
-# Packages a claim with its evidence, label, and justification
 
 
 class Analysis(TypedDict):
+    """
+    Packages a claim with its evidence, label, and justification
+    """
     claim: str
     label: str
     justification: str
