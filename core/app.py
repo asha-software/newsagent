@@ -1,4 +1,3 @@
-import os
 import datetime
 import pymysql
 import json
@@ -91,8 +90,6 @@ async def get_builtin_tools():
     Returns a list of available built-in tools.
     This endpoint is used by the Django container to get the list of built-in tools.
     """
-    # Hardcoded list of built-in tools
-    # This is a simpler approach that ensures all tools are included
     tools = [
         {"name": "calculator", "display_name": "Calculator"},
         {"name": "wikipedia", "display_name": "Wikipedia"},
@@ -103,17 +100,61 @@ async def get_builtin_tools():
     return {"tools": tools}
 
 
+async def get_user_preferred_tools(user_id: int) -> list[str]:
+    """
+    Returns a list of preferred custom tool names for the user.
+    If the user has no preferred custom tools, returns an empty list.
+    This function only returns custom tools, not built-in tools.
+    """
+    preferred_tools = []
+    
+    if not user_id:
+        return preferred_tools
+        
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Get all active preferred custom tools for this user
+            # Exclude built-in tools by checking for non-empty url_template
+            cursor.execute(
+                """
+                SELECT name
+                FROM user_info_usertool 
+                WHERE user_id = %s AND is_active = 1 AND is_preferred = 1
+                AND url_template != ''
+                """,
+                (user_id,)
+            )
+            rows = cursor.fetchall()
+            
+            # Extract tool names
+            preferred_tools = [row[0] for row in rows]
+            
+    except Exception as e:
+        print(f"Error retrieving user preferred tools: {e}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+            
+    return preferred_tools
+
 @app.post("/query")
 async def query(request: Request, user: dict[str, Any] = Depends(get_current_user)):
     # User is authenticated at this point
 
     # Parse the request body
-    req = await request.json()
+    try:
+        req = await request.json()
+    except json.JSONDecodeError:
+        # Handle case where request body is not valid JSON
+        raise HTTPException(
+            status_code=400, detail="Invalid JSON in request body")
 
     text = req.get('body')
 
     # Extract the sources array from the request
-    tools = req.get('sources')
+    tools = req.get('sources', [])  # Default to empty list if not provided
     print(f"Selected sources: {tools}")
 
     # Reject the query if tools is not properly formatted (should be a list)
@@ -121,12 +162,26 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
         raise HTTPException(
             status_code=400, detail="'sources' must be a list of tool names.")
     
-    # If no tools are selected, use the default built-in tools
+    # If no tools are selected, use the user's preferred tools if available,
+    # otherwise use the default built-in tools
+    print(f"DEBUG: Initial tools value: {tools}")
+    print(f"DEBUG: User ID: {user['id']}")
+    
     if not tools:
-        # Get the default built-in tools
-        builtin_tools_response = await get_builtin_tools()
-        tools = [tool['name'] for tool in builtin_tools_response['tools']]
-        print(f"No tools selected, using default tools: {tools}")
+        print("DEBUG: No tools selected, checking for preferred tools")
+        # Get the user's preferred tools
+        preferred_tools = await get_user_preferred_tools(user["id"])
+        print(f"DEBUG: Preferred tools found: {preferred_tools}")
+        
+        if preferred_tools:
+            tools = preferred_tools
+            print(f"DEBUG: Using user's preferred tools: {tools}")
+        else:
+            # If user has no preferred tools, fall back to default built-in tools
+            print("DEBUG: No preferred tools found, falling back to default tools")
+            builtin_tools_response = await get_builtin_tools()
+            tools = [tool['name'] for tool in builtin_tools_response['tools']]
+            print(f"DEBUG: Using default built-in tools: {tools}")
 
     if not text:
         raise HTTPException(

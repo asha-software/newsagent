@@ -7,6 +7,7 @@ from django.utils.html import strip_tags
 from django.contrib.auth.models import User
 from .models import UserTool
 
+
 def get_builtin_tools():
     """
     Get the list of built-in tools from the API container.
@@ -58,6 +59,7 @@ def get_builtin_tools():
         # Fall back to hardcoded tools if there's any error
         return hardcoded_tools
 
+
 def initialize_builtin_tools_for_user(user):
     """
     Initialize built-in tools for a new user with is_preferred=True.
@@ -84,6 +86,7 @@ def initialize_builtin_tools_for_user(user):
                 is_preferred=True,  # Set as preferred by default
                 docstring=f"Built-in {tool['display_name']} tool"
             )
+
 
 def send_password_reset_email(user, reset_token, request):
     """
@@ -135,6 +138,7 @@ def send_password_reset_email(user, reset_token, request):
         logger.error(f"Error sending password reset email: {str(e)}")
         # Re-raise the exception so it can be caught and handled by the view
         raise
+
 
 def send_verification_email(user_or_pending, verification_token, request):
     """
