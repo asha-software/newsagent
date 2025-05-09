@@ -1,67 +1,153 @@
+/* Delete Account Page Styles */
+
 .delete-container {
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
+    padding: 20px;
+    color: #fff;
+}
+
+/* Ensure all text in the delete card is white and bright */
+.delete-card {
+    background: rgba(40, 40, 40, 0.9);
+    border-radius: 10px;
     padding: 30px;
-    background-color: rgba(40, 40, 40, 0.9);
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    color: #fff;
-    z-index: 1;
-    position: relative;
+    margin-top: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.tool-info {
-    margin: 20px 0;
+.delete-card p, 
+.delete-card li, 
+.delete-card label {
+    color: #ffffff;
+    font-weight: 500;
+    text-shadow: none;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.delete-title {
+    color: #ff5252;
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.delete-warning {
+    margin-bottom: 30px;
     padding: 15px;
-    background-color: rgba(30, 30, 30, 0.9);
-    border-radius: 5px;
-    border-left: 4px solid #dc3545;
-}
-
-.btn-danger {
-    background-color: rgba(220, 53, 69, 0.8);
-    border: 1px solid #dc3545;
-}
-
-.btn-outline-secondary {
-    color: #ccc;
-    border-color: #ccc;
-}
-
-.btn-outline-secondary:hover {
-    background-color: #ccc;
-    color: #333;
-}
-
-.alert-warning {
-    background-color: rgba(255, 193, 7, 0.2);
-    color: #fff;
-    border: none;
-}
-
-.text-muted {
-    color: #ccc !important;
-}
-
-.badge {
-    background-color: rgba(255, 255, 255, 0.2);
-    color: #fff;
-}
-
-/* For API key delete page */
-.apikey-info {
-    margin: 20px 0;
-    padding: 15px;
-    background-color: rgba(30, 30, 30, 0.9);
-    border-radius: 5px;
-    border-left: 4px solid #dc3545;
-}
-
-.key-value {
-    font-family: monospace;
-    background-color: rgba(20, 20, 20, 0.9);
-    padding: 8px;
+    background-color: rgba(255, 82, 82, 0.1);
+    border-left: 4px solid #ff5252;
     border-radius: 4px;
-    word-break: break-all;
-    margin-top: 10px;
+}
+
+.delete-warning p {
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.delete-warning ul {
+    margin-left: 20px;
+    margin-bottom: 0;
+}
+
+.delete-warning li {
+    margin-bottom: 5px;
+}
+
+.delete-form {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 30px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 16px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #ff5252;
+    box-shadow: 0 0 0 2px rgba(255, 82, 82, 0.25);
+}
+
+.delete-btn {
+    background-color: #ff5252;
+    border: none;
+    color: white;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.delete-btn:hover:not(:disabled) {
+    background-color: #ff3333;
+}
+
+.delete-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.cancel-link {
+    text-align: center;
+    margin-top: 15px;
+}
+
+.cancel-link a {
+    display: inline-block;
+    background-color: #6c757d;
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 4px;
+    transition: all 0.3s;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    opacity: 1;
+}
+
+.cancel-link a:hover {
+    background-color: #5a6268;
+    color: #ffffff;
+    text-decoration: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .delete-container {
+        padding: 15px;
+    }
+    
+    .delete-card {
+        padding: 20px;
+    }
 }

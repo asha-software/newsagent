@@ -3,7 +3,7 @@ from .views import register, signin, home, search, logout_view, forgot_password_
 from .views import tool_list, tool_create, tool_edit, tool_delete
 from .views import get_api_key, apikey_list, apikey_create, apikey_delete
 from .views import shared_search_result, save_shared_result, history
-from .views import verify_email, reset_password_view
+from .views import verify_email, reset_password_view, delete_account
 
 urlpatterns = [
     path('', home, name='home'),
@@ -37,4 +37,7 @@ urlpatterns = [
     
     # Password reset
     path('reset-password/<uuid:token>/', reset_password_view, name='reset_password'),
+    
+    # Account deletion
+    path('delete-account/', delete_account, name='delete_account'),
 ]
