@@ -10,7 +10,7 @@ TYPE_MAPPING = {
     "bool": bool,
     "array": list,
     "object": dict,
-    "None": type(None)  # For NoneType
+    "None": type(None),  # For NoneType
 }
 
 
@@ -39,7 +39,7 @@ def extract_fields(obj: dict, listpath_to_field: list):
 def create_tool(
     name: str,
     # NOTE: Do we need to support the DELETE or PATCH verbs?
-    method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"],
     url_template: str,
     headers: dict[str, str] = None,
     default_params: dict[str, str] = None,
@@ -47,8 +47,9 @@ def create_tool(
     json: dict[str, str] = None,
     docstring: str = "",
     target_fields: list[list[str | int]] = None,
-    param_mapping: dict[str, dict[str, str | Literal['url_params',
-                                                     'params', 'headers', 'data', 'json']]] = {},
+    param_mapping: dict[
+        str, dict[str, str | Literal["url_params", "params", "headers", "data", "json"]]
+    ] = {},
 ):
     """
     This function takes in various parameters to configure an API request, leaving some values as variables the user can specify later.
@@ -87,21 +88,22 @@ def create_tool(
         for param_name, param_value in kwargs.items():
             if param_name in param_mapping:
                 param_info = param_mapping[param_name]
-                param_type = TYPE_MAPPING[param_info['type']]  # Validate type
+                param_type = TYPE_MAPPING[param_info["type"]]  # Validate type
                 if not isinstance(param_value, param_type):
                     raise TypeError(
-                        f"Parameter '{param_name}' must be of type {param_info['type']}.")
+                        f"Parameter '{param_name}' must be of type {param_info['type']}."
+                    )
 
                 # Map the parameter to the correct request component
-                if param_info['for'] == 'url_params':
+                if param_info["for"] == "url_params":
                     url_params[param_name] = param_value
-                elif param_info['for'] == 'headers':
+                elif param_info["for"] == "headers":
                     req_headers[param_name] = param_value
-                elif param_info['for'] == 'params':
+                elif param_info["for"] == "params":
                     req_params[param_name] = param_value
-                elif param_info['for'] == 'data':
+                elif param_info["for"] == "data":
                     req_data[param_name] = param_value
-                elif param_info['for'] == 'json':
+                elif param_info["for"] == "json":
                     req_json[param_name] = param_value
 
         # Format the URL with URL parameters
@@ -114,21 +116,21 @@ def create_tool(
             headers=req_headers,
             params=req_params,
             data=req_data,
-            json=req_json
+            json=req_json,
         )
         try:
             response_json = response.json()
         except ValueError:
             print(
-                f"Error: Could not parse response as JSON. Response text: {response.text}")
+                f"Error: Could not parse response as JSON. Response text: {response.text}"
+            )
             return response.text
 
         if target_fields:
             return_fields = []
             for listpath in target_fields:
                 # Make a copy of the listpath to avoid mutating the original
-                return_fields.append(extract_fields(
-                    response_json, listpath[:]))
+                return_fields.append(extract_fields(response_json, listpath[:]))
             return return_fields
         return response
 
@@ -137,7 +139,7 @@ def create_tool(
         Parameter(
             name=param_name,
             kind=Parameter.POSITIONAL_OR_KEYWORD,
-            annotation=TYPE_MAPPING[param_info['type']]
+            annotation=TYPE_MAPPING[param_info["type"]],
         )
         for param_name, param_info in param_mapping.items()
     ]
@@ -153,47 +155,41 @@ def create_tool(
     args_schema = {
         param_name: {  # Use parameter name as key
             "description": f"{param_name} parameter",
-            "type": param_info['type']
+            "type": param_info["type"],
         }
         for param_name, param_info in param_mapping.items()
     }
 
     return StructuredTool.from_function(
-        func=tool_function,
-        name=name,
-        description=docstring,
-        args_schema=args_schema
+        func=tool_function, name=name, description=docstring, args_schema=args_schema
     )
 
 
 def main():
     # Define the parameter mapping
-    name = 'PokemonAPI'
-    param_mapping = {
-        'name': {
-            'type': 'str',
-            'for': 'url_params'
-        }
-    }
-    method = 'GET'
+    name = "PokemonAPI"
+    param_mapping = {"name": {"type": "str", "for": "url_params"}}
+    method = "GET"
     # Use a URL template with a placeholder for the Pokémon name
-    url_template = 'https://pokeapi.co/api/v2/pokemon/{name}'
-    headers = {'Accept': 'application/json'}
-    docstring = '''Get information about a Pokémon from the PokeAPI.
+    url_template = "https://pokeapi.co/api/v2/pokemon/{name}"
+    headers = {"Accept": "application/json"}
+    docstring = """Get information about a Pokémon from the PokeAPI.
     Args:
         name (str): The name of the Pokémon to query, ALWAYS LOWERCASED.
     Returns:
         list: A list containing the Pokémon's abilities.
-    '''
+    """
     kwargs = {
-        'name': name,
-        'param_mapping': param_mapping,
-        'method': method,
-        'url_template': url_template,
-        'headers': headers,
-        'docstring': docstring,
-        'target_fields': [['abilities', 0, 'ability', 'name'],
-                          ['abilities', 1, 'ability', 'name']],
+        "name": name,
+        "param_mapping": param_mapping,
+        "method": method,
+        "url_template": url_template,
+        "headers": headers,
+        "docstring": docstring,
+        "target_fields": [
+            ["abilities", 0, "ability", "name"],
+            ["abilities", 1, "ability", "name"],
+        ],
     }
     # Create a tool for querying Pokémon
     try:
@@ -211,14 +207,14 @@ def main():
     # fmt: on
 
     research_agent = create_agent(
-        model=os.getenv('RESEARCH_AGENT_MODEL'),
-        builtin_tools=['wikipedia', 'web_search'],
-        user_tool_kwargs=[kwargs]
+        model=os.getenv("RESEARCH_AGENT_MODEL"),
+        builtin_tools=["wikipedia", "web_search"],
+        user_tool_kwargs=[kwargs],
     )
 
     claim = "Pikachu has electric abilities"
     results = research_agent.invoke({"claim": claim})
-    for message in results['messages']:
+    for message in results["messages"]:
         message.pretty_print()
 
 
