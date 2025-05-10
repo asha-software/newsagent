@@ -4,6 +4,7 @@ datasets/
 
 # Ignore secrets
 secrets.yaml
+*.pem
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
