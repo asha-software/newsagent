@@ -1,6 +1,7 @@
 import datetime
 import pymysql
 import json
+import uuid
 from typing import Any, Optional, Dict, List, Union, Literal
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -139,6 +140,99 @@ async def get_user_preferred_tools(user_id: int) -> list[str]:
             
     return preferred_tools
 
+async def check_cached_query(user_id: int, query_text: str) -> Optional[Dict[str, Any]]:
+    """
+    Check if a query has been cached for the user.
+    Returns the cached result if found, None otherwise.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Check if the query exists in the cache
+            cursor.execute(
+                """
+                SELECT id, query, result_data, created_at, is_public
+                FROM user_info_sharedsearchresult
+                WHERE user_id = %s AND query = %s
+                """,
+                (user_id, query_text)
+            )
+            row = cursor.fetchone()
+            
+            if row:
+                return {
+                    "id": row[0],
+                    "query": row[1],
+                    "result_data": json.loads(row[2]),
+                    "created_at": row[3],
+                    "is_public": bool(row[4])
+                }
+            return None
+    except Exception as e:
+        print(f"Error checking cached query: {e}")
+        return None
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+async def save_query_result(user_id: int, query_text: str, result_data: Dict[str, Any], is_public: bool = False) -> Dict[str, Any]:
+    """
+    Save a query result to the cache.
+    Returns the saved result.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Check if the query already exists
+            cursor.execute(
+                """
+                SELECT id FROM user_info_sharedsearchresult
+                WHERE user_id = %s AND query = %s
+                """,
+                (user_id, query_text)
+            )
+            existing_row = cursor.fetchone()
+            
+            if existing_row:
+                # Update the existing record
+                cursor.execute(
+                    """
+                    UPDATE user_info_sharedsearchresult
+                    SET result_data = %s, is_public = %s
+                    WHERE id = %s
+                    """,
+                    (json.dumps(result_data), is_public, existing_row[0])
+                )
+                result_id = existing_row[0]
+            else:
+                # Create a new record
+                result_id = uuid.uuid4().hex
+                cursor.execute(
+                    """
+                    INSERT INTO user_info_sharedsearchresult
+                    (id, user_id, query, result_data, created_at, is_public)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                    """,
+                    (result_id, user_id, query_text, json.dumps(result_data), datetime.datetime.now(), is_public)
+                )
+            
+            connection.commit()
+            
+            return {
+                "id": result_id,
+                "query": query_text,
+                "result_data": result_data,
+                "is_public": is_public
+            }
+    except Exception as e:
+        print(f"Error saving query result: {e}")
+        return None
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
 @app.post("/query")
 async def query(request: Request, user: dict[str, Any] = Depends(get_current_user)):
     # User is authenticated at this point
@@ -154,7 +248,12 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     text = req.get('body')
 
     # Extract the sources array from the request
-    tools = req.get('sources', [])  # Default to empty list if not provided
+    tools = req.get('sources', req.get('source', []))  # Default to empty list if not provided
+    
+    # Convert to list if a single string was provided
+    if isinstance(tools, str):
+        tools = [tools]
+        
     print(f"Selected sources: {tools}")
 
     # Reject the query if tools is not properly formatted (should be a list)
@@ -193,11 +292,22 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
             detail="Input text exceeds the maximum allowed length of 3500 characters."
         )
     
+    # Check if the query is already cached
+    cached_result = await check_cached_query(user["id"], text)
+    if cached_result:
+        print(f"Using cached result for query: {text[:50]}...")
+        return cached_result["result_data"]
+    
+    # If not cached, process the query
     user_tool_kwargs = await get_user_tool_params(user["id"], tools) if user else []
     
     print(f"User tool parameters: {user_tool_kwargs}")
     
     verdict_results = await process_query(text, builtin_tools=tools, user_tool_kwargs=user_tool_kwargs)
+    
+    # Save the result for future use
+    await save_query_result(user["id"], text, verdict_results)
+    
     return verdict_results
 
 
@@ -577,6 +687,124 @@ async def delete_custom_tool(tool_id: int, user: dict[str, Any] = Depends(get_cu
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error deleting custom tool: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+# Add a new endpoint to check for cached queries
+@app.get("/cached-queries")
+async def get_cached_queries(user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Returns a list of cached queries for the authenticated user.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Get all cached queries for the user
+            cursor.execute(
+                """
+                SELECT id, query, created_at, is_public
+                FROM user_info_sharedsearchresult
+                WHERE user_id = %s
+                ORDER BY created_at DESC
+                """,
+                (user["id"],)
+            )
+            rows = cursor.fetchall()
+
+            return [
+                {
+                    "id": row[0],
+                    "query": row[1],
+                    "created_at": row[2],
+                    "is_public": bool(row[3])
+                }
+                for row in rows
+            ]
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error listing cached queries: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+# Add an endpoint to get a specific cached query
+@app.get("/cached-queries/{query_id}")
+async def get_cached_query(query_id: str, user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Returns a specific cached query for the authenticated user.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Get the cached query
+            cursor.execute(
+                """
+                SELECT id, query, result_data, created_at, is_public
+                FROM user_info_sharedsearchresult
+                WHERE id = %s AND (user_id = %s OR is_public = 1)
+                """,
+                (query_id, user["id"])
+            )
+            row = cursor.fetchone()
+
+            if not row:
+                raise HTTPException(
+                    status_code=404, detail="Cached query not found or not accessible")
+
+            return {
+                "id": row[0],
+                "query": row[1],
+                "result_data": json.loads(row[2]),
+                "created_at": row[3],
+                "is_public": bool(row[4])
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error retrieving cached query: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+# Add an endpoint to delete a cached query
+@app.delete("/cached-queries/{query_id}")
+async def delete_cached_query(query_id: str, user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Deletes a cached query for the authenticated user.
+    """
+    try:
+        # Connect directly to MySQL database
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Check if the cached query belongs to the user
+            cursor.execute(
+                """
+                SELECT id FROM user_info_sharedsearchresult
+                WHERE id = %s AND user_id = %s
+                """,
+                (query_id, user["id"])
+            )
+            if not cursor.fetchone():
+                raise HTTPException(
+                    status_code=404, detail="Cached query not found")
+
+            # Delete the cached query
+            cursor.execute(
+                "DELETE FROM user_info_sharedsearchresult WHERE id = %s",
+                (query_id,)
+            )
+            connection.commit()
+
+            return {"message": "Cached query deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Error deleting cached query: {str(e)}")
     finally:
         if 'connection' in locals() and connection:
             connection.close()
