@@ -4,6 +4,14 @@ from langchain_core.tools import tool
 from core.agents.tools.builtins import tool_registry_globals
 from core.agents.utils.common_types import Evidence
 
+REFERENCE_SECTION_NAMES = {'See also', 'Notes', 'References', 'Further reading', 'External links'}
+
+"""
+README: Using this wikipedia module we first enter a query string in `wiki.search()`. This returns a list of page titles.
+We then iterate over the page titles and fetch the content of each page using `wiki.page()`.
+We also check for sections in the page and add them to the content if they are not in the REFERENCE_SECTION_NAMES, which we assume
+are not relevant for the user.
+"""
 
 @tool("wikipedia", parse_docstring=True, response_format="content_and_artifact")
 def tool_function(query_str: str) -> tuple[str, list[Evidence]]:
@@ -18,77 +26,46 @@ def tool_function(query_str: str) -> tuple[str, list[Evidence]]:
         query_str (str): The search term to query wiki.
 
     Returns:
-        str: Information from the wiki page
+        list[str]: Information from the wikipedia pages related to the query.
     """
 
     # Use our user agent
     wiki.USER_AGENT = tool_registry_globals.USER_AGENT
+
+    content = None
+    page_titles = []
+    evidence_list = []
+
     try:
-        # See if we can find a page
-        results: tuple[list[str], str] = wiki.search(
-            query_str, results=10, suggestion=1
-        )
+        page_titles = wiki.search(query_str, results=2)
     except wiki.exceptions.wikiException as e:
-        message = f"Could not search {query_str} from wiki!"
+        print(f"Error searching Wikipedia for '{query_str}': {e}")
+
+    if not page_titles:
         evidence_list = [
             Evidence(
-                name="wiki",
+                name="wikipedia",
                 args={"query": query_str},
-                content=message,
-                source="wiki",
+                content=f"Something went wrong searching Wikipedia for '{query_str}'",
+                source="wikipedia",
             )
         ]
-        str_content = json.dumps(evidence_list)
-        return str_content, evidence_list
 
-    title: str
-    if results[0]:
-        # Use the first search result if one exists
-        title = results[0][0]
-        print(f"Using first search result {title}!")
-    elif results[1] and results[1] is not None:
-        # Use the search suggestion if one exists
-        title = results[1]
-        print(f"Using search suggestion {title}")
-    else:
-        message = f"Could not find a page for {query_str}!"
-        evidence_list = [
-            Evidence(
-                name="wiki",
+    # Create an Evidence for each page
+    for title in page_titles:
+        try:
+            page = wiki.page(title=title, auto_suggest=False)
+            content = [page.content] + [page.section(section_name) for section_name in page.sections if section_name not in REFERENCE_SECTION_NAMES]
+            evidence = Evidence(
+                name="wikipedia",
                 args={"query": query_str},
-                content=message,
-                source="wiki",
+                content=content,
+                source=page.url,
             )
-        ]
-        return json.dumps(evidence_list), evidence_list
-    try:
-        # Pull the page from wiki
-        page: wiki.wikiPage = wiki.page(
-            title, auto_suggest=False, redirect=True
-        )
-    except wiki.exceptions.wikiException:
-        message = f"Could not fetch page title {title} from wiki!"
-        evidence_list = [
-            Evidence(
-                name="wiki",
-                args={"query": query_str},
-                content=message,
-                source="wiki",
-            )
-        ]
-        return json.dumps(evidence_list), evidence_list
+            evidence_list.append(evidence)
+        except Exception as e:
+            print(f"Error fetching page '{title}': {e}")
 
-    content = page.content
-    source = page.url
-
-    evidence_list = [
-        Evidence(
-            name="wiki",
-            args={"query": query_str},
-            content=content,
-            source=source,
-        )
-    ]
     return json.dumps(evidence_list), evidence_list
 
 

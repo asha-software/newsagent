@@ -47,6 +47,10 @@ def import_builtin(module_name):
     function_name = 'tool_function'
     try:
         module = importlib.import_module(import_path)
+
+        # TODO: this is just a hacky patch; resolve this for real
+        module = "wikipedia_tool" if module_name == "wikipedia" else module
+
         function = getattr(module, function_name)
         return function
     except ImportError as e:
@@ -137,33 +141,33 @@ def gather_evidence(state: State) -> State:
     all_evidence = []
     for i in range(len(state['messages'])):
         message = state['messages'][i]
-        if isinstance(message, ToolMessage):
+        if not isinstance(message, ToolMessage):
+            continue
+        
+        try:
+            # Confirm the artifact is list[Evidence]
+            validated = EvidenceListModel.model_validate(message.artifact)
+            evidence_list = validated.root
+        except Exception as e:
+            # If artifact not list[Evidence], the to load from message.content
+            print(f"Error: artifact in tool message didn't validate as list[Evidence]. Attempting to load from message.content. Error message: {e}")
             try:
-                # Confirm the artifact is list[Evidence]
-                validated = EvidenceListModel.model_validate(message.artifact)
+                validated = EvidenceListModel.model_validate_json(message.content)
                 evidence_list = validated.root
-                print(f"Tool message artifact successfully validated")
             except Exception as e:
-                # If artifact not list[Evidence], the to load from message.content
-                print(f"Error: artifact in tool message didn't validate as list[Evidence]. Attempting to load from message.content. Error message: {e}")
-                try:
-                    validated = EvidenceListModel.model_validate_json(message.content)
-                    evidence_list = validated.root
-                except Exception as e:
-                    # If message.content not valid JSON, just use its string content as is
-                    print(f"Error: message.content didn't parse as json to a valid list[Evidence]. Attempting to load from message.content. Error message: {e}")
-                    print(f"Error decoding JSON from tool call: {e}")
-                    salvaged_evidence = Evidence(
-                        name=message.name,
-                        args='see trace',
-                        content=message.content,
-                        source=message.name)
-                    evidence_list = [salvaged_evidence]
-                    print(f"Salvaged evidence: {salvaged_evidence}")
+                # If message.content not valid JSON, just use its string content as is
+                print(f"Error: message.content didn't parse as json to a valid list[Evidence]. Attempting to load from message.content. Error message: {e}")
+                print(f"Error decoding JSON from tool call: {e}")
+                salvaged_evidence = Evidence(
+                    name=message.name,
+                    # TODO: get this from the corresponding AI Message's tool call
+                    args={'info': 'see trace'},
+                    content=message.content,
+                    source=message.name)
+                evidence_list = [salvaged_evidence]
+                print(f"Salvaged evidence: {salvaged_evidence}")
 
-            all_evidence += evidence_list
-
-    print(f"all_evidence is a list? {isinstance(all_evidence, list)}")
+        all_evidence += evidence_list
 
     # Confirm that all evidence is list[Evidence]
     try:
