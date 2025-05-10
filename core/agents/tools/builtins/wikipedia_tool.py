@@ -1,42 +1,46 @@
+import json
+import wikipedia as wiki
 from langchain_core.tools import tool
-import wikipedia
 from core.agents.tools.builtins import tool_registry_globals
 from core.agents.utils.common_types import Evidence
 
 
-@tool("wikipedia", parse_docstring=True)
-def tool_function(query_str: str) -> str:
+@tool("wikipedia", parse_docstring=True, response_format="content_and_artifact")
+def tool_function(query_str: str) -> tuple[str, list[Evidence]]:
     """
-    Query Wikipedia. Use it to get factual information on: 
+    Query wiki. Use it to get factual information on: 
     - historical figures, events, or places
     - scientific concepts
     - common knowledge
     - debunked myths 
 
     Args:
-        query_str (str): The search term to query Wikipedia.
+        query_str (str): The search term to query wiki.
 
     Returns:
-        str: Information from the Wikipedia page
+        str: Information from the wiki page
     """
 
     # Use our user agent
-    wikipedia.USER_AGENT = tool_registry_globals.USER_AGENT
+    wiki.USER_AGENT = tool_registry_globals.USER_AGENT
     try:
         # See if we can find a page
-        results: tuple[list[str], str] = wikipedia.search(
+        results: tuple[list[str], str] = wiki.search(
             query_str, results=10, suggestion=1
         )
-    except wikipedia.exceptions.WikipediaException as e:
-        message = f"Could not search {query_str} from Wikipedia!"
-        return [
+    except wiki.exceptions.wikiException as e:
+        message = f"Could not search {query_str} from wiki!"
+        evidence_list = [
             Evidence(
-                name="wikipedia",
+                name="wiki",
                 args={"query": query_str},
                 content=message,
-                source="wikipedia",
+                source="wiki",
             )
         ]
+        str_content = json.dumps(evidence_list)
+        return str_content, evidence_list
+
     title: str
     if results[0]:
         # Use the first search result if one exists
@@ -48,40 +52,45 @@ def tool_function(query_str: str) -> str:
         print(f"Using search suggestion {title}")
     else:
         message = f"Could not find a page for {query_str}!"
-        return [
+        evidence_list = [
             Evidence(
-                name="wikipedia",
+                name="wiki",
                 args={"query": query_str},
                 content=message,
-                source="wikipedia",
+                source="wiki",
             )
         ]
+        return json.dumps(evidence_list), evidence_list
     try:
-        # Pull the page from wikipedia
-        page: wikipedia.WikipediaPage = wikipedia.page(
+        # Pull the page from wiki
+        page: wiki.wikiPage = wiki.page(
             title, auto_suggest=False, redirect=True
         )
-    except wikipedia.exceptions.WikipediaException:
-        message = f"Could not fetch page title {title} from Wikipedia!"
-        return [
+    except wiki.exceptions.wikiException:
+        message = f"Could not fetch page title {title} from wiki!"
+        evidence_list = [
             Evidence(
-                name="wikipedia",
+                name="wiki",
                 args={"query": query_str},
                 content=message,
-                source="wikipedia",
+                source="wiki",
             )
         ]
+        return json.dumps(evidence_list), evidence_list
+
     content = page.content
     source = page.url
-    return [
+
+    evidence_list = [
         Evidence(
-            name="wikipedia",
+            name="wiki",
             args={"query": query_str},
             content=content,
             source=source,
         )
     ]
+    return json.dumps(evidence_list), evidence_list
 
 
 if __name__ == "__main__":
-    print(tool_function("Apple Podcasts"))
+    print(tool_function.invoke("Apple Podcasts"))

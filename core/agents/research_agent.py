@@ -17,7 +17,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict, Callable
 from core.agents.tools.tool_registry import create_tool
 from core.agents.utils.llm_factory import get_chat_model
-from core.agents.utils.common_types import Evidence
+from core.agents.utils.common_types import Evidence, EvidenceListModel
 
 DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
@@ -29,6 +29,7 @@ load_dotenv(DIR.parent / '.env', override=True)
 
 # Import prefix for builtin tools
 MODULE_PREFIX = "core.agents.tools.builtins."
+EVIDENCE_REQUIRED_KEYS = Evidence.__required_keys__
 
 
 def import_builtin(module_name):
@@ -125,8 +126,11 @@ def get_assistant_node(llm: BaseChatModel) -> Callable:
 
 def gather_evidence(state: State) -> State:
     """
-    Scan the message history to extract tool calls and results into tuples:
-    (tool_name, tool_args, tool_result) for the 'evidence' list in the state
+    Scan the message history to extract tool calls and the evidence they produced.
+    1. Iterates over all messages in the state, looking for ToolMessages
+    2. Checks each ToolMessage if it has an artifact that's list[Evidence]
+    3. If not, attempts to parse message.content to list[Evidence] 
+    4. If that fails, uses string content of the message as evidence
 
     #TODO there's possibly a smarter way to do this by matching tool call IDs
     """
@@ -134,14 +138,47 @@ def gather_evidence(state: State) -> State:
     for i in range(len(state['messages'])):
         message = state['messages'][i]
         if isinstance(message, ToolMessage):
-            # TODO: pass the list[Evidence] through the tool_message.artifact
             try:
-                evidence = json.loads(message.content)
-            except json.JSONDecodeError as e:
-                print(f"Error decoding JSON from tool call: {e}")
-                evidence = [message.content]
+                # Confirm the artifact is list[Evidence]
+                validated = EvidenceListModel.model_validate(message.artifact)
+                evidence_list = validated.root
+                print(f"Tool message artifact successfully validated")
+            except Exception as e:
+                # If artifact not list[Evidence], the to load from message.content
+                print(f"Error: artifact in tool message didn't validate as list[Evidence]. Attempting to load from message.content. Error message: {e}")
+                try:
+                    validated = EvidenceListModel.model_validate_json(message.content)
+                    evidence_list = validated.root
+                except Exception as e:
+                    # If message.content not valid JSON, just use its string content as is
+                    print(f"Error: message.content didn't parse as json to a valid list[Evidence]. Attempting to load from message.content. Error message: {e}")
+                    print(f"Error decoding JSON from tool call: {e}")
+                    salvaged_evidence = Evidence(
+                        name=message.name,
+                        args='see trace',
+                        content=message.content,
+                        source=message.name)
+                    evidence_list = [salvaged_evidence]
+                    print(f"Salvaged evidence: {salvaged_evidence}")
 
-            all_evidence += evidence
+            all_evidence += evidence_list
+
+    print(f"all_evidence is a list? {isinstance(all_evidence, list)}")
+
+    # Confirm that all evidence is list[Evidence]
+    try:
+        evidence_list = EvidenceListModel.model_validate(all_evidence)
+    except Exception as e:
+        print(f"Error: evidence list didn't validate as list[Evidence]. Error message: {e}")
+        # If not, just use the string content of the evidence
+        evidence_list = [
+            Evidence(
+                name="unknown",
+                args={},
+                content=str(e),
+                source="unknown"
+            )
+        ]
 
     return {'evidence': all_evidence}
 

@@ -57,6 +57,9 @@ def preprocessing(state: State) -> State:
     system prompt will help make the model trust it more than the claim.
     """
     # Format system prmopt template: unwind the evidence list to a bullet list
+    for ev in state["evidence"]:
+        print(f"Evidence: {ev['name']}: {ev['content'][:20]}")
+        print(f"{ev['args']}, {ev['source']}")
     evidence_str = "\n".join(
         [f"* {ev['name']}: {ev['content']}" for ev in state["evidence"]])
     formatted_prompt = system_prompt.format(evidence=evidence_str)

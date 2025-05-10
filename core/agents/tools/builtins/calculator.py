@@ -1,3 +1,4 @@
+import json
 import math
 import numpy
 import numexpr
@@ -5,8 +6,8 @@ from langchain_core.tools import tool
 from core.agents.utils.common_types import Evidence
 
 
-@tool("calculator", parse_docstring=True)
-def tool_function(expression: str) -> list[Evidence]:
+@tool("calculator", parse_docstring=True, response_format="content_and_artifact")
+def tool_function(expression: str) -> tuple[str, list[Evidence]]:
     """Calculate single-line numeric expressions. Useful for performing quick calculations.
 
     Args:
@@ -24,30 +25,28 @@ def tool_function(expression: str) -> list[Evidence]:
     local_dict: dict[str, float] = {
         "pi": math.pi, "e": math.e, "tau": math.tau, "euler_gamma": float(numpy.euler_gamma)}
     try:
-        result = str(
+        content = str(
             numexpr.evaluate(
                 expression.strip().lower(),
                 global_dict={},  # restrict access to globals
                 local_dict=local_dict,  # add common mathematical functions
             )
         )
-        return [
-            Evidence(
-            name="calculator",
-            args={"expression": expression},
-            content=result,
-            source="calculator",
-        )]
+
     except SyntaxError as e:
         # Log the error for debugging
         print(f"Calculator tool SyntaxError: {e}")
-        return [
-            Evidence(
-            name="calculator",
-            args={"expression": expression},
-            content="Invalid expression",
-            source="calculator",
-        )]
+        content = "Invalid expression"
+
+    evidence_list = [
+        Evidence(
+        name="calculator",
+        args={"expression": expression},
+        content=content,
+        source="calculator",
+    )]
+
+    return json.dumps(evidence_list), evidence_list
 
 
 if __name__ == "__main__":
