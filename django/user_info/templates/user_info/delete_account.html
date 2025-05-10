@@ -1,0 +1,94 @@
+{% load static %}
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Asha Software | Delete Account</title>
+    <link href="https://fonts.googleapis.com/css?family=Lato:100,300,400,700,900" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/hamburger-menu.css' %}">
+    <link rel="stylesheet" href="{% static 'css/delete.css' %}">
+</head>
+<body>
+    <div class="s006">
+        <div class="website-logo">
+            <a href="{% url 'search' %}">
+                <div class="logo">
+                    <img class="logo-size" src="{% static 'images/logo-light.svg' %}" alt="">
+                </div>
+            </a>
+        </div>
+        
+        {% include 'user_info/includes/hamburger_menu.html' %}
+        
+        <div class="delete-container" style="position: relative; z-index: 2000;">
+            <div class="delete-card" style="background: rgba(30, 30, 30, 0.95); color: #ffffff; border: 1px solid rgba(255, 255, 255, 0.3); position: relative; z-index: 2000;">
+                <h2 class="delete-title" style="color: #ff5252; font-weight: 700;">Delete Account</h2>
+                
+                <div class="delete-warning" style="background-color: rgba(255, 82, 82, 0.15); border-left: 4px solid #ff5252;">
+                    <p style="color: #ffffff; font-weight: 500; text-shadow: none;">Warning: This action cannot be undone. Once you delete your account, all of your data will be permanently removed.</p>
+                    <p style="color: #ffffff; font-weight: 500; text-shadow: none;">This includes:</p>
+                    <ul>
+                        <li style="color: #ffffff; font-weight: 500; text-shadow: none;">Your search history</li>
+                        <li style="color: #ffffff; font-weight: 500; text-shadow: none;">Your custom tools</li>
+                        <li style="color: #ffffff; font-weight: 500; text-shadow: none;">Your API keys</li>
+                        <li style="color: #ffffff; font-weight: 500; text-shadow: none;">All other account information</li>
+                    </ul>
+                </div>
+                
+                <form method="POST" class="delete-form">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="confirmation" style="color: #ffffff; font-weight: 600; text-shadow: none;">To confirm, type "DELETE" in the box below:</label>
+                        <input type="text" id="confirmation" class="form-control" required style="background-color: rgba(255, 255, 255, 0.2); color: #fff; border: 1px solid rgba(255, 255, 255, 0.4);">
+                    </div>
+                    <button type="submit" class="btn btn-danger delete-btn" disabled style="background-color: #ff5252; color: white; opacity: 0.7;">Delete My Account</button>
+                </form>
+                
+                <div class="cancel-link" style="text-align: center; margin-top: 15px; position: relative; z-index: 3000;">
+                    <!-- Use a regular anchor tag with improved styling -->
+                    <a href="{% url 'search' %}" id="cancelButton" style="display: inline-block; background-color: #6c757d; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; padding: 10px 20px; border-radius: 4px; border: 2px solid rgba(255, 255, 255, 0.7); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); cursor: pointer; opacity: 1; position: relative; z-index: 3000; pointer-events: auto;">Cancel and return to search</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'js/hamburger-menu.js' %}"></script>
+    <script>
+        // Enable the delete button only when the confirmation text is correct
+        document.getElementById('confirmation').addEventListener('input', function() {
+            const deleteBtn = document.querySelector('.delete-btn');
+            if (this.value === 'DELETE') {
+                deleteBtn.disabled = false;
+                deleteBtn.style.opacity = '1';
+            } else {
+                deleteBtn.disabled = true;
+                deleteBtn.style.opacity = '0.7';
+            }
+        });
+        
+        // Ensure the cancel button is always visible and enabled
+        document.addEventListener('DOMContentLoaded', function() {
+            const cancelButton = document.getElementById('cancelButton');
+            if (cancelButton) {
+                // Add hover effect
+                cancelButton.addEventListener('mouseover', function() {
+                    this.style.backgroundColor = '#5a6268';
+                    this.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.4)';
+                    this.style.transform = 'translateY(-2px)';
+                });
+                
+                cancelButton.addEventListener('mouseout', function() {
+                    this.style.backgroundColor = '#6c757d';
+                    this.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+                    this.style.transform = 'translateY(0)';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

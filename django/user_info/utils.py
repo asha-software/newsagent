@@ -5,6 +5,8 @@ from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.contrib.auth.models import User
+from .models import UserTool
+
 
 def get_builtin_tools():
     """
@@ -30,8 +32,6 @@ def get_builtin_tools():
         api_url = settings.API_URL
         if not api_url:
             raise ValueError("API_URL is not set in settings")
-        
-        # First, let's try to make a simple API call to check if the API is available
         try:
             health_response = requests.get(f"{api_url}/health", timeout=5)
             health_response.raise_for_status()
@@ -58,6 +58,35 @@ def get_builtin_tools():
     except Exception:
         # Fall back to hardcoded tools if there's any error
         return hardcoded_tools
+
+
+def initialize_builtin_tools_for_user(user):
+    """
+    Initialize built-in tools for a new user with is_preferred=True.
+    This ensures built-in tools are set as preferred by default.
+    
+    Args:
+        user: The User object to initialize tools for
+    """
+    # Get the list of built-in tools
+    builtin_tools = get_builtin_tools()
+    
+    # Create UserTool entries for each built-in tool
+    for tool in builtin_tools:
+        # Check if the tool already exists for this user
+        if not UserTool.objects.filter(user=user, name=tool['name']).exists():
+            # Create a new UserTool entry with is_preferred=True
+            UserTool.objects.create(
+                user=user,
+                name=tool['name'],
+                description=f"Built-in {tool['display_name']} tool",
+                method='GET',
+                url_template='',
+                is_active=True,
+                is_preferred=True,  # Set as preferred by default
+                docstring=f"Built-in {tool['display_name']} tool"
+            )
+
 
 def send_password_reset_email(user, reset_token, request):
     """
@@ -109,6 +138,7 @@ def send_password_reset_email(user, reset_token, request):
         logger.error(f"Error sending password reset email: {str(e)}")
         # Re-raise the exception so it can be caught and handled by the view
         raise
+
 
 def send_verification_email(user_or_pending, verification_token, request):
     """

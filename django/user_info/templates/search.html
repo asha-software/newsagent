@@ -22,23 +22,7 @@
           </div>
         </a>
       </div>
-      <!-- Hamburger Menu -->
-      <div class="hamburger-menu">
-        <div class="hamburger-icon">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </div>
-      <div class="menu-items">
-        <a href="{% url 'search' %}">Search</a>
-        <a href="{% url 'history' %}">History</a>
-        <a href="{% url 'tool_list' %}">Tools</a>
-        <a href="{% url 'apikey_list' %}">API Keys</a>
-        <a href="{% url 'logout' %}">Logout</a>
-        <button class="menu-close-btn">Close</button>
-      </div>
-      <div class="menu-overlay"></div>
+      {% include 'user_info/includes/hamburger_menu.html' %}
       <div class="search-container">
         <form id="search-form" action="{% url 'search' %}" method="POST" data-is-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
           {% csrf_token %}
@@ -56,7 +40,7 @@
             <div class="suggestion-wrap">
               {% for tool in builtin_tools %}
               <label class="suggestion-item">
-                <input type="checkbox" name="source" value="{{ tool.name }}" checked>
+                <input type="checkbox" name="source" value="{{ tool.name }}" {% if tool.is_preferred %}checked{% endif %}>
                 <span>{{ tool.display_name }}</span>
               </label>
               {% endfor %}

@@ -9,7 +9,7 @@ from django.core.paginator import Paginator
 from django.utils import timezone
 from .models import UserTool, APIKey, SharedSearchResult, EmailVerification, PendingRegistration, PasswordResetToken
 from .forms import UserToolForm
-from .utils import get_builtin_tools, send_verification_email, send_password_reset_email
+from .utils import get_builtin_tools, send_verification_email, send_password_reset_email, initialize_builtin_tools_for_user
 import json
 import requests
 
@@ -174,6 +174,9 @@ def signin(request):
                     default_api_key = APIKey(user=user, name="Default API Key")
                     default_api_key.save()
                     
+                    # Initialize built-in tools for the user
+                    initialize_builtin_tools_for_user(user)
+                    
                     # Delete the pending registration as it's no longer needed
                     pending.delete()
                     
@@ -287,6 +290,9 @@ def register(request):
                 default_api_key = APIKey(user=user, name="Default API Key")
                 default_api_key.save()
                 
+                # Initialize built-in tools for the user
+                initialize_builtin_tools_for_user(user)
+                
                 # Log the user in
                 user = authenticate(request, username=username, password=password)
                 login(request, user)
@@ -333,6 +339,9 @@ def verify_email(request, token):
             default_api_key = APIKey(user=user, name="Default API Key")
             default_api_key.save()
             
+            # Initialize built-in tools for the user
+            initialize_builtin_tools_for_user(user)
+            
             # Delete the pending registration as it's no longer needed
             pending.delete()
             
@@ -378,6 +387,10 @@ def verify_email(request, token):
             if not APIKey.objects.filter(user=user).exists():
                 default_api_key = APIKey(user=user, name="Default API Key")
                 default_api_key.save()
+                
+            # Initialize built-in tools for the user if they don't exist
+            initialize_builtin_tools_for_user(user)
+                
             # Mark as verified
             verification.is_verified = True
             verification.save()
@@ -420,6 +433,41 @@ def search(request):
         
         # If any query is submitted, show the results section
         if query:
+            # Update user's tool preferences based on selected sources
+            selected_sources = request.POST.getlist('source')
+            
+            # Get all built-in tools
+            builtin_tools = get_builtin_tools()
+            builtin_tool_names = [tool['name'] for tool in builtin_tools]
+            
+            # Update preferences for built-in tools
+            for tool_name in builtin_tool_names:
+                # Get or create the UserTool entry for this built-in tool
+                user_tool, created = UserTool.objects.get_or_create(
+                    user=request.user,
+                    name=tool_name,
+                    defaults={
+                        'is_active': True,
+                        'is_preferred': tool_name in selected_sources
+                    }
+                )
+                
+                # If the tool already exists, update its is_preferred status
+                if not created:
+                    user_tool.is_preferred = tool_name in selected_sources
+                    user_tool.save()
+            
+            # Update preferences for custom tools
+            custom_tools = UserTool.objects.filter(
+                user=request.user
+            ).exclude(
+                name__in=builtin_tool_names
+            )
+            
+            for tool in custom_tools:
+                tool.is_preferred = tool.name in selected_sources
+                tool.save()
+            
             show_results = True
             
             # Check if this query already exists in the database
@@ -460,11 +508,38 @@ def search(request):
             'has_cached_result': False
         })
     
-    # Get the user's active tools
-    user_tools = UserTool.objects.filter(user=request.user, is_active=True).order_by('name')
-    
     # Get the built-in tools
     builtin_tools = get_builtin_tools()
+    
+    # Get the built-in tool names
+    builtin_tool_names = [tool['name'] for tool in builtin_tools]
+    
+    # Get the user's active tools (excluding built-in tools)
+    user_tools = UserTool.objects.filter(
+        user=request.user, 
+        is_active=True
+    ).exclude(
+        name__in=builtin_tool_names
+    ).order_by('name')
+    
+    # Get the user's preferences for built-in tools
+    builtin_tool_preferences = {}
+    for tool_name in builtin_tool_names:
+        # Check if the user has a preference for this tool
+        tool_preference = UserTool.objects.filter(
+            user=request.user,
+            name=tool_name
+        ).first()
+        
+        # If the user has a preference, use it; otherwise, default to True
+        if tool_preference:
+            builtin_tool_preferences[tool_name] = tool_preference.is_preferred
+        else:
+            builtin_tool_preferences[tool_name] = True
+    
+    # Add the preference information to the builtin_tools list
+    for tool in builtin_tools:
+        tool['is_preferred'] = builtin_tool_preferences.get(tool['name'], True)
     
     # Pass API_URL from settings to the template
     context = {
@@ -494,10 +569,19 @@ def shared_search_result(request, result_id):
         # Get the built-in tools (for the search form)
         builtin_tools = get_builtin_tools()
         
-        # If user is authenticated, get their tools
+        # If user is authenticated, get their tools (excluding built-in tools)
         user_tools = None
         if request.user.is_authenticated:
-            user_tools = UserTool.objects.filter(user=request.user, is_active=True).order_by('name')
+            # Get the built-in tool names
+            builtin_tool_names = [tool['name'] for tool in builtin_tools]
+            
+            # Get the user's active tools (excluding built-in tools)
+            user_tools = UserTool.objects.filter(
+                user=request.user, 
+                is_active=True
+            ).exclude(
+                name__in=builtin_tool_names
+            ).order_by('name')
         
         # Double serialize the result data to match the JavaScript's expectation
         # The JavaScript code expects a JSON string containing another JSON string
@@ -693,8 +777,63 @@ def reset_password_view(request, token):
 # Tool views
 @login_required
 def tool_list(request):
-    tools = UserTool.objects.filter(user=request.user).order_by('-created_at')
+    # Get the built-in tools
+    builtin_tools = get_builtin_tools()
+    
+    # Get the built-in tool names
+    builtin_tool_names = [tool['name'] for tool in builtin_tools]
+    
+    # Get the user's tools (excluding built-in tools)
+    tools = UserTool.objects.filter(
+        user=request.user
+    ).exclude(
+        name__in=builtin_tool_names
+    ).order_by('-created_at')
+    
     return render(request, 'user_info/tool_list.html', {'tools': tools})
+
+@login_required
+def get_api_key(request):
+    """
+    Returns the current user's API key.
+    This endpoint is used by the FastAPI backend to authenticate users.
+    """
+    # Get the user's first active API key
+    api_key = APIKey.objects.filter(user=request.user, is_active=True).first()
+    
+    if not api_key:
+        # Check if the user already has 3 or more API keys (including inactive ones)
+        existing_keys_count = APIKey.objects.filter(user=request.user).count()
+        if existing_keys_count >= 3:
+            # If the user has reached the limit, return an error
+            return JsonResponse({
+                'error': 'You have reached the maximum limit of 3 API keys. Please delete an existing key before creating a new one.'
+            }, status=400)
+        
+        # Create a new API key
+        api_key = APIKey(user=request.user, name="Auto-generated API Key")
+        api_key.save()
+    
+    return JsonResponse({
+        'api_key': api_key.key,
+        'username': request.user.username
+    })
+
+@login_required
+def delete_account(request):
+    """
+    View for deleting a user's account.
+    Requires confirmation before deletion.
+    """
+    if request.method == 'POST':
+        # Delete the user's account
+        user = request.user
+        logout(request)
+        user.delete()
+        messages.success(request, "Your account has been successfully deleted.")
+        return redirect('home')
+    
+    return render(request, 'user_info/delete_account.html')
 
 @login_required
 def tool_create(request):
