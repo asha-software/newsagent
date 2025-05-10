@@ -18,15 +18,16 @@ if str(project_root) not in sys.path:
 
 
 def argument_parser():
-    parser = argparse.ArgumentParser(
-        description='Evaluate the claim decomposer')
-    parser.add_argument('--experiment_prefix', '-p',
-                        type=str, help='Prefix for the experiment name')
+    parser = argparse.ArgumentParser(description="Evaluate the claim decomposer")
+    parser.add_argument(
+        "--experiment_prefix", "-p", type=str, help="Prefix for the experiment name"
+    )
     return parser.parse_args()
 
 
 def target_function(initial_state) -> list[str]:
     from core.agents.claim_decomposer import claim_decomposer
+
     result = claim_decomposer.invoke(initial_state)
     return result["claims"]
 
@@ -41,8 +42,12 @@ def number_of_claims_diff(outputs: dict, reference_outputs: dict) -> int:
 def main():
     # Make sure tests/.env variables are set
     load_dotenv("../.env", override=True)
-    assert "LANGCHAIN_API_KEY" in os.environ, "Please set the LANGCHAIN_API_KEY environment variable"
-    assert os.environ["LANGCHAIN_TRACING_V2"] == "true", "Please set the LANGCHAIN_TRACING_V2 environment variable to true"
+    assert (
+        "LANGCHAIN_API_KEY" in os.environ
+    ), "Please set the LANGCHAIN_API_KEY environment variable"
+    assert (
+        os.environ["LANGCHAIN_TRACING_V2"] == "true"
+    ), "Please set the LANGCHAIN_TRACING_V2 environment variable to true"
 
     args = argument_parser()
     ls_client = Client()
@@ -50,7 +55,7 @@ def main():
         target_function,
         data="claim_decomp_multiple",
         evaluators=[number_of_claims_diff],
-        experiment_prefix=args.experiment_prefix
+        experiment_prefix=args.experiment_prefix,
     )
 
 

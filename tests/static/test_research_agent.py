@@ -265,7 +265,6 @@ class TestImportBuiltin:
 # Tests for `render_user_defined_tools`
 ###############################
 class TestRenderUserDefinedTools:
-
     def test_render_user_defined_tools_empty(self, research_agent_uut):
         """
         Return empty list for an empty tool_kwargs list.
