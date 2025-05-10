@@ -71,7 +71,7 @@ def test_research_agent_integration(expect_calc, claim, expr, result):
         assert ev["name"] == "calculator"
         # expression may be simplified by the LLM (e.g., '7 * 8') so
         # we compare numerically:
-        calc_out = float(ev["result"])
+        calc_out = float(ev["content"])
         assert math.isclose(calc_out, float(result)), ev
     else:
-        assert evidence == []
+        assert evidence == [], "No calculator call expected"
