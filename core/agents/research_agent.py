@@ -9,7 +9,13 @@ import importlib
 import os
 from pathlib import Path
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, ToolMessage, SystemMessage
+from langchain_core.messages import (
+    AIMessage,
+    BaseMessage,
+    HumanMessage,
+    ToolMessage,
+    SystemMessage,
+)
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -24,10 +30,11 @@ DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 DIR = Path(__file__).parent.resolve()
 
 # Load env variables from core/.env
-load_dotenv(DIR.parent / '.env', override=True)
+load_dotenv(DIR.parent / ".env", override=True)
 
 # Import prefix for builtin tools
 MODULE_PREFIX = "core.agents.tools.builtins."
+
 
 def import_builtin(module_name):
     """Dynamically imports a function from a module.
@@ -41,19 +48,17 @@ def import_builtin(module_name):
     """
     import_path = MODULE_PREFIX + module_name
     # Standard interface for builtin tool: each module has a function called tool_function
-    function_name = 'tool_function'
+    function_name = "tool_function"
     try:
         module = importlib.import_module(import_path)
         function = getattr(module, function_name)
         return function
     except ImportError as e:
-        print(
-            f"Error: Could not find module '{import_path}'.")
+        print(f"Error: Could not find module '{import_path}'.")
         print(f"cwd: {os.getcwd()}")
         print(f"Exception: {e}")
     except AttributeError as e:
-        print(
-            f"Error: Function '{function_name}' not found in module '{import_path}'.")
+        print(f"Error: Function '{function_name}' not found in module '{import_path}'.")
         print(f"Exception: {e}")
     except Exception as e:
         print(f"An unexpected error occurred: {e}")
@@ -81,16 +86,21 @@ def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
             print(f"Error creating tool with kwargs {kwargs}:\n{e}")
     return tools
 
+
 """
 Static graph components
 """
+
+
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
     evidence: list[Evidence]
 
-with open(DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
+
+with open(DIR / "prompts/research_agent_system_prompt.txt", "r") as f:
     sys_msg = SystemMessage(content=f.read())
+
 
 def preprocessing(state: State):
     """
@@ -98,17 +108,19 @@ def preprocessing(state: State):
     Currently, this just extracts the claim from the state and sets it as a HumanMessage
     following the SystemMessage
     """
-    state['messages'] = [sys_msg, HumanMessage(content=state['claim'])]
+    state["messages"] = [sys_msg, HumanMessage(content=state["claim"])]
     return state
+
 
 def get_assistant_node(llm: BaseChatModel) -> Callable:
     """
     Given reference to LLM, returns an assistant node using that LLM
     """
+
     def assistant(state: State) -> State:
-        response = llm.invoke(state['messages'])
+        response = llm.invoke(state["messages"])
         return {"messages": response}
-    
+
     return assistant
 
 
@@ -120,32 +132,38 @@ def postprocessing(state: State) -> State:
     #TODO there's possibly a smarter way to do this by matching tool call IDs
     """
     evidence = []
-    for i in range(len(state['messages'])):
-        message = state['messages'][i]
-        if isinstance(message, AIMessage) and hasattr(message, 'tool_calls'):
+    for i in range(len(state["messages"])):
+        message = state["messages"][i]
+        if isinstance(message, AIMessage) and hasattr(message, "tool_calls"):
             for tool_call in message.tool_calls:
                 # Scan later messages for the corresponding ToolMessage
-                for j in range(i + 1, len(state['messages'])):
-                    next_message = state['messages'][j]
-                    if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
+                for j in range(i + 1, len(state["messages"])):
+                    next_message = state["messages"][j]
+                    if (
+                        isinstance(next_message, ToolMessage)
+                        and next_message.tool_call_id == tool_call["id"]
+                    ):
                         # Found the corresponding ToolMessage
                         evidence_item = Evidence(
-                            name=tool_call['name'], args=tool_call['args'], result=next_message.content)
+                            name=tool_call["name"],
+                            args=tool_call["args"],
+                            result=next_message.content,
+                        )
                         evidence.append(evidence_item)
                         break
 
-    return {'evidence': evidence}
+    return {"evidence": evidence}
+
 
 def create_agent(
-        model: str,
-        builtin_tools: list[str] = None,
-        user_tool_kwargs: list[dict] = None) -> StateGraph:
+    model: str, builtin_tools: list[str] = None, user_tool_kwargs: list[dict] = None
+) -> StateGraph:
     """
     Build the research agent graph.
     Args:
         model (str): The model to use for the agent.
         builtin_tools (list[str]): A list of builtin tools to use identified by strings
-            The strings are module names, which will be prepending with PACKAGE_PREFIX, 
+            The strings are module names, which will be prepending with PACKAGE_PREFIX,
             values are lists of function names.
             E.g. 'wikipedia' will attempt to import PACKAGE_PREFIX + 'wikipedia'
             (core.agents.tools.builtins.wikipedia)
@@ -156,10 +174,8 @@ def create_agent(
     """
 
     # Assemble builtin and user-defined tools
-    builtins = [tool for module in builtin_tools if (
-        tool := import_builtin(module))]
-    user_defined_tools = render_user_defined_tools(
-        tool_kwargs=user_tool_kwargs)
+    builtins = [tool for module in builtin_tools if (tool := import_builtin(module))]
+    user_defined_tools = render_user_defined_tools(tool_kwargs=user_tool_kwargs)
     tools = builtins + user_defined_tools
 
     # Instantiate LLM-based objects for the agent (ChatModel, assistant node)
@@ -180,7 +196,7 @@ def create_agent(
     builder.add_conditional_edges(
         source="assistant",
         path=tools_condition,
-        path_map={'tools': 'tools', '__end__': 'postprocessing'}
+        path_map={"tools": "tools", "__end__": "postprocessing"},
     )
     builder.add_edge("tools", "assistant")
     builder.add_edge("postprocessing", END)
@@ -190,32 +206,29 @@ def create_agent(
 
 
 def main():
-    builtin_tools_wanted = ['wikipedia', 'web_search']
+    builtin_tools_wanted = ["wikipedia", "web_search"]
 
     pokemon_kwargs = {
-        'name': 'pokeapi',
-        'method': 'GET',
-        'headers': {'Accept': 'application/json'},
-        'url_template': 'https://pokeapi.co/api/v2/pokemon/{name}',
-        'docstring': '''Get information about a Pokémon from the PokeAPI.
+        "name": "pokeapi",
+        "method": "GET",
+        "headers": {"Accept": "application/json"},
+        "url_template": "https://pokeapi.co/api/v2/pokemon/{name}",
+        "docstring": """Get information about a Pokémon from the PokeAPI.
     Args:
         name (str): The name of the Pokémon to query, ALWAYS LOWERCASED.
     Returns:
         list: A list containing the Pokémon's abilities.
-    ''',
-        'target_fields': [['abilities', 0, 'ability', 'name'],
-                          ['abilities', 1, 'ability', 'name']],
-        'param_mapping': {
-            'name': {
-                'type': 'str',
-                'for': 'url_params'
-            }
-        },
+    """,
+        "target_fields": [
+            ["abilities", 0, "ability", "name"],
+            ["abilities", 1, "ability", "name"],
+        ],
+        "param_mapping": {"name": {"type": "str", "for": "url_params"}},
     }
     research_agent = create_agent(
-        model='mistral-nemo',
+        model="mistral-nemo",
         builtin_tools=builtin_tools_wanted,
-        user_tool_kwargs=[pokemon_kwargs]
+        user_tool_kwargs=[pokemon_kwargs],
     )
     # claim = "Python was created by Guido van Rossum"
     # final_state = research_agent.invoke({"claim": claim})

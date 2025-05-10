@@ -22,10 +22,11 @@ DB_CONFIG = {
 class APIKeyMiddleware(BaseHTTPMiddleware):
     """
     Middleware for API key authentication.
-    
+
     This middleware extracts the API key from the request header,
     validates it against the database, and attaches the user to the request state.
     """
+
     async def dispatch(self, request: Request, call_next):
         # Get the API key from the header
         api_key = request.headers.get("X-API-Key")
@@ -43,10 +44,10 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
     async def get_user_from_api_key(self, api_key: str) -> Optional[Dict[str, Any]]:
         """
         Get the user associated with the API key.
-        
+
         Args:
             api_key: The API key to validate
-            
+
         Returns:
             A dictionary containing user information if the API key is valid,
             None otherwise.
@@ -63,7 +64,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                     JOIN user_info_apikey uak ON uak.user_id = au.id
                     WHERE uak.key = %s AND uak.is_active = 1
                     """,
-                    (api_key,)
+                    (api_key,),
                 )
                 user_row = cursor.fetchone()
 
@@ -71,7 +72,7 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
                     return {
                         "id": user_row[0],
                         "username": user_row[1],
-                        "email": user_row[2]
+                        "email": user_row[2],
                     }
 
                 return None
@@ -79,5 +80,5 @@ class APIKeyMiddleware(BaseHTTPMiddleware):
             print(f"Error getting user from API key: {e}")
             return None
         finally:
-            if 'connection' in locals() and connection:
+            if "connection" in locals() and connection:
                 connection.close()

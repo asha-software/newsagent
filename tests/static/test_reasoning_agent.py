@@ -12,16 +12,28 @@ from core.agents.utils.common_types import Evidence
 def reasoning_agent_uut(monkeypatch):
     monkeypatch.setenv("REASONING_AGENT_MODEL", "mistral:7b")
     import core.agents.reasoning_agent as reasoning_agent
+
     return reasoning_agent
+
 
 @pytest.fixture
 def sample_state(reasoning_agent_uut):
     """
     Provides a minimal valid State fixture for testing.
     """
-    return reasoning_agent_uut.State(messages=[], claim="The sky is blue", evidence=[
-        Evidence(name="Factbook", result="Earth's atmosphere causes scattering of blue light.", args={})
-    ], label=None, justification=None)
+    return reasoning_agent_uut.State(
+        messages=[],
+        claim="The sky is blue",
+        evidence=[
+            Evidence(
+                name="Factbook",
+                result="Earth's atmosphere causes scattering of blue light.",
+                args={},
+            )
+        ],
+        label=None,
+        justification=None,
+    )
 
 
 @pytest.fixture
@@ -47,8 +59,7 @@ def test_preprocessing(reasoning_agent_uut, sample_state, evidence_count):
     """
     # Adjust the sample_state's evidence to have `evidence_count` items
     sample_state["evidence"] = [
-        {"name": f"source{i}", "result": f"result{i}"}
-        for i in range(evidence_count)
+        {"name": f"source{i}", "result": f"result{i}"} for i in range(evidence_count)
     ]
 
     new_state = reasoning_agent_uut.preprocessing(sample_state)
@@ -73,7 +84,9 @@ def test_assistant(reasoning_agent_uut, sample_state):
     Test the assistant function ensures llm.invoke is called
     and the returned dictionary has the 'messages' from the LLM.
     """
-    with patch.object(ChatOllama, 'invoke', return_value=[{"content": "Fake response"}]) as mock_invoke:
+    with patch.object(
+        ChatOllama, "invoke", return_value=[{"content": "Fake response"}]
+    ) as mock_invoke:
         mock_invoke.return_value = [{"content": "Fake response"}]
         # We need the state from preprocessing, because assistant expects "messages" in the correct form
         preprocessed_state = reasoning_agent_uut.preprocessing(sample_state)
@@ -84,8 +97,11 @@ def test_assistant(reasoning_agent_uut, sample_state):
 
 
 def test_postprocessing(reasoning_agent_uut, sample_state):
-    sample_state["messages"] = [AIMessage(content=json.dumps({"label": "label", "justification": "justification"}))]
+    sample_state["messages"] = [
+        AIMessage(
+            content=json.dumps({"label": "label", "justification": "justification"})
+        )
+    ]
     output = reasoning_agent_uut.postprocessing(sample_state)
     assert output["label"] == "label"
     assert output["justification"] == "justification"
-
