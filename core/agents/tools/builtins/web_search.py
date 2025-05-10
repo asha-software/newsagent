@@ -7,7 +7,9 @@ from core.agents.utils.common_types import Evidence
 
 
 @tool("web_search", parse_docstring=True, response_format="content_and_artifact")
-def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> tuple[str, list[Evidence]]:
+def tool_function(
+    query: str, topic: Literal["general", "news", "finance"]
+) -> tuple[str, list[Evidence]]:
     """
     Search the web. Use this when the claim refers to:
       - current events
@@ -41,7 +43,6 @@ def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> t
             chunks_per_source=4,
             include_images=False,
             exclude_domains=["wikipedia.org"]
-
             # Other optional parameters:
             # include_answer=False, # Can ONLY be set during instantiation
             # include_raw_content=False, # Can ONLY be set during instantiation
@@ -59,16 +60,19 @@ def tool_function(query: str, topic: Literal["general", "news", "finance"]) -> t
         Evidence(
             name="web_search",
             args={"query": query, "topic": topic},
-            content=res['content'],
-            source=res['url']
+            content=res["content"],
+            source=res["url"],
         )
-        for res in response['results']
+        for res in response["results"]
     ]
     return json.dumps(evidence_list), evidence_list
+
 
 if __name__ == "__main__":
     # Test the function
     results = tool_function.invoke(
-        {"query": "Who lives in Gracie Mansion?", "topic": "general"})
+        {"query": "Who lives in Gracie Mansion?", "topic": "general"}
+    )
     from pprint import pprint
+
     pprint(results)
