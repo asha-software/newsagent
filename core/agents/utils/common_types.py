@@ -1,4 +1,7 @@
-from typing import TypedDict
+# from typing import TypedDict, Union
+from typing import Union
+from typing_extensions import TypedDict
+from pydantic import BaseModel, RootModel
 
 
 class Evidence(TypedDict):
@@ -15,7 +18,6 @@ class Evidence(TypedDict):
     source: str
 
 
-
 class Analysis(TypedDict):
     """
     Packages a claim with its evidence, label, and justification
@@ -24,3 +26,16 @@ class Analysis(TypedDict):
     label: str
     justification: str
     evidence: list[Evidence]
+
+
+class EvidenceModel(BaseModel):
+    """
+    Evidence model for storing evidence data.
+    """
+    name: str
+    args: dict
+    content: Union[str, dict, list]
+    source: str
+
+
+EvidenceListModel = RootModel[list[Evidence]]
