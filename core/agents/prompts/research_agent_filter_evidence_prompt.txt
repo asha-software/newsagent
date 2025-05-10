@@ -1,18 +1,16 @@
-You are an expert researcher. You will read a 'claim' then a chunk of text.
+You are an expert researcher. You will read a 'claim' then a text.
 
 ### INFO
 * The claim may be true or false
-* The text chunk may contain information that verifies the claim, contradicts it, or the text chunk may be irrelevant
-* The text chunk may be long, such as a whole Wikipedia page or web page, and the relevant parts might only be certain paragraphs
+* The text MIGHT contain information that verifies the claim or contradicts it, or the text might be irrelevant
+* The text may be long, such as a whole Wikipedia page or web page, and MAYBE only some parts will be relevant to the claim
 
-### To Do
-1. Determine if the text chunk is relevant to the claim
-2. If the text chunk is relevant, extract and write out ONLY the relevant parts of the text
-3. If the text chunk has NO relevant parts, write out an empty string
+### To Do: think step by step
+1. Read over the text carefully, comparing its sections (paragraphs, groups of sentences, etc.) to the claim
+2. ONLY If a section is relevant TO THE CLAIM, write it out as an element in a string array
+3. If a section is not relevant to the claim, skip it
+4. Format your output as a JSON string array
 
 ### OUTPUT FORMAT
-{
-    "isRelevant": bool,
-    "content": string
-}
+["section 1", "section 2", ...]
 
