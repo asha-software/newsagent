@@ -42,21 +42,20 @@ def import_builtin(module_name):
     Returns:
         The imported function, or None if the module or function is not found.
     """
+    # TODO: this is just a hacky patch; resolve this for real
+    module_name = "wikipedia_tool" if module_name == "wikipedia" else module_name
+
     import_path = MODULE_PREFIX + module_name
     # Standard interface for builtin tool: each module has a function called tool_function
     function_name = 'tool_function'
     try:
         module = importlib.import_module(import_path)
 
-        # TODO: this is just a hacky patch; resolve this for real
-        module = "wikipedia_tool" if module_name == "wikipedia" else module
-
         function = getattr(module, function_name)
         return function
     except ImportError as e:
         print(
             f"Error: Could not find module '{import_path}'.")
-        print(f"cwd: {os.getcwd()}")
         print(f"Exception: {e}")
     except AttributeError as e:
         print(
@@ -92,6 +91,13 @@ def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
 """
 Static graph components
 """
+
+# FILTER_OUTPUT_FORMAT = {
+#     "type": "array",
+#     "items": {
+#         "type": "string"
+#     }
+# }
 
 
 class State(TypedDict):
@@ -143,21 +149,21 @@ def gather_evidence(state: State) -> State:
         message = state['messages'][i]
         if not isinstance(message, ToolMessage):
             continue
-        
+
+        # Try to get list[Evidence] from artifact
         try:
-            # Confirm the artifact is list[Evidence]
             validated = EvidenceListModel.model_validate(message.artifact)
             evidence_list = validated.root
         except Exception as e:
-            # If artifact not list[Evidence], the to load from message.content
             print(f"Error: artifact in tool message didn't validate as list[Evidence]. Attempting to load from message.content. Error message: {e}")
+
+            # If artifact not valid list[Evidence], try to get it from message.content
             try:
                 validated = EvidenceListModel.model_validate_json(message.content)
                 evidence_list = validated.root
             except Exception as e:
                 # If message.content not valid JSON, just use its string content as is
                 print(f"Error: message.content didn't parse as json to a valid list[Evidence]. Attempting to load from message.content. Error message: {e}")
-                print(f"Error decoding JSON from tool call: {e}")
                 salvaged_evidence = Evidence(
                     name=message.name,
                     # TODO: get this from the corresponding AI Message's tool call
@@ -165,7 +171,6 @@ def gather_evidence(state: State) -> State:
                     content=message.content,
                     source=message.name)
                 evidence_list = [salvaged_evidence]
-                print(f"Salvaged evidence: {salvaged_evidence}")
 
         all_evidence += evidence_list
 
@@ -187,40 +192,23 @@ def gather_evidence(state: State) -> State:
     return {'evidence': all_evidence}
 
 
-def get_filter_evidence_node(llm: BaseChatModel) -> Callable:
-    def filter_evidence(state: State) -> State:
-        """
-        Iterate over the evidence list, filtering out any evidence that is not relevant to the claim
-        """
-        # set up a system prompt, SystemMessage
-        filtered_evidence = []
-        for evidence in state['evidence']:
-            prompt = "Claim:\n" + state['claim'] + "\nEvidence:\n" + evidence['content']
-            messages = [filter_sys_msg, HumanMessage(content=prompt)]
-            response = llm.invoke(messages)
+# def get_filter_evidence_node(llm: BaseChatModel) -> Callable:
+#     def filter_evidence(state: State) -> State:
+#         """
+#         Iterate over the evidence list, filtering out any evidence that is not relevant to the claim
+#         """
+#         filtered_evidence = []
+#         print(f"I'm a filter node and I don't do anything yet")
 
-            # Load the JSON response
-            try:
-                response_json = json.loads(response.content)
-            except json.JSONDecodeError as e:
-                print(f"Error decoding JSON from filter response: {e}")
-                # Fall back to using the original evidence
-                filtered_evidence.append(evidence)
-                continue
+#         for evidence in state['evidence']:
+#             prompt = "Claim:\n" + state['claim'] + "\Text to read:\n" + str(evidence['content'])
+#             messages = [filter_sys_msg, HumanMessage(content=prompt)]
+#             response = llm.invoke(messages)
+#             print(f"Response: {response}")
 
-            # Check if the evidence is relevant
-            if response_json['isRelevant']:
-                filtered_evidence_item = Evidence(
-                    name=evidence['name'],
-                    args=evidence['args'],
-                    content=response_json['content'],
-                    source=evidence['source']
-                )
-                filtered_evidence.append(filtered_evidence_item)
-        state['evidence'] = filtered_evidence
-        return state
+#         return {}
 
-    return filter_evidence
+#     return filter_evidence
 
 
 def create_agent(
@@ -254,7 +242,6 @@ def create_agent(
         model = os.getenv("RESEARCH_AGENT_MODEL", DEFAULT_MODEL)
     llm = get_chat_model(model_name=model).bind_tools(tools)
     assistant = get_assistant_node(llm)
-    # filter_evidence = get_filter_evidence_node(llm)
 
     # Build graph
     builder = StateGraph(State)
@@ -262,7 +249,6 @@ def create_agent(
     builder.add_node("assistant", assistant)
     builder.add_node("tools", ToolNode(tools))
     builder.add_node("gather_evidence", gather_evidence)
-    # builder.add_node("filter_evidence", filter_evidence)
 
     builder.add_edge(START, "preprocessing")
     builder.add_edge("preprocessing", "assistant")
@@ -273,6 +259,15 @@ def create_agent(
     )
     builder.add_edge("tools", "assistant")
     builder.add_edge("gather_evidence", END)
+
+    # Filter evidence: unfinished
+    # TODO: factor out the filtering LLM's model name; it need not be the same as the assistant's
+    # filter_llm = llm = get_chat_model(
+    #     model_name=os.getenv("RESEARCH_AGENT_MODEL", DEFAULT_MODEL),
+    #     format_output=FILTER_OUTPUT_FORMAT,
+    # )
+    # filter_evidence = get_filter_evidence_node(filter_llm)
+    # builder.add_node("filter_evidence", filter_evidence)
     # builder.add_edge("gather_evidence", "filter_evidence")
     # builder.add_edge("filter_evidence", END)
 
@@ -311,7 +306,7 @@ def main():
     )
     claim = "Python was created by Guido van Rossum"
     final_state = research_agent.invoke({"claim": claim})
-    print(f"Final evidence: {final_state['evidence']}")
+    # print(f"Final evidence: {final_state['evidence']}")
     print()
 
 
