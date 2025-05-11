@@ -301,12 +301,12 @@ def main():
 
     research_agent = create_agent(
         model='mistral-nemo',
-        builtin_tools=['wikipedia'],
-        # user_tool_kwargs=[pokemon_kwargs]
+        builtin_tools=builtin_tools_wanted,
+        user_tool_kwargs=[]
     )
     claim = "Python was created by Guido van Rossum"
     final_state = research_agent.invoke({"claim": claim})
-    # print(f"Final evidence: {final_state['evidence']}")
+    print(f"Final evidence: {final_state['evidence']}")
     print()
 
 
