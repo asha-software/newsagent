@@ -233,10 +233,10 @@ function displaySearchResults(data, query) {
             evidenceResult.className = 'evidence-result';
             
             // Handle different types of evidence results
-            if (typeof evidence.result === 'string') {
-              evidenceResult.textContent = evidence.result;
+            if (typeof evidence.content === 'string') {
+              evidenceResult.textContent = evidence.content;
             } else {
-              evidenceResult.textContent = JSON.stringify(evidence.result);
+              evidenceResult.textContent = JSON.stringify(evidence.content);
             }
             
             evidenceItem.appendChild(evidenceResult);
