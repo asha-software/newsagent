@@ -248,39 +248,25 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     text = req.get('body')
 
     # Extract the sources array from the request
-    tools = req.get('sources', req.get('source', []))  # Default to empty list if not provided
+    tools = req.get('sources', [])  # Default to empty list if not provided
     
-    # Convert to list if a single string was provided
-    if isinstance(tools, str):
-        tools = [tools]
-        
-    print(f"Selected sources: {tools}")
-
-    # Reject the query if tools is not properly formatted (should be a list)
-    if tools is not None and not isinstance(tools, list):
+    # Strictly enforce that sources must be a list
+    if not isinstance(tools, list):
         raise HTTPException(
-            status_code=400, detail="'sources' must be a list of tool names.")
-    
-    # If no tools are selected, use the user's preferred tools if available,
-    # otherwise use the default built-in tools
-    print(f"DEBUG: Initial tools value: {tools}")
-    print(f"DEBUG: User ID: {user['id']}")
+            status_code=400, detail="'sources' must be a list of tool names, even for a single tool.")
+            
+    print(f"Selected sources: {tools}")
     
     if not tools:
-        print("DEBUG: No tools selected, checking for preferred tools")
         # Get the user's preferred tools
         preferred_tools = await get_user_preferred_tools(user["id"])
-        print(f"DEBUG: Preferred tools found: {preferred_tools}")
         
         if preferred_tools:
             tools = preferred_tools
-            print(f"DEBUG: Using user's preferred tools: {tools}")
         else:
             # If user has no preferred tools, fall back to default built-in tools
-            print("DEBUG: No preferred tools found, falling back to default tools")
             builtin_tools_response = await get_builtin_tools()
             tools = [tool['name'] for tool in builtin_tools_response['tools']]
-            print(f"DEBUG: Using default built-in tools: {tools}")
 
     if not text:
         raise HTTPException(
