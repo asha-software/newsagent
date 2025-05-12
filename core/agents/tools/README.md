@@ -116,19 +116,15 @@ github_issues_tool = create_tool(
 )
 ```
 
-## Integration with Agents
+## Tool Interface Explanation
 
-```python
-from langchain_openai import ChatOpenAI
-from langchain.agents import initialize_agent, AgentType
+NewsAgent builtin tools and custom tools implement essentially the same interface:
 
-# Create your API tools
-tools = [github_issues_tool, weather_tool]
+- Can take any number of parameters
+- Returns a tuple `(json.dumps(list[Evidence]), list[Evidence])`
 
-# Initialize agent
-llm = ChatOpenAI(temperature=0)
-agent = initialize_agent(tools, llm, agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION)
+Both builtin and custom tools get wrapped in LangChain's `StructuredTool` decorator with `response_format="content_and_artifact"`. So conceptually, the tool function will only return the serialized evidence list and the `list[Evidence]` appears on the call's ToolMessage `.artifact` attribute (see LangChain [https://python.langchain.com/docs/how_to/tool_artifacts/](https://python.langchain.com/docs/how_to/tool_artifacts/))
 
-# Run the agent
-agent.run("Find open issues in the langchain-ai/langchain repository")
-```
+Given a ToolMessage should have content on its `content` attribute, we serialize the tool call's assembled evidence to accurately return it. However, since by the end of a tool call our desired evidence presumably already resides in the desired `list[Evidence]` object, the Research Agent fist checks the ToolMessage's artifact for a valid `list[Evidence]` object. Failing that, it attempts to parse the `content` attribute. If that fails as well, it creates an `Evidence` list with a single item, including the raw string content from the ToolMessage.
+
+Builtin tools should exist each in their own file and be called `tool_function`; its unique name gets assigned by the `tool` decorator. Custom tools receive their name by user-supplied kwargs.

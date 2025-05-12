@@ -86,6 +86,7 @@ def get_chat_model(
             "model": model_name,
             "temperature": 0,
             "base_url": ollama_base_url,
+            "num_ctx": 128000,
             **kwargs
         }
         if format_output:

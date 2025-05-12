@@ -80,10 +80,10 @@ class CustomToolResponse(BaseModel):
     is_active: bool
 
 
-
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
 
 @app.get("/tools/builtins")
 async def get_builtin_tools():
@@ -93,11 +93,11 @@ async def get_builtin_tools():
     """
     tools = [
         {"name": "calculator", "display_name": "Calculator"},
-        {"name": "wikipedia", "display_name": "Wikipedia"},
+        {"name": "wikipedia_tool", "display_name": "Wikipedia"},
         {"name": "web_search", "display_name": "Web Search"},
-        {"name": "wolframalpha", "display_name": "Wolfram Alpha"}
+        # {"name": "wolframalpha", "display_name": "Wolfram Alpha"}
     ]
-    
+
     return {"tools": tools}
 
 
@@ -271,7 +271,7 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     if not text:
         raise HTTPException(
             status_code=400, detail="Input {'body': str} is required.")
-    
+
     if len(text) > 3500:
         raise HTTPException(
             status_code=400,
@@ -286,9 +286,9 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
     
     # If not cached, process the query
     user_tool_kwargs = await get_user_tool_params(user["id"], tools) if user else []
-    
+
     print(f"User tool parameters: {user_tool_kwargs}")
-    
+
     verdict_results = await process_query(text, builtin_tools=tools, user_tool_kwargs=user_tool_kwargs)
     
     # Save the result for future use
@@ -455,6 +455,7 @@ async def delete_api_key(api_key_id: int, user: dict[str, Any] = Depends(get_cur
         if 'connection' in locals() and connection:
             connection.close()
 
+
 @app.post("/tools/preferences")
 async def set_tool_preferences(request: Request, user: dict[str, Any] = Depends(get_current_user)):
     """
@@ -554,7 +555,7 @@ async def create_custom_tool(tool: CustomToolCreate, user: dict[str, Any] = Depe
                 """,
                 (
                     user["id"], tool.name, tool.description, datetime.datetime.now(), datetime.datetime.now(),
-                    tool.is_active, tool.method, tool.url_template, 
+                    tool.is_active, tool.method, tool.url_template,
                     json.dumps(tool.headers) if tool.headers else None,
                     json.dumps(tool.default_params) if tool.default_params else None,
                     json.dumps(tool.data) if tool.data else None,
