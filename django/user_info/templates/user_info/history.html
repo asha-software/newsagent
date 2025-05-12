@@ -23,23 +23,7 @@
                 </div>
             </a>
         </div>
-        <!-- Hamburger Menu -->
-        <div class="hamburger-menu">
-            <div class="hamburger-icon">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-        <div class="menu-items">
-            <a href="{% url 'search' %}">Search</a>
-            <a href="{% url 'history' %}">History</a>
-            <a href="{% url 'tool_list' %}">Tools</a>
-            <a href="{% url 'apikey_list' %}">API Keys</a>
-            <a href="{% url 'logout' %}">Logout</a>
-            <button class="menu-close-btn">Close</button>
-        </div>
-        <div class="menu-overlay"></div>
+        {% include 'user_info/includes/hamburger_menu.html' %}
         
         <div class="history-container">
             <div class="nav-links">

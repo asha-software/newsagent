@@ -233,10 +233,10 @@ function displaySearchResults(data, query) {
             evidenceResult.className = 'evidence-result';
             
             // Handle different types of evidence results
-            if (typeof evidence.result === 'string') {
-              evidenceResult.textContent = evidence.result;
+            if (typeof evidence.content === 'string') {
+              evidenceResult.textContent = evidence.content;
             } else {
-              evidenceResult.textContent = JSON.stringify(evidence.result);
+              evidenceResult.textContent = JSON.stringify(evidence.content);
             }
             
             evidenceItem.appendChild(evidenceResult);
@@ -685,6 +685,15 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
   const selectedSources = Array.from(document.querySelectorAll('input[name="source"]:checked'))
     .map(checkbox => checkbox.value);
 
+  // Create form data with search query and selected sources
+  const formData = new URLSearchParams();
+  formData.append('search', searchQuery);
+  
+  // Add each selected source to the form data
+  selectedSources.forEach(source => {
+    formData.append('source', source);
+  });
+  
   // First check if we have a cached result for this query using AJAX
   fetch(window.location.href, {
     method: 'POST',
@@ -693,9 +702,7 @@ document.getElementById('search-form').addEventListener('submit', function(e) {
       'X-Requested-With': 'XMLHttpRequest',
       'X-CSRFToken': csrfToken
     },
-    body: new URLSearchParams({
-      'search': searchQuery
-    })
+    body: formData
   })
   .then(response => response.json())
   .then(data => {
