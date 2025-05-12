@@ -373,7 +373,7 @@ class TestStatePostProcessing:
         """
         No messages in the state -> evidence remains empty.
         """
-        result = research_agent_uut.postprocessing(empty_state)
+        result = research_agent_uut.gather_evidence(empty_state)
         assert result["evidence"] == [], "Expected no evidence when state is empty."
 
     def test_post_processing_no_tool_calls(
@@ -382,7 +382,7 @@ class TestStatePostProcessing:
         """
         AIMessage present but 'tool_calls' is empty -> evidence remains empty.
         """
-        result = research_agent_uut.postprocessing(no_tool_calls_state)
+        result = research_agent_uut.gather_evidence(no_tool_calls_state)
         assert (
             result["evidence"] == []
         ), "Expected no evidence when AIMessage has no tool_calls."
@@ -393,7 +393,7 @@ class TestStatePostProcessing:
         """
         AIMessage has tool_calls, but no matching ToolMessage -> no evidence is collected.
         """
-        result = research_agent_uut.postprocessing(
+        result = research_agent_uut.gather_evidence(
             single_tool_call_no_tool_message_state
         )
         assert (
@@ -407,7 +407,7 @@ class TestStatePostProcessing:
         AIMessage has a single tool_call and exactly one matching ToolMessage ->
         that single piece of evidence is collected.
         """
-        result = research_agent_uut.postprocessing(
+        result = research_agent_uut.gather_evidence(
             single_tool_call_with_tool_message_state
         )
         assert len(result["evidence"]) == 1, "Expected exactly one evidence item."
@@ -424,7 +424,7 @@ class TestStatePostProcessing:
         Each tool_call has a matching ToolMessage somewhere in the later messages.
         We break after the first match for each tool_call.
         """
-        result = research_agent_uut.postprocessing(multiple_tool_calls_state)
+        result = research_agent_uut.gather_evidence(multiple_tool_calls_state)
         # We expect exactly two evidence items, one for each tool_call.
         assert len(result["evidence"]) == 2, "Expected two evidence items."
 
