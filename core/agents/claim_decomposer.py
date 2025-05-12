@@ -1,3 +1,4 @@
+from langchain_ollama import ChatOllama
 from dotenv import load_dotenv
 import json
 import os
@@ -7,6 +8,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
+from pydantic import BaseModel, Field
 
 DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
@@ -32,9 +34,14 @@ LLM_OUTPUT_FORMAT = {
     }
 }
 
+
+class ClaimsOutput(BaseModel):
+    claims: list[str] = Field(description="The list of individual claim strings.")
+
+
 llm = get_chat_model(
     model_name=os.getenv("CLAIM_DECOMPOSER_MODEL", DEFAULT_MODEL),
-    format_output=LLM_OUTPUT_FORMAT,
+    output_model=ClaimsOutput,
 )
 
 
@@ -62,25 +69,25 @@ def assistant(state: State) -> State:
     Gets the LLM response to System and Human prompt
     """
     response = llm.invoke(state['messages'])
-    return {'messages': response}
+    return {'claims': response.claims}
 
+# TODO: use postprocessing node to deal with bad LLM output, if necessary
+# def postprocessing(state: State) -> State:
+#     """
+#     Postprocesses the LLM response to extract the claims
+#     Using format output on the LLM, we expect the AIMessage.content to be parsable
+#     as a list of strings
+#     """
+#     # We assume the last message in the state is the AI response
+#     message = state['messages'][-1]
+#     assert isinstance(
+#         message, AIMessage), "Postprocessing node expected the last message to be an AIMessage"
+#     try:
+#         claims = json.loads(message.content)
+#     except json.JSONDecodeError as e:
+#         print(f"Error decoding JSON from claim decomposer: {e}")
 
-def postprocessing(state: State) -> State:
-    """
-    Postprocesses the LLM response to extract the claims
-    Using format output on the LLM, we expect the AIMessage.content to be parsable
-    as a list of strings
-    """
-    # We assume the last message in the state is the AI response
-    message = state['messages'][-1]
-    assert isinstance(
-        message, AIMessage), "Postprocessing node expected the last message to be an AIMessage"
-    try:
-        claims = json.loads(message.content)
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON from claim decomposer: {e}")
-
-    return {'claims': claims}
+#     return {'claims': claims}
 
 
 builder = StateGraph(State)
@@ -88,13 +95,14 @@ builder = StateGraph(State)
 # Define nodes
 builder.add_node("preprocessing", preprocessing)
 builder.add_node("assistant", assistant)
-builder.add_node("postprocessing", postprocessing)
+# builder.add_node("postprocessing", postprocessing)
 
 # Define edges
 builder.add_edge(START, "preprocessing")
 builder.add_edge("preprocessing", "assistant")
-builder.add_edge("assistant", "postprocessing")
-builder.add_edge("postprocessing", END)
+builder.add_edge("assistant", END)
+# builder.add_edge("assistant", "postprocessing")
+# builder.add_edge("postprocessing", END)
 
 claim_decomposer = builder.compile()
 
@@ -104,6 +112,7 @@ def main():
     initial_state = {"text": "The sky is blue and the grass is green."}
     result = claim_decomposer.invoke(initial_state)
     print(f"Decomposed claims: {result['claims']}")
+    print(f"Type: {type(result['claims'])}")
 
 
 if __name__ == "__main__":

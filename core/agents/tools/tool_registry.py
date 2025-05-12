@@ -5,7 +5,7 @@ from langchain.tools import StructuredTool
 from typing import Literal
 from core.agents.utils.common_types import Evidence
 
-TYPE_MAPPING = {
+TYPE_MAPPING_PYTHON = {
     "int": int,
     "str": str,
     "float": float,
@@ -13,6 +13,16 @@ TYPE_MAPPING = {
     "array": list,
     "object": dict,
     "None": type(None)  # For NoneType
+}
+
+TYPE_MAPPING_JSON = {
+    "int": "integer",
+    "str": "string",
+    "float": "number",
+    "bool": "boolean",
+    "array": "array",
+    "object": "object",
+    "None": "null"  # For NoneType
 }
 
 
@@ -92,7 +102,7 @@ def create_tool(
         for param_name, param_value in kwargs.items():
             if param_name in param_mapping:
                 param_info = param_mapping[param_name]
-                param_type = TYPE_MAPPING[param_info['type']]  # Validate type
+                param_type = TYPE_MAPPING_PYTHON[param_info['type']]  # Validate type
                 if not isinstance(param_value, param_type):
                     raise TypeError(
                         f"Parameter '{param_name}' must be of type {param_info['type']}.")
@@ -159,7 +169,7 @@ def create_tool(
         Parameter(
             name=param_name,
             kind=Parameter.POSITIONAL_OR_KEYWORD,
-            annotation=TYPE_MAPPING[param_info['type']]
+            annotation=TYPE_MAPPING_PYTHON[param_info['type']]
         )
         for param_name, param_info in param_mapping.items()
     ]
@@ -171,13 +181,16 @@ def create_tool(
         bound_args.apply_defaults()
         return api_caller(**bound_args.arguments)
 
-    # Create arguments schema dictionary for LangChain
     args_schema = {
-        param_name: {  # Use parameter name as key
-            "description": f"{param_name} parameter",
-            "type": param_info['type']
-        }
-        for param_name, param_info in param_mapping.items()
+        "type": "object",
+        "properties": {
+            param_name: {
+                "description": f"{param_name} parameter",
+                "type": TYPE_MAPPING_JSON[param_info['type']]
+            }
+            for param_name, param_info in param_mapping.items()
+        },
+        "required": list(param_mapping.keys())
     }
 
     return StructuredTool.from_function(

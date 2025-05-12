@@ -92,14 +92,6 @@ def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
 Static graph components
 """
 
-# FILTER_OUTPUT_FORMAT = {
-#     "type": "array",
-#     "items": {
-#         "type": "string"
-#     }
-# }
-
-
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
@@ -300,11 +292,11 @@ def main():
     }
 
     research_agent = create_agent(
-        model='mistral-nemo',
-        builtin_tools=builtin_tools_wanted,
-        user_tool_kwargs=[]
+        model='gpt-4o',
+        builtin_tools=[],
+        user_tool_kwargs=[pokemon_kwargs]
     )
-    claim = "Python was created by Guido van Rossum"
+    claim = "Pikachu is an electric type Pokémon. It has the ability static."
     final_state = research_agent.invoke({"claim": claim})
     print(f"Final evidence: {final_state['evidence']}")
     print()

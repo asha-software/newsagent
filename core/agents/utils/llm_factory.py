@@ -4,11 +4,14 @@ from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 # from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
+from pydantic import BaseModel
 
 # Map model names to their providers
 MODEL_PROVIDERS = {
     # OpenAI models (NOTE: many models don't support formatted output the we're using it for Ollama. We'll likely have to move to pydantic to support both with the same schema models)
+    "gpt-4o": "openai",
     "gpt-4o-mini": "openai",
+    "gpt-4.1": "openai",
 
     # Anthropic models
     "claude-3-opus-20240229": "anthropic",
@@ -34,7 +37,7 @@ MODEL_PROVIDERS = {
 
 def get_chat_model(
     model_name: str,
-    format_output: Optional[Dict] = None,
+    output_model: Optional[Dict] | BaseModel = None,
     **kwargs
 ) -> BaseChatModel:
     """
@@ -52,33 +55,28 @@ def get_chat_model(
     """
     # Determine provider - use explicit provider if specified, otherwise look up in the mapping
     model_provider = MODEL_PROVIDERS.get(model_name)
-
     # If we can't determine provider from mapping or explicit override, use Ollama as fallback
     if not model_provider:
-        print(f"Warning: Unknown model '{model_name}'."
+        print(f"Warning: Unknown model '{model_name}'. "
               f"Add this model to MODEL_PROVIDERS explicitly to enable support.")
+
+    print(f"Using model '{model_name}' with structured output model '{output_model}'")
 
     # Create the appropriate model type
     if model_provider == "openai":
-        return ChatOpenAI(
+        llm = ChatOpenAI(
             model=model_name,
             temperature=0,
-            model_kwargs={
-                "response_format":
-                {
-                    "type": "json_schema",
-                    "json_schema": format_output
-                }
-            }
+            max_tokens=None,
+            timeout=None,
+            max_retries=2
         )
+        if output_model:
+            llm = llm.with_structured_output(output_model, method="json_schema")
+        return llm
 
-    # elif model_provider == "anthropic":
-    #     return ChatAnthropic(
-    #         model=model_name,
-    #         temperature=0,
-    #         **({"response_format": format} if format else {}),
-    #         **kwargs
-    #     )
+    # TODO: Add Anthropic support
+
     elif model_provider == "ollama":  # ollama
         ollama_base_url = os.getenv(
             "OLLAMA_BASE_URL", "http://localhost:11434")
@@ -86,12 +84,13 @@ def get_chat_model(
             "model": model_name,
             "temperature": 0,
             "base_url": ollama_base_url,
-            "num_ctx": 128000,
-            **kwargs
+            # "num_ctx": 128000,
+            # **kwargs
         }
-        if format_output:
-            model_kwargs["format"] = format_output
-        return ChatOllama(**model_kwargs)
+        llm = ChatOllama(**model_kwargs)
+        if output_model:
+            llm = llm.with_structured_output(output_model, method="json_schema")
+        return llm
 
     raise ValueError(
         f"Unknown model '{model_name}', can't build an LLM on that model.")

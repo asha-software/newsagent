@@ -7,13 +7,13 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from typing import Annotated, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
+from pydantic import BaseModel, Field
 
 DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
 # Load environment variables
 DIR = Path(__file__).parent.resolve()
 load_dotenv(DIR.parent / ".env", override=True)
-
 
 
 LLM_OUTPUT_FORMAT = {
@@ -30,8 +30,17 @@ LLM_OUTPUT_FORMAT = {
     "required": ["final_label", "final_justification"]
 }
 
-llm = get_chat_model(model_name=os.getenv(
-    "VERDICT_AGENT_MODEL", DEFAULT_MODEL), format_output=LLM_OUTPUT_FORMAT)
+
+class ReasoningOutput(BaseModel):
+    final_justification: str = Field(
+        description="The final justification for the label assigned to the claim.")
+    final_label: str = Field(
+        description="The final label assigned to the claim.")
+
+
+llm = get_chat_model(
+    model_name=os.getenv("VERDICT_AGENT_MODEL", DEFAULT_MODEL),
+    output_model=ReasoningOutput)
 
 
 class State(TypedDict):
@@ -68,39 +77,59 @@ def prompt_prep_node(state: State) -> dict:
 
 def verdict_node(state: State) -> dict:
     response = llm.invoke(state['messages'])
-    return {"messages": response}
+    return {"final_label": response.final_label, "final_justification": response.final_justification}
 
 
-def postprocessing_node(state: State) -> dict:
-    response = state['messages'][-1]
+# def postprocessing_node(state: State) -> dict:
+#     response = state['messages'][-1]
 
-    try:
-        structured = json.loads(response.content)
-    except json.JSONDecodeError as e:
-        print("JSON decode error:", e)
-        print("Raw response content:", response.content)
+#     try:
+#         structured = json.loads(response.content)
+#     except json.JSONDecodeError as e:
+#         print("JSON decode error:", e)
+#         print("Raw response content:", response.content)
 
-        structured = {
-            "final_label": "unknown",
-            "final_justification": "Model did not return valid JSON."
-        }
+#         structured = {
+#             "final_label": "unknown",
+#             "final_justification": "Model did not return valid JSON."
+#         }
 
-    return {
-        "final_label": structured.get("final_label", "Verdict Agent did not return a verdict."),
-        "final_justification": structured.get("final_justification", "Verdict Agent did not return a justification."),
-    }
-
+#     return {
+#         "final_label": structured.get("final_label", "Verdict Agent did not return a verdict."),
+#         "final_justification": structured.get("final_justification", "Verdict Agent did not return a justification."),
+#     }
 
 # Graph definition
 builder = StateGraph(State)
 
 builder.add_node("prompt_prep", prompt_prep_node)
 builder.add_node("verdict", verdict_node)
-builder.add_node("postprocessing", postprocessing_node)
+# builder.add_node("postprocessing", postprocessing_node)
 
 builder.add_edge(START, "prompt_prep")
 builder.add_edge("prompt_prep", "verdict")
-builder.add_edge("verdict", "postprocessing")
-builder.add_edge("postprocessing", END)
+builder.add_edge("verdict", END)
+# builder.add_edge("verdict", "postprocessing")
+# builder.add_edge("postprocessing", END)
 
 verdict_agent = builder.compile()
+
+
+def main():
+    # Example usage
+    state = {
+        "messages": [],
+        "claims": ["I'm just a poor man from a poor family", "I am the walrus"],
+        "labels": ["true", "false"],
+        "justifications": ["My momma just killed a man", "I am the egg man, goo goo g'joob"],
+        # "final_label": None,
+        # "final_justification": None
+    }
+    result = verdict_agent.invoke(state)
+    from pprint import pprint
+    pprint(result)
+    print(type(result))
+
+
+if __name__ == "__main__":
+    main()
