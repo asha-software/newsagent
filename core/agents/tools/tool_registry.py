@@ -151,7 +151,7 @@ def create_tool(
                 source=url
             )
         ]
-        # Return the evidence list as a JSON string and the list[Evidence] as artifact
+        # Return the evidence list as a JSON string for content and the list[Evidence] as artifact
         return json_module.dumps(evidence_list), evidence_list
 
     # Dynamically create the function signature
