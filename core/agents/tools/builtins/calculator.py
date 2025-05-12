@@ -23,7 +23,11 @@ def tool_function(expression: str) -> tuple[str, list[Evidence]]:
         - "pi * 2" (using constants)
     """
     local_dict: dict[str, float] = {
-        "pi": math.pi, "e": math.e, "tau": math.tau, "euler_gamma": float(numpy.euler_gamma)}
+        "pi": math.pi,
+        "e": math.e,
+        "tau": math.tau,
+        "euler_gamma": float(numpy.euler_gamma),
+    }
     try:
         content = str(
             numexpr.evaluate(
@@ -40,11 +44,12 @@ def tool_function(expression: str) -> tuple[str, list[Evidence]]:
 
     evidence_list = [
         Evidence(
-        name="calculator",
-        args={"expression": expression},
-        content=content,
-        source="calculator",
-    )]
+            name="calculator",
+            args={"expression": expression},
+            content=content,
+            source="calculator",
+        )
+    ]
 
     return json.dumps(evidence_list), evidence_list
 

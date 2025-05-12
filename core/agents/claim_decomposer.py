@@ -25,12 +25,7 @@ class State(TypedDict):
     claims: list[str]
 
 
-LLM_OUTPUT_FORMAT = {
-    "type": "array",
-    "items": {
-        "type": "string"
-    }
-}
+LLM_OUTPUT_FORMAT = {"type": "array", "items": {"type": "string"}}
 
 llm = get_chat_model(
     model_name=os.getenv("CLAIM_DECOMPOSER_MODEL", DEFAULT_MODEL),
@@ -53,7 +48,7 @@ def preprocessing(state: State) -> State:
     Currently, this just extracts the text from the state, and sets it
     as a HumanMessage following the SystemMessage
     """
-    state['messages'] = [system_message, HumanMessage(content=state['text'])]
+    state["messages"] = [system_message, HumanMessage(content=state["text"])]
     return state
 
 
@@ -61,8 +56,8 @@ def assistant(state: State) -> State:
     """
     Gets the LLM response to System and Human prompt
     """
-    response = llm.invoke(state['messages'])
-    return {'messages': response}
+    response = llm.invoke(state["messages"])
+    return {"messages": response}
 
 
 def postprocessing(state: State) -> State:
@@ -72,15 +67,16 @@ def postprocessing(state: State) -> State:
     as a list of strings
     """
     # We assume the last message in the state is the AI response
-    message = state['messages'][-1]
+    message = state["messages"][-1]
     assert isinstance(
-        message, AIMessage), "Postprocessing node expected the last message to be an AIMessage"
+        message, AIMessage
+    ), "Postprocessing node expected the last message to be an AIMessage"
     try:
         claims = json.loads(message.content)
     except json.JSONDecodeError as e:
         print(f"Error decoding JSON from claim decomposer: {e}")
 
-    return {'claims': claims}
+    return {"claims": claims}
 
 
 builder = StateGraph(State)
