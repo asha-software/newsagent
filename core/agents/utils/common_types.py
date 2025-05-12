@@ -12,6 +12,7 @@ class Evidence(TypedDict):
     result: Result of the tool
     source: Source of the evidence (e.g., URL, tool name)
     """
+
     name: str
     args: dict
     content: str | dict | list
@@ -22,6 +23,7 @@ class Analysis(TypedDict):
     """
     Packages a claim with its evidence, label, and justification
     """
+
     claim: str
     label: str
     justification: str
@@ -32,6 +34,7 @@ class EvidenceModel(BaseModel):
     """
     Evidence model for storing evidence data.
     """
+
     name: str
     args: dict
     content: Union[str, dict, list]
