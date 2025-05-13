@@ -8,6 +8,8 @@ from langgraph.graph.message import add_messages
 from typing import Annotated, Literal, TypedDict
 from core.agents.utils.llm_factory import get_chat_model
 from core.agents.utils.common_types import Evidence
+from langgraph.types import Command
+from typing_extensions import Literal as TxLiteral
 
 DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
@@ -100,3 +102,21 @@ builder.add_edge("preprocessing", "assistant")
 builder.add_edge("assistant", "postprocessing")
 builder.add_edge("postprocessing", END)
 reasoning_agent = builder.compile()
+
+def reason_node(state) -> Command[TxLiteral["verdict"]]:
+    """
+    Wrapper: invoke the reasoning_agent sub-graph for *each* claim/evidence,
+    then hand off lists of labels & justifications.
+    """
+    labels, justifications = [], []
+    for claim, ev_list in zip(state["claims"], state["evidence"]):
+        out = reasoning_agent.invoke({"claim": claim, "evidence": ev_list})
+        labels.append(out["label"])
+        justifications.append(out["justification"])
+    return Command(
+        goto="verdict",
+        update={
+            "labels": labels,
+            "justifications": justifications
+        }
+    )

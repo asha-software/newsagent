@@ -17,6 +17,9 @@ from typing import Annotated, TypedDict, Callable
 from core.agents.tools.tool_registry import create_tool
 from core.agents.utils.llm_factory import get_chat_model
 from core.agents.utils.common_types import Evidence
+from langgraph.types import Command
+from typing_extensions import Literal
+
 
 DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
@@ -189,6 +192,18 @@ def create_agent(
     return agent
 
 
+
+# instantiate once
+research_agent = create_agent(
+    model="llama3", builtin_tools=[], user_tool_kwargs=[]
+)
+
+def research_node(state: State) -> Command[Literal["reason"]]:
+    """Wrapper: call research_agent, hand off only `evidence`."""
+    out = research_agent.invoke({"claim": state["claim"]})
+    return Command(goto="reason", update={"evidence": out["evidence"]})
+
+
 def main():
     builtin_tools_wanted = ['wikipedia', 'web_search']
 
@@ -221,7 +236,6 @@ def main():
     final_state = research_agent.invoke({"claim": claim})
     print(f"Final evidence: {final_state['evidence']}")
     print()
-
 
 if __name__ == "__main__":
     main()
