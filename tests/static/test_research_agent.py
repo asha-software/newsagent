@@ -3,6 +3,9 @@ import importlib
 import unittest.mock
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
+from core.agents.utils.common_types import Evidence
+
+
 ###############################
 # Fixtures and Test Helpers
 ###############################
@@ -166,13 +169,7 @@ def single_tool_call_with_tool_message_state():
     """
     return {
         "messages": [
-            AIMessage(
-                content="I'm using a tool now.",
-                tool_calls=[
-                    {"id": "toolcall1", "name": "some_tool", "args": {"param": "val"}}
-                ],
-            ),
-            ToolMessage(content="Tool result content", tool_call_id="toolcall1"),
+            ToolMessage(content=[Evidence(name="Hi!", args={}, content="The Sky is purple", source="I made it up")], tool_call_id="toolcall1"),
             HumanMessage(content="User message after tool."),
         ],
         "claim": "Single tool call with matching ToolMessage",

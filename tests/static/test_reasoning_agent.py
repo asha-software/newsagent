@@ -20,7 +20,7 @@ def sample_state(reasoning_agent_uut):
     Provides a minimal valid State fixture for testing.
     """
     return reasoning_agent_uut.State(messages=[], claim="The sky is blue", evidence=[
-        Evidence(name="Factbook", result="Earth's atmosphere causes scattering of blue light.", args={})
+        Evidence(name="Totally Real Information LLC", args={}, content="The sky contains blue light", source="I made it up")
     ], label=None, justification=None)
 
 
@@ -47,7 +47,7 @@ def test_preprocessing(reasoning_agent_uut, sample_state, evidence_count):
     """
     # Adjust the sample_state's evidence to have `evidence_count` items
     sample_state["evidence"] = [
-        {"name": f"source{i}", "result": f"result{i}"}
+        Evidence(name="Totally Real Information LLC", args={}, content="The sky contains blue light " + str(i), source="I made it up " + str(i))
         for i in range(evidence_count)
     ]
 
@@ -61,7 +61,7 @@ def test_preprocessing(reasoning_agent_uut, sample_state, evidence_count):
 
     # The system message should contain a bullet list with the evidence results
     for i in range(evidence_count):
-        assert f"* source{i}: result{i}" in system_msg.content
+        assert "The sky contains blue light " + str(i) in system_msg.content
 
     # The human message should contain the claim
     assert "Claim:" in human_msg.content
