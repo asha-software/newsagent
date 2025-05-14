@@ -135,8 +135,6 @@ Alternatively, you can use the combined command for steps 3-5:
 ./k8s/deploy.sh --build --push-to-ecr --deploy
 ```
 
-**Important Note**: Do not use `--terraform` with `--push-to-ecr` in the same command, as this can cause conflicts with ECR repository creation. Always run Terraform separately first, then proceed with the other steps.
-
 ### Accessing the Deployed Application
 
 After deployment, the `deploy.sh` script will display the URLs for accessing your application:
