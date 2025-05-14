@@ -2,6 +2,7 @@ import os
 import datetime
 import pymysql
 import json
+import uuid
 from typing import Any, Optional, Dict, List, Union, Literal
 from fastapi import FastAPI, HTTPException, Request, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -103,6 +104,94 @@ async def get_builtin_tools():
     return {"tools": tools}
 
 
+async def get_cached_result(user_id: int, query: str) -> Optional[dict]:
+    """
+    Check if a cached result exists for the given user and query using the Django table.
+    
+    Args:
+        user_id: The ID of the user
+        query: The query text
+        
+    Returns:
+        The cached result data if found, None otherwise
+    """
+    try:
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT result_data FROM user_info_sharedsearchresult
+                WHERE user_id = %s AND query = %s
+                """,
+                (user_id, query)
+            )
+            row = cursor.fetchone()
+            if row:
+                # The result_data is stored as JSON in the database
+                return json.loads(row[0]) if isinstance(row[0], str) else row[0]
+        return None
+    except Exception as e:
+        print(f"Error retrieving cached result: {e}")
+        return None
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+async def cache_result(user_id: int, query: str, result_data: dict) -> bool:
+    """
+    Cache a query result for future use in the Django table.
+    
+    Args:
+        user_id: The ID of the user
+        query: The query text
+        result_data: The result data to cache
+        
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            # Check if a record already exists
+            cursor.execute(
+                """
+                SELECT id FROM user_info_sharedsearchresult
+                WHERE user_id = %s AND query = %s
+                """,
+                (user_id, query)
+            )
+            existing_record = cursor.fetchone()
+            
+            if existing_record:
+                # Update existing record
+                cursor.execute(
+                    """
+                    UPDATE user_info_sharedsearchresult
+                    SET result_data = %s, created_at = NOW()
+                    WHERE id = %s
+                    """,
+                    (json.dumps(result_data), existing_record[0])
+                )
+            else:
+                # Insert new record with UUID as id (using hex format without hyphens)
+                cursor.execute(
+                    """
+                    INSERT INTO user_info_sharedsearchresult
+                    (id, user_id, query, result_data, created_at, is_public)
+                    VALUES (%s, %s, %s, %s, NOW(), %s)
+                    """,
+                    (uuid.uuid4().hex, user_id, query, json.dumps(result_data), False)
+                )
+            
+            connection.commit()
+        return True
+    except Exception as e:
+        print(f"Error caching result: {e}")
+        return False
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
 @app.post("/query")
 async def query(request: Request, user: dict[str, Any] = Depends(get_current_user)):
     # User is authenticated at this point
@@ -138,11 +227,23 @@ async def query(request: Request, user: dict[str, Any] = Depends(get_current_use
             detail="Input text exceeds the maximum allowed length of 3500 characters."
         )
     
+    # Check for cached result
+    cached_result = await get_cached_result(user["id"], text)
+    if cached_result:
+        print(f"Using cached result for query: {text[:50]}...")
+        return cached_result
+    
+    print(f"No cached result found, processing query: {text[:50]}...")
     user_tool_kwargs = await get_user_tool_params(user["id"], tools) if user else []
     
     print(f"User tool parameters: {user_tool_kwargs}")
     
     verdict_results = await process_query(text, builtin_tools=tools, user_tool_kwargs=user_tool_kwargs)
+    
+    # Cache the result for future use
+    await cache_result(user["id"], text, verdict_results)
+    print(f"Cached result for query: {text[:50]}...")
+    
     return verdict_results
 
 
@@ -522,6 +623,26 @@ async def delete_custom_tool(tool_id: int, user: dict[str, Any] = Depends(get_cu
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Error deleting custom tool: {str(e)}")
+    finally:
+        if 'connection' in locals() and connection:
+            connection.close()
+
+@app.delete("/cache")
+async def clear_cache(user: dict[str, Any] = Depends(get_current_user)):
+    """
+    Clears all cached queries for the authenticated user.
+    """
+    try:
+        connection = pymysql.connect(**DB_CONFIG)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "DELETE FROM user_info_sharedsearchresult WHERE user_id = %s",
+                (user["id"],)
+            )
+            connection.commit()
+        return {"message": "Cache cleared successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error clearing cache: {str(e)}")
     finally:
         if 'connection' in locals() and connection:
             connection.close()
