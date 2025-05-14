@@ -36,6 +36,11 @@ resource "aws_vpc" "eks_vpc" {
       Name = "${var.cluster_name}-vpc"
     }
   )
+  
+  # Skip recreation if VPC already exists
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 # Internet Gateway
@@ -47,6 +52,11 @@ resource "aws_internet_gateway" "eks_igw" {
       Name = "${var.cluster_name}-igw"
     }
   )
+  
+  # Skip recreation if Internet Gateway already exists
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 # Public Subnets
@@ -64,6 +74,11 @@ resource "aws_subnet" "eks_public_subnet" {
       "kubernetes.io/cluster/${var.cluster_name}" = "shared"
     }
   )
+  
+  # Skip recreation if Subnets already exist
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 # Security Group for EKS Cluster Load Balancers
@@ -71,6 +86,15 @@ resource "aws_security_group" "eks_lb_sg" {
   name        = "${var.cluster_name}-lb-sg"
   description = "Security group for EKS cluster load balancers"
   vpc_id      = aws_vpc.eks_vpc.id
+  
+  # Skip recreation if Security Group already exists
+  lifecycle {
+    ignore_changes = [
+      name,
+      description,
+      tags
+    ]
+  }
 
   # Allow HTTP traffic for Django (port 8000)
   ingress {
@@ -120,6 +144,11 @@ resource "aws_route_table" "eks_public_rt" {
       Name = "${var.cluster_name}-public-rt"
     }
   )
+  
+  # Skip recreation if Route Table already exists
+  lifecycle {
+    ignore_changes = [tags, route]
+  }
 }
 
 # Route Table Association for Public Subnets
@@ -127,6 +156,11 @@ resource "aws_route_table_association" "eks_public_rt_assoc" {
   count          = length(aws_subnet.eks_public_subnet)
   subnet_id      = aws_subnet.eks_public_subnet[count.index].id
   route_table_id = aws_route_table.eks_public_rt.id
+  
+  # Skip recreation if Route Table Association already exists
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # IAM Role for EKS Cluster - Use a unique name to avoid conflicts
@@ -144,6 +178,14 @@ resource "aws_iam_role" "eks_cluster_role" {
       }
     ]
   })
+  
+  # Skip recreation if IAM Role already exists
+  lifecycle {
+    ignore_changes = [
+      name,
+      tags
+    ]
+  }
 }
 
 # Attach Required Policies to Cluster Role
@@ -152,8 +194,10 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   
   # This ensures the policy attachment is recreated when the role is recreated
+  # and skips recreation if policy attachment already exists
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [role]
   }
 }
 
@@ -173,6 +217,15 @@ resource "aws_eks_cluster" "eks_cluster" {
   depends_on = [
     aws_iam_role_policy_attachment.eks_cluster_policy
   ]
+  
+  # Skip recreation if EKS Cluster already exists
+  lifecycle {
+    ignore_changes = [
+      version,
+      vpc_config,
+      tags
+    ]
+  }
 }
 
 # IAM Role for EKS Node Group - Use a unique name to avoid conflicts
@@ -190,6 +243,14 @@ resource "aws_iam_role" "eks_node_role" {
       }
     ]
   })
+  
+  # Skip recreation if IAM Role already exists
+  lifecycle {
+    ignore_changes = [
+      name,
+      tags
+    ]
+  }
 }
 
 # Attach Required Policies to Node Role
@@ -198,8 +259,10 @@ resource "aws_iam_role_policy_attachment" "eks_worker_node_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   
   # This ensures the policy attachment is recreated when the role is recreated
+  # and skips recreation if policy attachment already exists
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [role]
   }
 }
 
@@ -208,8 +271,10 @@ resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
   
   # This ensures the policy attachment is recreated when the role is recreated
+  # and skips recreation if policy attachment already exists
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [role]
   }
 }
 
@@ -218,8 +283,10 @@ resource "aws_iam_role_policy_attachment" "eks_container_registry_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
   
   # This ensures the policy attachment is recreated when the role is recreated
+  # and skips recreation if policy attachment already exists
   lifecycle {
     create_before_destroy = true
+    ignore_changes = [role]
   }
 }
 
@@ -251,9 +318,15 @@ resource "aws_eks_node_group" "eks_node_group" {
     source_security_group_ids = var.source_security_group_ids
   }
   
-  # Add lifecycle configuration to handle key pair issues
+  # Skip recreation if Node Group already exists and handle key pair issues
   lifecycle {
-    ignore_changes = [remote_access]
+    ignore_changes = [
+      remote_access,
+      scaling_config,
+      labels,
+      tags,
+      instance_types
+    ]
   }
   
   # Ensure IAM role policies are attached before creating node group
@@ -290,6 +363,11 @@ resource "aws_subnet" "ollama_public_subnet" {
       Name = "${var.cluster_name}-ollama-public-subnet"
     }
   )
+  
+  # Skip recreation if Subnet already exists
+  lifecycle {
+    ignore_changes = [tags]
+  }
 }
 
 # Route Table for Ollama Public Subnet
@@ -305,12 +383,22 @@ resource "aws_route_table" "ollama_public_rt" {
       Name = "${var.cluster_name}-ollama-public-rt"
     }
   )
+  
+  # Skip recreation if Route Table already exists
+  lifecycle {
+    ignore_changes = [tags, route]
+  }
 }
 
 # Route Table Association for Ollama Public Subnet
 resource "aws_route_table_association" "ollama_public_rt_assoc" {
   subnet_id      = aws_subnet.ollama_public_subnet.id
   route_table_id = aws_route_table.ollama_public_rt.id
+  
+  # Skip recreation if Route Table Association already exists
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # Security Group for Ollama EC2 Instance
@@ -318,6 +406,15 @@ resource "aws_security_group" "ollama_sg" {
   name        = "${var.cluster_name}-ollama-sg"
   description = "Security group for Ollama EC2 instance"
   vpc_id      = aws_vpc.eks_vpc.id
+  
+  # Skip recreation if Security Group already exists
+  lifecycle {
+    ignore_changes = [
+      name,
+      description,
+      tags
+    ]
+  }
 
   # Allow SSH from anywhere (you may want to restrict this to your IP)
   ingress {
@@ -370,18 +467,39 @@ resource "aws_iam_role" "ollama_role" {
     ]
   })
   tags = var.tags
+  
+  # Skip recreation if IAM Role already exists
+  lifecycle {
+    ignore_changes = [
+      name,
+      tags
+    ]
+  }
 }
 
 # IAM Instance Profile for Ollama EC2 Instance - Use a unique name to avoid conflicts
 resource "aws_iam_instance_profile" "ollama_profile" {
   name = "${var.cluster_name}-ollama-profile-${formatdate("YYYYMMDDhhmmss", timestamp())}"
   role = aws_iam_role.ollama_role.name
+  
+  # Skip recreation if IAM Instance Profile already exists
+  lifecycle {
+    ignore_changes = [
+      name,
+      role
+    ]
+  }
 }
 
 # Create a new key pair for EC2 instances
 resource "tls_private_key" "ollama_key" {
   algorithm = "RSA"
   rsa_bits  = 4096
+  
+  # Skip recreation if key already exists
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # Store the private key locally so you can use it to SSH into instances
@@ -389,12 +507,22 @@ resource "local_file" "ollama_private_key" {
   content         = tls_private_key.ollama_key.private_key_pem
   filename        = "${path.module}/ollama-key.pem"
   file_permission = "0600"  # Proper permissions for SSH key
+  
+  # Skip recreation if file already exists
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # Register the key pair with AWS
 resource "aws_key_pair" "ollama_key_pair" {
   key_name   = "${var.cluster_name}-ollama-key"
   public_key = tls_private_key.ollama_key.public_key_openssh
+  
+  # Skip recreation if key pair already exists
+  lifecycle {
+    ignore_changes = all
+  }
 }
 
 # EC2 Instance for Ollama
@@ -422,6 +550,18 @@ resource "aws_instance" "ollama_instance" {
   )
 
   depends_on = [aws_internet_gateway.eks_igw]
+  
+  # Skip recreation if EC2 Instance already exists
+  lifecycle {
+    ignore_changes = [
+      ami,
+      instance_type,
+      key_name,
+      root_block_device,
+      tags,
+      user_data
+    ]
+  }
 }
 
 # Output the path to the Ollama key file
@@ -449,6 +589,14 @@ resource "aws_security_group_rule" "eks_to_ollama" {
   
   # This ensures the security group rule is created after the EKS cluster
   depends_on = [aws_eks_cluster.eks_cluster]
+  
+  # Skip recreation if Security Group Rule already exists
+  lifecycle {
+    ignore_changes = [
+      description,
+      source_security_group_id
+    ]
+  }
 }
 
 # Output the Ollama instance IPs
@@ -512,6 +660,15 @@ resource "aws_ecr_repository" "newsagent_api" {
       Name = "newsagent-api"
     }
   )
+  
+  # Skip recreation if repository already exists
+  lifecycle {
+    ignore_changes = [
+      name,
+      image_tag_mutability,
+      image_scanning_configuration
+    ]
+  }
 }
 
 resource "aws_ecr_repository" "newsagent_django" {
@@ -529,6 +686,15 @@ resource "aws_ecr_repository" "newsagent_django" {
       Name = "newsagent-django"
     }
   )
+  
+  # Skip recreation if repository already exists
+  lifecycle {
+    ignore_changes = [
+      name,
+      image_tag_mutability,
+      image_scanning_configuration
+    ]
+  }
 }
 
 # Output ECR repository URLs

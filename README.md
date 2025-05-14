@@ -67,6 +67,106 @@ The application provides a REST API for programmatic access. You can:
 
 See the API documentation at `http://localhost:8001/docs` when the application is running.
 
+## AWS Deployment
+
+For deploying the application to AWS, we use Terraform to provision the infrastructure and Kubernetes (EKS) to deploy the application components. The deployment process is automated through scripts in the `k8s` and `terraform` directories.
+
+### Prerequisites for AWS Deployment
+
+- AWS CLI installed and configured with appropriate credentials
+- Terraform (version 1.0.0 or later) installed
+- kubectl installed for interacting with the Kubernetes cluster
+- AWS IAM permissions to create EKS clusters, VPCs, ECR repositories, and related resources
+
+### Deployment Process
+
+The correct order for deployment is:
+
+1. **Create Infrastructure with Terraform**:
+   ```bash
+   cd terraform
+   terraform init
+   terraform apply
+   ```
+   This creates:
+   - EKS cluster
+   - ECR repositories for Docker images
+   - EC2 instance for Ollama with GPU support
+   - VPC, subnets, and other networking components
+
+2. **Configure Secrets**:
+   ```bash
+   # Copy the template file to create your own secrets file
+   cp k8s/base/secrets/app-secrets.template.yaml k8s/base/secrets/app-secrets.yaml
+   ```
+   
+   Edit the `app-secrets.yaml` file to replace the placeholder values with your actual credentials:
+   - Database credentials can be set to values of your choice
+   - API keys need to be obtained from the respective services
+   - AWS credentials should be from an IAM user with appropriate permissions
+   - Add LLM model settings:
+     ```yaml
+     CLAIM_DECOMPOSER_MODEL: "mistral-nemo"
+     RESEARCH_AGENT_MODEL: "mistral-nemo"
+     REASONING_AGENT_MODEL: "mistral-nemo"
+     VERDICT_AGENT_MODEL: "mistral-nemo"
+     ```
+
+3. **Build Docker Images**:
+   ```bash
+   ./k8s/deploy.sh --build
+   ```
+   This builds the Docker images for the Django and API components.
+
+4. **Push Images to ECR**:
+   ```bash
+   ./k8s/deploy.sh --push-to-ecr
+   ```
+   This pushes the built images to the ECR repositories created by Terraform.
+
+5. **Deploy to Kubernetes**:
+   ```bash
+   ./k8s/deploy.sh --deploy
+   ```
+   This deploys all components to the EKS cluster.
+
+Alternatively, you can use the combined command for steps 3-5:
+```bash
+./k8s/deploy.sh --build --push-to-ecr --deploy
+```
+
+**Important Note**: Do not use `--terraform` with `--push-to-ecr` in the same command, as this can cause conflicts with ECR repository creation. Always run Terraform separately first, then proceed with the other steps.
+
+### Accessing the Deployed Application
+
+After deployment, the `deploy.sh` script will display the URLs for accessing your application:
+
+```
+============================================================
+                   ACCESS INFORMATION                       
+============================================================
+Your application is now accessible at the following URLs:
+
+Django Frontend: http://<DJANGO-HOSTNAME>:8000
+API Endpoint: http://<API-HOSTNAME>:8001
+API Documentation: http://<API-HOSTNAME>:8001/docs
+============================================================
+```
+
+### Cleanup
+
+To remove all resources:
+
+1. **Delete Kubernetes Resources and ECR Images**:
+   ```bash
+   ./k8s/deploy.sh --delete
+   ```
+
+2. **Destroy Terraform Infrastructure**:
+   ```bash
+   cd terraform
+   terraform destroy
+   ```
 
 ## Developer Info
 
@@ -228,4 +328,3 @@ The application includes a complete user authentication system with:
   2. Verify the mistral-nemo model is installed: Run `ollama list` to see installed models
   3. If needed, reinstall the model: `ollama pull mistral-nemo`
   4. Check Ollama logs for any errors
-

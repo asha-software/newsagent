@@ -18,8 +18,16 @@ Before you begin, ensure you have the following:
 The Terraform configuration consists of the following files:
 
 1. `main.tf` - Contains the actual resource definitions
-2. `variables.tf` - Contains all customizable parameters with default values
-3. `terraform.tfvars` - (Optional) Contains your specific variable values
+2. `variables.tf` - Contains all customizable parameters with their types and default values
+3. `terraform.tfvars` - Contains your specific variable values that override the defaults in variables.tf
+
+### Understanding variables.tf vs terraform.tfvars
+
+- **variables.tf**: Defines all the variables that can be used in the Terraform configuration, including their types, descriptions, and default values. This file serves as documentation for what variables are available and what they do.
+
+- **terraform.tfvars**: Provides actual values for the variables defined in variables.tf. Values in this file override the default values in variables.tf. This separation allows you to keep your specific configuration separate from the variable definitions.
+
+This is standard Terraform practice that allows for flexibility and reusability of the configuration.
 
 ## Customizing Your Deployment
 
@@ -57,7 +65,7 @@ To SSH into the EC2 instance running Ollama, you need to create and specify an S
    ssh_key_name = "ollama-key"
    ```
 
-The key is automatically created for you an saved under the terraform directory.
+The key is automatically created for you and saved under the terraform directory.
 
 ## Deployment Steps
 
@@ -82,18 +90,52 @@ Follow these steps to deploy the EKS cluster:
 
    **Note**: The deployment process may take 10-15 minutes to complete.
 
-4. **Verify the Cluster**:
+4. **Configure Secrets**:
+   After Terraform has created the infrastructure, you need to configure the application secrets:
+   ```bash
+   # Copy the template file to create your own secrets file
+   cp k8s/base/secrets/app-secrets.template.yaml k8s/base/secrets/app-secrets.yaml
+   ```
+   
+   Edit the `app-secrets.yaml` file to replace the placeholder values with your actual credentials and add LLM model settings.
+
+5. **Verify the Cluster**:
    ```bash
    kubectl get nodes
    ```
    This should display the worker nodes that have joined the cluster.
 
-5. **Use ECR Repositories**:
-   The deployment creates two ECR repositories for your Docker images:
-   - `newsagent-api`: For the API service Docker image
-   - `newsagent-django`: For the Django service Docker image
+## Deployment Order and Integration with k8s/deploy.sh
+
+The correct order for deploying the entire application is:
+
+1. **Run Terraform to create infrastructure**:
+   ```bash
+   cd terraform
+   terraform init
+   terraform apply
+   ```
+   This creates the EKS cluster, ECR repositories, and Ollama EC2 instance.
+
+2. **Configure Secrets**:
+   ```bash
+   cp k8s/base/secrets/app-secrets.template.yaml k8s/base/secrets/app-secrets.yaml
+   # Edit app-secrets.yaml with your credentials and settings
+   ```
+
+3. **Use the k8s/deploy.sh script for the remaining steps**:
+   ```bash
+   # Build Docker images
+   ./k8s/deploy.sh --build
    
-   You can use the `k8s/deploy.sh` script with the `--build` and `--push-to-ecr`, and `deploy` options to build and push the images:
+   # Push images to ECR
+   ./k8s/deploy.sh --push-to-ecr
+   
+   # Deploy to Kubernetes
+   ./k8s/deploy.sh --deploy
+   ```
+
+**Important Note**: Do not use the `--terraform` flag with `--push-to-ecr` in the same command. The `--push-to-ecr` flag attempts to create ECR repositories if they don't exist, but Terraform has already created these repositories. This can cause conflicts and errors. Always run Terraform separately first, then proceed with the other steps.
 
 ## Cleaning Up
 
@@ -111,3 +153,27 @@ Alternatively, you can use the `k8s/deploy.sh` script with the `--delete` option
 ```bash
 ./k8s/deploy.sh --delete
 ```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Terraform state lock issues**:
+   If Terraform fails with a state lock error, you may need to manually release the lock:
+   ```bash
+   terraform force-unlock <LOCK_ID>
+   ```
+
+2. **AWS credential issues**:
+   Ensure your AWS credentials are properly configured either in core/.env or through the AWS CLI.
+
+3. **Resource creation failures**:
+   - Check the AWS console for more details about the failure
+   - Ensure you have sufficient permissions to create all required resources
+   - Verify that you're not hitting any AWS service limits
+
+4. **ECR repository conflicts**:
+   If you encounter errors about ECR repositories already existing:
+   - Ensure you're not trying to create repositories that already exist
+   - Use the AWS console to check the status of existing repositories
+   - If needed, delete existing repositories before recreating them

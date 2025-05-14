@@ -94,7 +94,6 @@ BUILD_IMAGES=false
 DEPLOY=false
 DELETE=false
 PUSH_TO_ECR=false
-RUN_TERRAFORM=false
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -122,14 +121,9 @@ while [[ $# -gt 0 ]]; do
       echo "  --build         Build Docker images"
       echo "  --push-to-ecr   Push Docker images to Amazon ECR"
       echo "  --deploy        Deploy to Kubernetes"
-      echo "  --delete        Delete from Kubernetes and destroy Terraform infrastructure"
-      echo "  --terraform     Run Terraform init, plan, and apply before deployment"
+      echo "  --delete        Delete Kubernetes resources"
       echo "  --help          Show this help message"
       exit 0
-      ;;
-    --terraform)
-      RUN_TERRAFORM=true
-      shift
       ;;
     *)
       echo "Unknown option: $1"
@@ -141,31 +135,6 @@ done
 # Set the project root directory
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$PROJECT_ROOT"
-
-# Run Terraform if requested
-if [ "$RUN_TERRAFORM" = true ]; then
-  echo "Running Terraform to provision infrastructure..."
-  
-  # Change to the terraform directory
-  cd "$PROJECT_ROOT/terraform"
-  
-  # Initialize Terraform
-  echo "Initializing Terraform..."
-  terraform init
-  
-  # Plan the deployment
-  echo "Planning Terraform deployment..."
-  terraform plan
-  
-  # Apply the Terraform configuration
-  echo "Applying Terraform configuration..."
-  terraform apply -auto-approve
-  
-  # Change back to the project root directory
-  cd "$PROJECT_ROOT"
-  
-  echo "Terraform infrastructure provisioning completed."
-fi
 
 # Get AWS account ID
 AWS_ACCOUNT_ID=$(aws sts get-caller-identity --no-cli-pager --query Account --output text)
@@ -236,9 +205,8 @@ if [ "$PUSH_TO_ECR" = true ]; then
   # Update Django deployment
   sed -i.bak "s|image: .*dkr.ecr.*amazonaws.com/newsagent-django:latest|image: ${ECR_REGISTRY}/newsagent-django:latest|g" k8s/base/deployments/django.yaml
   
-  # Update AWS_REGION in secrets files
-  echo "Updating AWS_REGION in secrets files..."
-  sed -i.bak "s|AWS_REGION: \".*\"|AWS_REGION: \"${AWS_REGION}\"|g" k8s/secrets.yaml
+  # Update AWS_REGION in secrets file
+  echo "Updating AWS_REGION in secrets file..."
   sed -i.bak "s|AWS_REGION: \".*\"|AWS_REGION: \"${AWS_REGION}\"|g" k8s/base/secrets/app-secrets.yaml
   
   # Clean up backup files (if any exist)
@@ -683,205 +651,10 @@ EOL
   # Clean up the temporary script
   rm "$TEMP_SCRIPT"
   
-  # Verify Ollama is running and accessible locally on the instance
-  echo "Verifying Ollama is running and accessible locally on the instance..."
-  if ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "curl -s http://localhost:11434/api/tags > /dev/null"; then
-    echo "Ollama is running and accessible locally."
-  else
-    echo "Warning: Ollama may not be running or accessible locally. Attempting to restart service..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo systemctl restart ollama-custom.service"
-    sleep 10
-    
-    # Check again after restart
-    if ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "curl -s http://localhost:11434/api/tags > /dev/null"; then
-      echo "Ollama is now running and accessible after service restart."
-    else
-      echo "Error: Ollama is still not accessible after service restart. Deployment may fail."
-    fi
-  fi
-  
-  # Verify Ollama is listening on all interfaces
-  echo "Verifying Ollama is listening on all interfaces..."
-  BINDING_OUTPUT=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo netstat -tulpn | grep 11434")
-  echo "$BINDING_OUTPUT"
-  
-  # Check if Ollama is listening on 0.0.0.0 (all interfaces)
-  if echo "$BINDING_OUTPUT" | grep -q "0.0.0.0:11434"; then
-    echo "Ollama is correctly listening on all interfaces (0.0.0.0)."
-  else
-    echo "WARNING: Ollama is not listening on all interfaces. Attempting to fix..."
-    
-    # Force restart with explicit binding - with detailed debugging
-    echo "Stopping any running Ollama services..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo systemctl stop ollama.service 2>/dev/null || true"
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo systemctl stop ollama-custom.service 2>/dev/null || true"
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo killall -9 ollama 2>/dev/null || true"
-    
-    echo "Checking Ollama executable location..."
-    OLLAMA_PATH=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "which ollama")
-    echo "Ollama executable found at: $OLLAMA_PATH"
-    
-    echo "Updating Ollama configuration..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'echo \"OLLAMA_HOST=0.0.0.0:11434\" > /etc/ollama/config'"
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'echo \"OLLAMA_HOST=0.0.0.0:11434\" >> /etc/environment'"
-    
-    echo "Creating updated systemd service file with correct executable path and GPU support..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'cat > /etc/systemd/system/ollama-custom.service << EOL
-[Unit]
-Description=Ollama API Service
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Environment=\"OLLAMA_HOST=0.0.0.0:11434\"
-Environment=\"OLLAMA_CUDA=1\"
-ExecStart=$OLLAMA_PATH serve
-Restart=always
-RestartSec=3
-User=root
-LimitNOFILE=65536
-
-[Install]
-WantedBy=multi-user.target
-EOL'"
-    
-    echo "Reloading systemd and restarting Ollama..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo systemctl daemon-reload"
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo systemctl restart ollama-custom.service"
-    
-    # Wait a bit longer for the service to fully start
-    echo "Waiting for service to start..."
-    sleep 10
-    
-    # Check again after fix
-    echo "Checking binding again after fix..."
-    sleep 5
-    BINDING_OUTPUT_AFTER=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo netstat -tulpn | grep 11434")
-    echo "$BINDING_OUTPUT_AFTER"
-    
-    if echo "$BINDING_OUTPUT_AFTER" | grep -q "0.0.0.0:11434"; then
-      echo "Fix successful! Ollama is now listening on all interfaces (0.0.0.0)."
-    else
-      echo "WARNING: Fix attempt failed. Ollama is still not listening on all interfaces."
-      echo "Checking configuration and service status..."
-      ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "cat /etc/ollama/config"
-      ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo systemctl status ollama-custom.service"
-    fi
-  fi
-  
-  # Verify external connectivity to Ollama
-  echo "Verifying external connectivity to Ollama (this may take a few seconds)..."
-  if command -v nc > /dev/null; then
-    if timeout 5 nc -z -v "$OLLAMA_PUBLIC_IP" 11434 2>/dev/null; then
-      echo "Success: Ollama is accessible from outside the instance on port 11434."
-    else
-      echo "Warning: Could not connect to Ollama from outside the instance on port 11434."
-      echo "This may be due to network restrictions or firewall settings."
-      echo "Checking EC2 security group rules..."
-      aws ec2 describe-security-groups --no-cli-pager --group-ids $(aws ec2 describe-instances --no-cli-pager --instance-ids "$OLLAMA_INSTANCE_ID" --query "Reservations[0].Instances[0].SecurityGroups[0].GroupId" --output text) --query "SecurityGroups[0].IpPermissions[?FromPort==\`11434\`]"
-    fi
-  else
-    echo "Warning: 'nc' command not found. Skipping external connectivity check."
-    echo "To manually check connectivity, run: telnet $OLLAMA_PUBLIC_IP 11434"
-  fi
-  
-  echo "Ollama installation completed successfully."
-  
-  # Ensure the mistral-nemo model is properly pulled and loaded
+  # Ensure the model is properly loaded
   ensure_ollama_model_loaded "$KEY_FILE_PATH" "$OLLAMA_PUBLIC_IP" "mistral-nemo"
   
-  # Verify the model is available via the API
-  echo "Verifying model availability via API..."
-  MODEL_LIST=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "curl -s http://localhost:11434/api/tags")
-  echo "Available models: $MODEL_LIST"
-  
-  # Verify GPU usage
-  echo "Verifying GPU usage by Ollama..."
-  GPU_CHECK=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "nvidia-smi | grep -i ollama")
-  if [ -n "$GPU_CHECK" ]; then
-    echo "SUCCESS: Ollama is using the GPU:"
-    echo "$GPU_CHECK"
-  else
-    echo "WARNING: Ollama process not detected in nvidia-smi output. This may indicate Ollama is not using the GPU."
-    echo "Checking if any process is using the GPU..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "nvidia-smi"
-    
-    echo "Checking CUDA environment variables..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "grep -r OLLAMA_CUDA /etc/ollama/ /etc/environment /etc/systemd/system/ollama-custom.service"
-    
-    echo "Setting up CUDA environment variables..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'echo \"export PATH=/usr/local/cuda/bin:\\\$PATH\" > /etc/profile.d/cuda.sh'"
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'echo \"export LD_LIBRARY_PATH=/usr/local/cuda/lib64:\\\$LD_LIBRARY_PATH\" >> /etc/profile.d/cuda.sh'"
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo chmod +x /etc/profile.d/cuda.sh"
-    
-    echo "Updating Ollama service with CUDA paths..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo bash -c 'cat > /etc/systemd/system/ollama-custom.service << EOL
-[Unit]
-Description=Ollama API Service
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Environment=\"OLLAMA_HOST=0.0.0.0:11434\"
-Environment=\"OLLAMA_CUDA=1\"
-Environment=\"PATH=/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"
-Environment=\"LD_LIBRARY_PATH=/usr/local/cuda/lib64\"
-ExecStart=/usr/local/bin/ollama serve
-Restart=always
-RestartSec=3
-User=root
-LimitNOFILE=65536
-
-[Install]
-WantedBy=multi-user.target
-EOL'"
-    
-    echo "Restarting Ollama service with updated configuration..."
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo systemctl daemon-reload && sudo systemctl restart ollama-custom.service"
-    sleep 15
-    
-    # Check again after restart
-    GPU_CHECK_AFTER=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "nvidia-smi | grep -i ollama")
-    if [ -n "$GPU_CHECK_AFTER" ]; then
-      echo "SUCCESS: After restart, Ollama is now using the GPU:"
-      echo "$GPU_CHECK_AFTER"
-    else
-      echo "WARNING: Ollama still not detected in nvidia-smi output after restart."
-      echo "Running a test query to load the model into GPU memory..."
-      ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "curl -s -X POST http://localhost:11434/api/generate -d '{\"model\":\"mistral-nemo\",\"prompt\":\"Hello, world!\",\"stream\":false}' > /dev/null"
-      sleep 5
-      
-      # Check one more time
-      GPU_CHECK_FINAL=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "nvidia-smi | grep -i ollama")
-      if [ -n "$GPU_CHECK_FINAL" ]; then
-        echo "SUCCESS: After test query, Ollama is now using the GPU:"
-        echo "$GPU_CHECK_FINAL"
-      else
-        echo "WARNING: Ollama still not detected in nvidia-smi output after test query."
-        echo "This may indicate a configuration issue with GPU support."
-      fi
-    fi
-  fi
-  
-  if echo "$MODEL_LIST" | grep -q "mistral-nemo"; then
-    echo "Model 'mistral-nemo' is available via the API."
-  else
-    echo "Warning: Model 'mistral-nemo' is not showing up in the API tags list."
-    echo "This may cause issues with the API service. Attempting to fix..."
-    
-    # Try to pull the model again with force
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo ollama rm mistral-nemo 2>/dev/null || true"
-    ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "sudo ollama pull mistral-nemo"
-    
-    # Check again
-    MODEL_LIST=$(ssh -o StrictHostKeyChecking=no -i "$KEY_FILE_PATH" ubuntu@"$OLLAMA_PUBLIC_IP" "curl -s http://localhost:11434/api/tags")
-    if echo "$MODEL_LIST" | grep -q "mistral-nemo"; then
-      echo "Success! Model 'mistral-nemo' is now available via the API."
-    else
-      echo "Error: Model 'mistral-nemo' is still not showing up in the API tags list."
-      echo "The API service may not work correctly. Please check the Ollama instance manually."
-    fi
-  fi
+  return 0
 }
 
 # Deploy to Kubernetes if requested
@@ -1169,12 +942,6 @@ if [ "$DELETE" = true ]; then
   # Delete ECR repositories and their images
   delete_ecr_repository "newsagent-api"
   delete_ecr_repository "newsagent-django"
-  
-  # Run Terraform destroy to clean up infrastructure
-  echo "Running Terraform destroy to clean up infrastructure..."
-  cd "$PROJECT_ROOT/terraform"
-  terraform destroy -auto-approve
-  cd "$PROJECT_ROOT"
   
   echo "Deletion completed successfully."
 fi

@@ -16,7 +16,7 @@ variable "kubernetes_version" {
 variable "cluster_name" {
   description = "Name of the EKS cluster"
   type        = string
-  default     = "newsagent-cluster"
+  default     = "newsagent-clusterv2"
 }
 
 variable "endpoint_private_access" {
