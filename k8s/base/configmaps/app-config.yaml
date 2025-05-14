@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: newsagent
+data:
+  # Database configuration
+  DB_HOST: "mysql"
+  DB_NAME: "fakenews_db"
+  DB_USER: "fakenews_user"
+  
+  # API configuration
+  API_URL: "http://${API_HOSTNAME}:8001"
+  
+  # Model configuration
+  CLAIM_DECOMPOSER_MODEL: "mistral-nemo"
+  RESEARCH_AGENT_MODEL: "mistral-nemo"
+  REASONING_AGENT_MODEL: "mistral-nemo"
+  VERDICT_AGENT_MODEL: "mistral-nemo"
+  
+  # Ollama configuration
+  OLLAMA_BASE_URL: "http://${OLLAMA_PUBLIC_IP}:11434"
+  
+  # LangChain configuration
+  LANGCHAIN_PROJECT: "newsagent"
+  LANGCHAIN_TRACING_V2: "true"
