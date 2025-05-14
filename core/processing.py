@@ -1,3 +1,5 @@
+import os
+from dotenv import load_dotenv
 import pymysql
 from typing import Any
 from core.middlewares.auth import DB_CONFIG
@@ -7,6 +9,7 @@ from core.agents.reasoning_agent import reasoning_agent
 from core.agents.verdict_agent import verdict_agent
 from core.agents.utils.common_types import Analysis, Evidence
 
+load_dotenv('.env', override=True)
 
 async def get_user_tool_params(user_id: int, tools: list[str]) -> list[dict[str, Any]]:
     """
@@ -100,7 +103,8 @@ async def process_query(text: str, builtin_tools: list, user_tool_kwargs: list =
 
     # Try constructing research agent
     research_agent = create_research_agent(
-        model="mistral-nemo",
+        # model="mistral-nemo",
+        model=os.getenv("RESEARCH_AGENT_MODEL", "mistral-nemo"),
         builtin_tools=builtin_tools,
         user_tool_kwargs=user_tool_kwargs,
     )
