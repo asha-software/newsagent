@@ -12,6 +12,7 @@ MODEL_PROVIDERS = {
     "gpt-4o": "openai",
     "gpt-4o-mini": "openai",
     "gpt-4.1": "openai",
+    "o3-mini": "openai",
 
     # Anthropic models
     "claude-3-opus-20240229": "anthropic",
@@ -60,19 +61,31 @@ def get_chat_model(
         print(f"Warning: Unknown model '{model_name}'. "
               f"Add this model to MODEL_PROVIDERS explicitly to enable support.")
 
-    print(f"Using model '{model_name}' with structured output model '{output_model}'")
-
     # Create the appropriate model type
     if model_provider == "openai":
-        llm = ChatOpenAI(
-            model=model_name,
-            temperature=0,
-            max_tokens=None,
-            timeout=None,
-            max_retries=2
-        )
+        model_kwargs = {
+            "model": model_name,
+            "max_tokens": None,
+            "timeout": None,
+            "max_retries": 2
+        }
+
+        # Add temperature=0 if not using a reasoning model
+        if model_name not in {"o3-mini", "o4-mini"}:
+            model_kwargs["temperature"] = 0
+
+        # llm = ChatOpenAI(
+        #     model=model_name,
+        #     temperature=0,
+        #     max_tokens=None,
+        #     timeout=None,
+        #     max_retries=2
+        # )
+        llm = ChatOpenAI(**model_kwargs)
+
         if output_model:
             llm = llm.with_structured_output(output_model, method="json_schema")
+            
         return llm
 
     # TODO: Add Anthropic support
