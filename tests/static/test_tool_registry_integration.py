@@ -163,7 +163,7 @@ def test_multiple_user_tools_register_and_execute_sequentially(monkeypatch):
         agent = create_agent("model‑x", builtin_tools=[], user_tool_kwargs=tool_kwargs)
 
     evidence = _run_agent_once(agent)
-    parsed = {e["name"]: _deserialize_tool_result(e["result"])[0] for e in evidence}
+    parsed = {e["name"]: _deserialize_tool_result(e["content"])[0] for e in evidence}
 
     assert parsed == {"service_one": "value‑one", "service_two": "value‑two"}
 
@@ -202,7 +202,7 @@ def test_agent_list_index_extract_fields(monkeypatch):
         )
 
     evidence = _run_agent_once(agent)
-    assert _deserialize_tool_result(evidence[0]["result"]) == ["alpha"]
+    assert _deserialize_tool_result(evidence[0]["content"]) == ["alpha"]
 
 
 def test_agent_object_attribute_extract_fields(monkeypatch):
@@ -239,7 +239,7 @@ def test_agent_object_attribute_extract_fields(monkeypatch):
         agent = create_agent("x", builtin_tools=[], user_tool_kwargs=[tool_def])
 
     evidence = _run_agent_once(agent)
-    assert _deserialize_tool_result(evidence[0]["result"]) == [42]
+    assert _deserialize_tool_result(evidence[0]["content"]) == [42]
 
 
 def test_agent_json_param_mapping(capture_requests):
@@ -270,5 +270,5 @@ def test_agent_json_param_mapping(capture_requests):
     evidence = _run_agent_once(agent)
 
     # The fake request echoes JSON back so the agent result contains it directly.
-    assert _deserialize_tool_result(evidence[0]["result"])["foo"] == "bar"
+    assert _deserialize_tool_result(evidence[0]["content"])["foo"] == "bar"
     assert capture_requests["json"] == {"foo": "bar"}

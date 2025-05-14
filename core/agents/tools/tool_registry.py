@@ -1,7 +1,9 @@
+import json as json_module
 import requests
 from inspect import Signature, Parameter
 from langchain.tools import StructuredTool
 from typing import Literal
+from core.agents.utils.common_types import Evidence
 
 TYPE_MAPPING = {
     "int": int,
@@ -44,16 +46,19 @@ def create_tool(
     headers: dict[str, str] = None,
     default_params: dict[str, str] = None,
     data: dict[str, str] = None,
-    json: dict[str, str] = None,
+    json: dict[str, str] = None,  # TODO: rename this to avoid shadowing the json module
     docstring: str = "",
     target_fields: list[list[str | int]] = None,
     param_mapping: dict[str, dict[str, str | Literal['url_params',
                                                      'params', 'headers', 'data', 'json']]] = {},
 ):
     """
-    This function takes in various parameters to configure an API request, leaving some values as variables the user can specify later.
+    This function takes in various parameters to configure an API request, leaving some values as variables the AI can generate when prompted.
     It returns a function with a user-specified signature that can be bound to an LLM as a tool, allowing users to add their own API services
     to NewsAgent without having to modify the core code or execute arbitrary code on our servers.
+
+    The function returned will accept the parameters specified in the `param_mapping` dictionary. Following the builtin tool interface, the function
+    should return a tuple of JSON string representing a list of Evidence objects, and the list[Evidence] as an artifact.
 
     Args:
         name (str): The user-defined name of the tool. NOTE: this should be unique amongst the user's tools.
@@ -116,21 +121,38 @@ def create_tool(
             data=req_data,
             json=req_json
         )
+
+        # Resolve the evidence content: the response body (possibly filtered by target_fields) or plain text
+        content = None
+        parsed = False  # Flag to check if response parses successfully; we return response.text if not
         try:
             response_json = response.json()
+            parsed = True
         except ValueError:
             print(
                 f"Error: Could not parse response as JSON. Response text: {response.text}")
-            return response.text
+            content = response.text
 
-        if target_fields:
-            return_fields = []
-            for listpath in target_fields:
-                # Make a copy of the listpath to avoid mutating the original
-                return_fields.append(extract_fields(
-                    response_json, listpath[:]))
-            return return_fields
-        return response
+        if parsed:
+            if target_fields:
+                content = []
+                for listpath in target_fields:
+                    # Make a copy of the listpath to avoid mutating the original
+                    content.append(extract_fields(
+                        response_json, listpath[:]))
+            else:
+                content = response_json
+
+        evidence_list = [
+            Evidence(
+                name=name,
+                args=kwargs,
+                content=content,
+                source=url
+            )
+        ]
+        # Return the evidence list as a JSON string for content and the list[Evidence] as artifact
+        return json_module.dumps(evidence_list), evidence_list
 
     # Dynamically create the function signature
     parameters = [
@@ -162,42 +184,83 @@ def create_tool(
         func=tool_function,
         name=name,
         description=docstring,
-        args_schema=args_schema
+        args_schema=args_schema,
+        response_format="content_and_artifact"
     )
 
 
 def main():
     # Define the parameter mapping
-    name = 'PokemonAPI'
+    # name = 'PokemonAPI'
+    # param_mapping = {
+    #     'name': {
+    #         'type': 'str',
+    #         'for': 'url_params'
+    #     }
+    # }
+    # method = 'GET'
+    # # Use a URL template with a placeholder for the Pokémon name
+    # url_template = 'https://pokeapi.co/api/v2/pokemon/{name}'
+    # headers = {'Accept': 'application/json'}
+    # docstring = '''Get information about a Pokémon from the PokeAPI.
+    # Args:
+    #     name (str): The name of the Pokémon to query, ALWAYS LOWERCASED.
+    # Returns:
+    #     list: A list containing the Pokémon's abilities.
+    # '''
+    # kwargs = {
+    #     'name': name,
+    #     'param_mapping': param_mapping,
+    #     'method': method,
+    #     'url_template': url_template,
+    #     'headers': headers,
+    #     'docstring': docstring,
+    #     'target_fields': [['abilities', 0, 'ability', 'name'],
+    #                       ['abilities', 1, 'ability', 'name']],
+    # }
+    # # Create a tool for querying Pokémon
+    # try:
+    #     get_pokemon = create_tool(**kwargs)
+    # except Exception as e:
+    #     print(f"Error creating tool: {e}")
+    #     return
+    """
+    EXAMPLE: making an Alpha Vantage API tool
+    """
+    name = 'get_time_series_daily'
+
     param_mapping = {
-        'name': {
+        'symbol': {
             'type': 'str',
             'for': 'url_params'
-        }
+        },
     }
     method = 'GET'
-    # Use a URL template with a placeholder for the Pokémon name
-    url_template = 'https://pokeapi.co/api/v2/pokemon/{name}'
-    headers = {'Accept': 'application/json'}
-    docstring = '''Get information about a Pokémon from the PokeAPI.
+    url_template = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey=uio2y34lkasf'
+    docstring = '''Get daily time series data for a given stock symbol.
     Args:
-        name (str): The name of the Pokémon to query, ALWAYS LOWERCASED.
+        symbol (str): The stock symbol to query.
     Returns:
-        list: A list containing the Pokémon's abilities.
+        list: A list containing the daily time series data.
+
+    Example:
+        get_time_series_daily(symbol='AAPL')
+        # Returns a list of daily time series data for Apple Inc. (AAPL)
     '''
     kwargs = {
         'name': name,
         'param_mapping': param_mapping,
         'method': method,
         'url_template': url_template,
-        'headers': headers,
+        'headers': {'Accept': 'application/json'},
         'docstring': docstring,
-        'target_fields': [['abilities', 0, 'ability', 'name'],
-                          ['abilities', 1, 'ability', 'name']],
+        'target_fields': [
+            ["Meta Data", "2. Symbol"],
+            ['Time Series (Daily)']
+        ],
     }
-    # Create a tool for querying Pokémon
     try:
-        get_pokemon = create_tool(**kwargs)
+        get_alpha_vantage = create_tool(**kwargs)
     except Exception as e:
         print(f"Error creating tool: {e}")
         return
@@ -212,11 +275,12 @@ def main():
 
     research_agent = create_agent(
         model=os.getenv('RESEARCH_AGENT_MODEL'),
-        builtin_tools=['wikipedia', 'web_search'],
+        builtin_tools=['wikipedia_tool', 'web_search'],
         user_tool_kwargs=[kwargs]
     )
 
-    claim = "Pikachu has electric abilities"
+    # claim = "Pikachu has electric abilities"
+    claim = "AAPL stock has been rollercoastering in the past week"
     results = research_agent.invoke({"claim": claim})
     for message in results['messages']:
         message.pretty_print()

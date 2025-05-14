@@ -3,6 +3,10 @@ import importlib
 import unittest.mock
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 
+from core.agents.research_agent import State
+from core.agents.utils.common_types import Evidence
+
+
 ###############################
 # Fixtures and Test Helpers
 ###############################
@@ -96,16 +100,9 @@ def multiple_tool_calls_state():
     """
     return {
         "messages": [
-            AIMessage(
-                content="Tool calls here.",
-                tool_calls=[
-                    {"id": "toolcall1", "name": "tool_one", "args": {"key": "val"}},
-                    {"id": "toolcall2", "name": "tool_two", "args": {"foo": "bar"}},
-                ],
-            ),
-            ToolMessage(content="Result from tool_one", tool_call_id="toolcall1"),
+            ToolMessage(content="", artifact=[Evidence(name="tool_one", args={"key": "val"}, content="Result from tool_one", source="I made it up")], tool_call_id="toolcall1"),
             HumanMessage(content="User message in between."),
-            ToolMessage(content="Result from tool_two", tool_call_id="toolcall2"),
+            ToolMessage(content="", artifact=[Evidence(name="tool_two", args={"foo": "bar"}, content="Result from tool_two", source="I made it up")], tool_call_id="toolcall1"),
         ],
         "claim": "Multiple tool calls with multiple matches",
         "evidence": [],
@@ -164,20 +161,14 @@ def single_tool_call_with_tool_message_state():
     """
     Returns a state with a single AIMessage tool call and a matching ToolMessage.
     """
-    return {
-        "messages": [
-            AIMessage(
-                content="I'm using a tool now.",
-                tool_calls=[
-                    {"id": "toolcall1", "name": "some_tool", "args": {"param": "val"}}
-                ],
-            ),
-            ToolMessage(content="Tool result content", tool_call_id="toolcall1"),
+    return State(
+        messages=[
+            AIMessage(content="User message after tool."),
+            ToolMessage(content="", artifact=[Evidence(name="some_tool", args={"param": "val"}, content="Tool result content", source="I made it up")], tool_call_id="toolcall1"),
             HumanMessage(content="User message after tool."),
         ],
-        "claim": "Single tool call with matching ToolMessage",
-        "evidence": [],
-    }
+        claim="Single tool call with matching ToolMessage",
+    )
 
 
 ###############################
@@ -373,7 +364,7 @@ class TestStatePostProcessing:
         """
         No messages in the state -> evidence remains empty.
         """
-        result = research_agent_uut.postprocessing(empty_state)
+        result = research_agent_uut.gather_evidence(empty_state)
         assert result["evidence"] == [], "Expected no evidence when state is empty."
 
     def test_post_processing_no_tool_calls(
@@ -382,7 +373,7 @@ class TestStatePostProcessing:
         """
         AIMessage present but 'tool_calls' is empty -> evidence remains empty.
         """
-        result = research_agent_uut.postprocessing(no_tool_calls_state)
+        result = research_agent_uut.gather_evidence(no_tool_calls_state)
         assert (
             result["evidence"] == []
         ), "Expected no evidence when AIMessage has no tool_calls."
@@ -393,7 +384,7 @@ class TestStatePostProcessing:
         """
         AIMessage has tool_calls, but no matching ToolMessage -> no evidence is collected.
         """
-        result = research_agent_uut.postprocessing(
+        result = research_agent_uut.gather_evidence(
             single_tool_call_no_tool_message_state
         )
         assert (
@@ -407,14 +398,14 @@ class TestStatePostProcessing:
         AIMessage has a single tool_call and exactly one matching ToolMessage ->
         that single piece of evidence is collected.
         """
-        result = research_agent_uut.postprocessing(
+        result = research_agent_uut.gather_evidence(
             single_tool_call_with_tool_message_state
         )
         assert len(result["evidence"]) == 1, "Expected exactly one evidence item."
         evidence_item = result["evidence"][0]
         assert evidence_item["name"] == "some_tool"
         assert evidence_item["args"] == {"param": "val"}
-        assert evidence_item["result"] == "Tool result content"
+        assert evidence_item["content"] == "Tool result content"
 
     def test_post_processing_multiple_tool_calls(
         self, research_agent_uut, multiple_tool_calls_state
@@ -424,7 +415,7 @@ class TestStatePostProcessing:
         Each tool_call has a matching ToolMessage somewhere in the later messages.
         We break after the first match for each tool_call.
         """
-        result = research_agent_uut.postprocessing(multiple_tool_calls_state)
+        result = research_agent_uut.gather_evidence(multiple_tool_calls_state)
         # We expect exactly two evidence items, one for each tool_call.
         assert len(result["evidence"]) == 2, "Expected two evidence items."
 
@@ -432,9 +423,9 @@ class TestStatePostProcessing:
         first_call = result["evidence"][0]
         assert first_call["name"] == "tool_one"
         assert first_call["args"] == {"key": "val"}
-        assert first_call["result"] == "Result from tool_one"
+        assert first_call["content"] == "Result from tool_one"
 
         second_call = result["evidence"][1]
         assert second_call["name"] == "tool_two"
         assert second_call["args"] == {"foo": "bar"}
-        assert second_call["result"] == "Result from tool_two"
+        assert second_call["content"] == "Result from tool_two"

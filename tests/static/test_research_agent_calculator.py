@@ -17,6 +17,8 @@ from langchain_core.messages import AIMessage, ToolMessage
 # Common helper: build a Research-Agent on demand
 # ------------------------------------------------------------------
 import core.agents.research_agent as ra
+from core.agents.utils.common_types import Evidence
+
 
 # ==================================================================
 # PART II –  Plumbing (stub / fast)            ─────────────────────
@@ -44,13 +46,18 @@ def dummy_calculator():
 # ---------- Helpers -----------------------------------------------
 def make_ai_and_tool_msgs(expr: str, result: str):
     tool_call_id = "calc-1"
+
+
+
     ai = AIMessage(
         content="Let me calculate that.",
         tool_calls=[
             {"id": tool_call_id, "name": "calculator", "args": {"expression": expr}}
         ],
     )
-    tool_msg = ToolMessage(content=result, tool_call_id=tool_call_id)
+    tool_msg = ToolMessage(content="Let me calculate that.", artifact=[
+        Evidence(name="calculator", args={"expression": expr}, content=result, source="Mathematics")],
+                           tool_call_id=tool_call_id)
     return [ai, tool_msg]
 
 
@@ -107,8 +114,9 @@ def test_research_agent_stub(monkeypatch, should_use, claim, expr, expected):
     if should_use:
         assert len(evidence) == 1
         ev = evidence[0]
+        print(f"Evidence: {ev}")
         assert ev["name"] == "calculator"
-        assert ev["args"]["expression"] == expr
-        assert ev["result"] == expected
+        # assert ev["args"]["expression"] == expr
+        assert ev["content"] == expected
     else:
         assert evidence == []

@@ -5,6 +5,7 @@ from project root
 """
 
 from dotenv import load_dotenv
+import json
 import importlib
 import os
 from pathlib import Path
@@ -16,7 +17,7 @@ from langgraph.prebuilt import ToolNode, tools_condition
 from typing import Annotated, TypedDict, Callable
 from core.agents.tools.tool_registry import create_tool
 from core.agents.utils.llm_factory import get_chat_model
-from core.agents.utils.common_types import Evidence
+from core.agents.utils.common_types import Evidence, EvidenceListModel
 
 DEFAULT_MODEL = "mistral-nemo"  # Default model to use if not specified in .env
 
@@ -28,6 +29,8 @@ load_dotenv(DIR.parent / '.env', override=True)
 
 # Import prefix for builtin tools
 MODULE_PREFIX = "core.agents.tools.builtins."
+EVIDENCE_REQUIRED_KEYS = Evidence.__required_keys__
+
 
 def import_builtin(module_name):
     """Dynamically imports a function from a module.
@@ -39,17 +42,20 @@ def import_builtin(module_name):
     Returns:
         The imported function, or None if the module or function is not found.
     """
+    # TODO: this is just a hacky patch; resolve this for real
+    module_name = "wikipedia_tool" if module_name == "wikipedia" else module_name
+
     import_path = MODULE_PREFIX + module_name
     # Standard interface for builtin tool: each module has a function called tool_function
     function_name = 'tool_function'
     try:
         module = importlib.import_module(import_path)
+
         function = getattr(module, function_name)
         return function
     except ImportError as e:
         print(
             f"Error: Could not find module '{import_path}'.")
-        print(f"cwd: {os.getcwd()}")
         print(f"Exception: {e}")
     except AttributeError as e:
         print(
@@ -81,16 +87,31 @@ def render_user_defined_tools(tool_kwargs: list[dict]) -> list[Callable]:
             print(f"Error creating tool with kwargs {kwargs}:\n{e}")
     return tools
 
+
 """
 Static graph components
 """
+
+# FILTER_OUTPUT_FORMAT = {
+#     "type": "array",
+#     "items": {
+#         "type": "string"
+#     }
+# }
+
+
 class State(TypedDict):
     messages: Annotated[list[BaseMessage], add_messages]
     claim: str
     evidence: list[Evidence]
 
+
 with open(DIR / 'prompts/research_agent_system_prompt.txt', 'r') as f:
     sys_msg = SystemMessage(content=f.read())
+
+with open(DIR / 'prompts/research_agent_filter_evidence_prompt.txt', 'r') as f:
+    filter_sys_msg = SystemMessage(content=f.read())
+
 
 def preprocessing(state: State):
     """
@@ -101,6 +122,7 @@ def preprocessing(state: State):
     state['messages'] = [sys_msg, HumanMessage(content=state['claim'])]
     return state
 
+
 def get_assistant_node(llm: BaseChatModel) -> Callable:
     """
     Given reference to LLM, returns an assistant node using that LLM
@@ -108,33 +130,86 @@ def get_assistant_node(llm: BaseChatModel) -> Callable:
     def assistant(state: State) -> State:
         response = llm.invoke(state['messages'])
         return {"messages": response}
-    
+
     return assistant
 
 
-def postprocessing(state: State) -> State:
+def gather_evidence(state: State) -> State:
     """
-    Scan the message history to extract tool calls and results into tuples:
-    (tool_name, tool_args, tool_result) for the 'evidence' list in the state
+    Scan the message history to extract tool calls and the evidence they produced.
+    1. Iterates over all messages in the state, looking for ToolMessages
+    2. Checks each ToolMessage if it has an artifact that's list[Evidence]
+    3. If not, attempts to parse message.content to list[Evidence] 
+    4. If that fails, uses string content of the message as evidence
 
     #TODO there's possibly a smarter way to do this by matching tool call IDs
     """
-    evidence = []
+    all_evidence = []
     for i in range(len(state['messages'])):
         message = state['messages'][i]
-        if isinstance(message, AIMessage) and hasattr(message, 'tool_calls'):
-            for tool_call in message.tool_calls:
-                # Scan later messages for the corresponding ToolMessage
-                for j in range(i + 1, len(state['messages'])):
-                    next_message = state['messages'][j]
-                    if isinstance(next_message, ToolMessage) and next_message.tool_call_id == tool_call['id']:
-                        # Found the corresponding ToolMessage
-                        evidence_item = Evidence(
-                            name=tool_call['name'], args=tool_call['args'], result=next_message.content)
-                        evidence.append(evidence_item)
-                        break
+        if not isinstance(message, ToolMessage):
+            continue
 
-    return {'evidence': evidence}
+        # Try to get list[Evidence] from artifact
+        try:
+            validated = EvidenceListModel.model_validate(message.artifact)
+            evidence_list = validated.root
+        except Exception as e:
+            print(f"Error: artifact in tool message didn't validate as list[Evidence]. Attempting to load from message.content. Error message: {e}")
+
+            # If artifact not valid list[Evidence], try to get it from message.content
+            try:
+                validated = EvidenceListModel.model_validate_json(message.content)
+                evidence_list = validated.root
+            except Exception as e:
+                # If message.content not valid JSON, just use its string content as is
+                print(f"Error: message.content didn't parse as json to a valid list[Evidence]. Attempting to load from message.content. Error message: {e}")
+                salvaged_evidence = Evidence(
+                    name=message.name,
+                    # TODO: get this from the corresponding AI Message's tool call
+                    args={'info': 'see trace'},
+                    content=message.content,
+                    source=message.name)
+                evidence_list = [salvaged_evidence]
+
+        all_evidence += evidence_list
+
+    # Confirm that all evidence is list[Evidence]
+    try:
+        evidence_list = EvidenceListModel.model_validate(all_evidence)
+    except Exception as e:
+        print(f"Error: evidence list didn't validate as list[Evidence]. Error message: {e}")
+        # If not, just use the string content of the evidence
+        evidence_list = [
+            Evidence(
+                name="unknown",
+                args={},
+                content=str(e),
+                source="unknown"
+            )
+        ]
+
+    return {'evidence': all_evidence}
+
+
+# def get_filter_evidence_node(llm: BaseChatModel) -> Callable:
+#     def filter_evidence(state: State) -> State:
+#         """
+#         Iterate over the evidence list, filtering out any evidence that is not relevant to the claim
+#         """
+#         filtered_evidence = []
+#         print(f"I'm a filter node and I don't do anything yet")
+
+#         for evidence in state['evidence']:
+#             prompt = "Claim:\n" + state['claim'] + "\Text to read:\n" + str(evidence['content'])
+#             messages = [filter_sys_msg, HumanMessage(content=prompt)]
+#             response = llm.invoke(messages)
+#             print(f"Response: {response}")
+
+#         return {}
+
+#     return filter_evidence
+
 
 def create_agent(
         model: str,
@@ -173,17 +248,28 @@ def create_agent(
     builder.add_node("preprocessing", preprocessing)
     builder.add_node("assistant", assistant)
     builder.add_node("tools", ToolNode(tools))
-    builder.add_node("postprocessing", postprocessing)
+    builder.add_node("gather_evidence", gather_evidence)
 
     builder.add_edge(START, "preprocessing")
     builder.add_edge("preprocessing", "assistant")
     builder.add_conditional_edges(
         source="assistant",
         path=tools_condition,
-        path_map={'tools': 'tools', '__end__': 'postprocessing'}
+        path_map={'tools': 'tools', '__end__': 'gather_evidence'},
     )
     builder.add_edge("tools", "assistant")
-    builder.add_edge("postprocessing", END)
+    builder.add_edge("gather_evidence", END)
+
+    # Filter evidence: unfinished
+    # TODO: factor out the filtering LLM's model name; it need not be the same as the assistant's
+    # filter_llm = llm = get_chat_model(
+    #     model_name=os.getenv("RESEARCH_AGENT_MODEL", DEFAULT_MODEL),
+    #     format_output=FILTER_OUTPUT_FORMAT,
+    # )
+    # filter_evidence = get_filter_evidence_node(filter_llm)
+    # builder.add_node("filter_evidence", filter_evidence)
+    # builder.add_edge("gather_evidence", "filter_evidence")
+    # builder.add_edge("filter_evidence", END)
 
     agent = builder.compile()
     return agent
@@ -212,6 +298,7 @@ def main():
             }
         },
     }
+
     research_agent = create_agent(
         model='mistral-nemo',
         builtin_tools=builtin_tools_wanted,
