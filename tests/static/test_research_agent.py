@@ -100,9 +100,31 @@ def multiple_tool_calls_state():
     """
     return {
         "messages": [
-            ToolMessage(content="", artifact=[Evidence(name="tool_one", args={"key": "val"}, content="Result from tool_one", source="I made it up")], tool_call_id="toolcall1"),
+            ToolMessage(
+                content="",
+                artifact=[
+                    Evidence(
+                        name="tool_one",
+                        args={"key": "val"},
+                        content="Result from tool_one",
+                        source="I made it up",
+                    )
+                ],
+                tool_call_id="toolcall1",
+            ),
             HumanMessage(content="User message in between."),
-            ToolMessage(content="", artifact=[Evidence(name="tool_two", args={"foo": "bar"}, content="Result from tool_two", source="I made it up")], tool_call_id="toolcall1"),
+            ToolMessage(
+                content="",
+                artifact=[
+                    Evidence(
+                        name="tool_two",
+                        args={"foo": "bar"},
+                        content="Result from tool_two",
+                        source="I made it up",
+                    )
+                ],
+                tool_call_id="toolcall1",
+            ),
         ],
         "claim": "Multiple tool calls with multiple matches",
         "evidence": [],
@@ -164,7 +186,18 @@ def single_tool_call_with_tool_message_state():
     return State(
         messages=[
             AIMessage(content="User message after tool."),
-            ToolMessage(content="", artifact=[Evidence(name="some_tool", args={"param": "val"}, content="Tool result content", source="I made it up")], tool_call_id="toolcall1"),
+            ToolMessage(
+                content="",
+                artifact=[
+                    Evidence(
+                        name="some_tool",
+                        args={"param": "val"},
+                        content="Tool result content",
+                        source="I made it up",
+                    )
+                ],
+                tool_call_id="toolcall1",
+            ),
             HumanMessage(content="User message after tool."),
         ],
         claim="Single tool call with matching ToolMessage",
@@ -256,7 +289,6 @@ class TestImportBuiltin:
 # Tests for `render_user_defined_tools`
 ###############################
 class TestRenderUserDefinedTools:
-
     def test_render_user_defined_tools_empty(self, research_agent_uut):
         """
         Return empty list for an empty tool_kwargs list.

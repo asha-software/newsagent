@@ -12,7 +12,7 @@ TYPE_MAPPING = {
     "bool": bool,
     "array": list,
     "object": dict,
-    "None": type(None)  # For NoneType
+    "None": type(None),  # For NoneType
 }
 
 
@@ -41,7 +41,7 @@ def extract_fields(obj: dict, listpath_to_field: list):
 def create_tool(
     name: str,
     # NOTE: Do we need to support the DELETE or PATCH verbs?
-    method: Literal['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    method: Literal["GET", "POST", "PUT", "DELETE", "PATCH"],
     url_template: str,
     headers: dict[str, str] = None,
     default_params: dict[str, str] = None,
@@ -49,8 +49,9 @@ def create_tool(
     json: dict[str, str] = None,  # TODO: rename this to avoid shadowing the json module
     docstring: str = "",
     target_fields: list[list[str | int]] = None,
-    param_mapping: dict[str, dict[str, str | Literal['url_params',
-                                                     'params', 'headers', 'data', 'json']]] = {},
+    param_mapping: dict[
+        str, dict[str, str | Literal["url_params", "params", "headers", "data", "json"]]
+    ] = {},
 ):
     """
     This function takes in various parameters to configure an API request, leaving some values as variables the AI can generate when prompted.
@@ -92,21 +93,22 @@ def create_tool(
         for param_name, param_value in kwargs.items():
             if param_name in param_mapping:
                 param_info = param_mapping[param_name]
-                param_type = TYPE_MAPPING[param_info['type']]  # Validate type
+                param_type = TYPE_MAPPING[param_info["type"]]  # Validate type
                 if not isinstance(param_value, param_type):
                     raise TypeError(
-                        f"Parameter '{param_name}' must be of type {param_info['type']}.")
+                        f"Parameter '{param_name}' must be of type {param_info['type']}."
+                    )
 
                 # Map the parameter to the correct request component
-                if param_info['for'] == 'url_params':
+                if param_info["for"] == "url_params":
                     url_params[param_name] = param_value
-                elif param_info['for'] == 'headers':
+                elif param_info["for"] == "headers":
                     req_headers[param_name] = param_value
-                elif param_info['for'] == 'params':
+                elif param_info["for"] == "params":
                     req_params[param_name] = param_value
-                elif param_info['for'] == 'data':
+                elif param_info["for"] == "data":
                     req_data[param_name] = param_value
-                elif param_info['for'] == 'json':
+                elif param_info["for"] == "json":
                     req_json[param_name] = param_value
 
         # Format the URL with URL parameters
@@ -119,7 +121,7 @@ def create_tool(
             headers=req_headers,
             params=req_params,
             data=req_data,
-            json=req_json
+            json=req_json,
         )
 
         # Resolve the evidence content: the response body (possibly filtered by target_fields) or plain text
@@ -130,7 +132,8 @@ def create_tool(
             parsed = True
         except ValueError:
             print(
-                f"Error: Could not parse response as JSON. Response text: {response.text}")
+                f"Error: Could not parse response as JSON. Response text: {response.text}"
+            )
             content = response.text
 
         if parsed:
@@ -138,19 +141,11 @@ def create_tool(
                 content = []
                 for listpath in target_fields:
                     # Make a copy of the listpath to avoid mutating the original
-                    content.append(extract_fields(
-                        response_json, listpath[:]))
+                    content.append(extract_fields(response_json, listpath[:]))
             else:
                 content = response_json
 
-        evidence_list = [
-            Evidence(
-                name=name,
-                args=kwargs,
-                content=content,
-                source=url
-            )
-        ]
+        evidence_list = [Evidence(name=name, args=kwargs, content=content, source=url)]
         # Return the evidence list as a JSON string for content and the list[Evidence] as artifact
         return json_module.dumps(evidence_list), evidence_list
 
@@ -159,7 +154,7 @@ def create_tool(
         Parameter(
             name=param_name,
             kind=Parameter.POSITIONAL_OR_KEYWORD,
-            annotation=TYPE_MAPPING[param_info['type']]
+            annotation=TYPE_MAPPING[param_info["type"]],
         )
         for param_name, param_info in param_mapping.items()
     ]
@@ -175,7 +170,7 @@ def create_tool(
     args_schema = {
         param_name: {  # Use parameter name as key
             "description": f"{param_name} parameter",
-            "type": param_info['type']
+            "type": param_info["type"],
         }
         for param_name, param_info in param_mapping.items()
     }
@@ -185,7 +180,7 @@ def create_tool(
         name=name,
         description=docstring,
         args_schema=args_schema,
-        response_format="content_and_artifact"
+        response_format="content_and_artifact",
     )
 
 
@@ -227,17 +222,14 @@ def main():
     """
     EXAMPLE: making an Alpha Vantage API tool
     """
-    name = 'get_time_series_daily'
+    name = "get_time_series_daily"
 
     param_mapping = {
-        'symbol': {
-            'type': 'str',
-            'for': 'url_params'
-        },
+        "symbol": {"type": "str", "for": "url_params"},
     }
-    method = 'GET'
-    url_template = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey=uio2y34lkasf'
-    docstring = '''Get daily time series data for a given stock symbol.
+    method = "GET"
+    url_template = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol={symbol}&apikey=uio2y34lkasf"
+    docstring = """Get daily time series data for a given stock symbol.
     Args:
         symbol (str): The stock symbol to query.
     Returns:
@@ -246,18 +238,15 @@ def main():
     Example:
         get_time_series_daily(symbol='AAPL')
         # Returns a list of daily time series data for Apple Inc. (AAPL)
-    '''
+    """
     kwargs = {
-        'name': name,
-        'param_mapping': param_mapping,
-        'method': method,
-        'url_template': url_template,
-        'headers': {'Accept': 'application/json'},
-        'docstring': docstring,
-        'target_fields': [
-            ["Meta Data", "2. Symbol"],
-            ['Time Series (Daily)']
-        ],
+        "name": name,
+        "param_mapping": param_mapping,
+        "method": method,
+        "url_template": url_template,
+        "headers": {"Accept": "application/json"},
+        "docstring": docstring,
+        "target_fields": [["Meta Data", "2. Symbol"], ["Time Series (Daily)"]],
     }
     try:
         get_alpha_vantage = create_tool(**kwargs)
@@ -274,15 +263,15 @@ def main():
     # fmt: on
 
     research_agent = create_agent(
-        model=os.getenv('RESEARCH_AGENT_MODEL'),
-        builtin_tools=['wikipedia_tool', 'web_search'],
-        user_tool_kwargs=[kwargs]
+        model=os.getenv("RESEARCH_AGENT_MODEL"),
+        builtin_tools=["wikipedia_tool", "web_search"],
+        user_tool_kwargs=[kwargs],
     )
 
     # claim = "Pikachu has electric abilities"
     claim = "AAPL stock has been rollercoastering in the past week"
     results = research_agent.invoke({"claim": claim})
-    for message in results['messages']:
+    for message in results["messages"]:
         message.pretty_print()
 
 
