@@ -1,5 +1,10 @@
-# Ignore training/eval datasets 
+# Ignore training/eval datasets and result files
 datasets/
+**/*.jsonl
+
+# Ignore secrets and keys
+secrets.yaml
+*.pem
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

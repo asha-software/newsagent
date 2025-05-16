@@ -2,6 +2,7 @@ import os
 from typing import Any, Dict, Optional, Literal, Union
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
+
 # from langchain_anthropic import ChatAnthropic
 from langchain_core.language_models import BaseChatModel
 
@@ -9,14 +10,12 @@ from langchain_core.language_models import BaseChatModel
 MODEL_PROVIDERS = {
     # OpenAI models (NOTE: many models don't support formatted output the we're using it for Ollama. We'll likely have to move to pydantic to support both with the same schema models)
     "gpt-4o-mini": "openai",
-
     # Anthropic models
     "claude-3-opus-20240229": "anthropic",
     "claude-3-sonnet-20240229": "anthropic",
     "claude-3-haiku-20240307": "anthropic",
     "claude-2.0": "anthropic",
     "claude-2.1": "anthropic",
-
     # Ollama models
     "llama3": "ollama",
     "llama3:8b": "ollama",
@@ -33,9 +32,7 @@ MODEL_PROVIDERS = {
 
 
 def get_chat_model(
-    model_name: str,
-    format_output: Optional[Dict] = None,
-    **kwargs
+    model_name: str, format_output: Optional[Dict] = None, **kwargs
 ) -> BaseChatModel:
     """
     Factory function to create the appropriate chat model based on model name or explicit provider.
@@ -55,8 +52,10 @@ def get_chat_model(
 
     # If we can't determine provider from mapping or explicit override, use Ollama as fallback
     if not model_provider:
-        print(f"Warning: Unknown model '{model_name}'."
-              f"Add this model to MODEL_PROVIDERS explicitly to enable support.")
+        print(
+            f"Warning: Unknown model '{model_name}'."
+            f"Add this model to MODEL_PROVIDERS explicitly to enable support."
+        )
 
     # Create the appropriate model type
     if model_provider == "openai":
@@ -64,12 +63,8 @@ def get_chat_model(
             model=model_name,
             temperature=0,
             model_kwargs={
-                "response_format":
-                {
-                    "type": "json_schema",
-                    "json_schema": format_output
-                }
-            }
+                "response_format": {"type": "json_schema", "json_schema": format_output}
+            },
         )
 
     # elif model_provider == "anthropic":
@@ -80,17 +75,16 @@ def get_chat_model(
     #         **kwargs
     #     )
     elif model_provider == "ollama":  # ollama
-        ollama_base_url = os.getenv(
-            "OLLAMA_BASE_URL", "http://localhost:11434")
+        ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         model_kwargs = {
             "model": model_name,
             "temperature": 0,
             "base_url": ollama_base_url,
-            **kwargs
+            "num_ctx": 128000,
+            **kwargs,
         }
         if format_output:
             model_kwargs["format"] = format_output
         return ChatOllama(**model_kwargs)
 
-    raise ValueError(
-        f"Unknown model '{model_name}', can't build an LLM on that model.")
+    raise ValueError(f"Unknown model '{model_name}', can't build an LLM on that model.")

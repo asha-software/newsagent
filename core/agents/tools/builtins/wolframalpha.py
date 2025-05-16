@@ -35,8 +35,7 @@ def tool_function(query_input: str) -> str:
         return "Wolfram Alpha API key not set up!"
         # Create an APP ID here https://developer.wolframalpha.com/access for the full results API and set as an env var
     try:
-        result = wolframalpha.Client(
-            os.environ[WOLFRAM_APP_ID_NAME]).query(query_input)
+        result = wolframalpha.Client(os.environ[WOLFRAM_APP_ID_NAME]).query(query_input)
     except Exception:
         return "Unable to query Wolfram Alpha!"
     try:

@@ -1,4 +1,5 @@
 from typing import Dict, Any
+import json
 
 import pytest
 from core.agents.tools.tool_registry import create_tool, extract_fields
@@ -25,8 +26,9 @@ def test_create_tool_handles_non_json_response(monkeypatch):
         param_mapping={},
     )
 
-    result = my_tool.invoke({})
-    assert result == "Plain text response"
+    result_str = my_tool.invoke({})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"] == "Plain text response"
 
 
 def test_create_tool_basic_get(monkeypatch):
@@ -48,8 +50,9 @@ def test_create_tool_basic_get(monkeypatch):
         param_mapping={"id": {"type": "int", "for": "url_params"}},
     )
 
-    result = tool.invoke({"id": 42})
-    assert result.json()["status"] == "ok"
+    result_str = tool.invoke({"id": 42})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"]["status"] == "ok"
 
 
 def test_create_tool_with_default_params(monkeypatch):
@@ -71,8 +74,9 @@ def test_create_tool_with_default_params(monkeypatch):
         param_mapping={},
     )
 
-    result = tool.invoke({})
-    assert result.json()["result"] == "ok"
+    result_str = tool.invoke({})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"]["result"] == "ok"
 
 
 def test_create_tool_merges_headers(monkeypatch):
@@ -94,8 +98,9 @@ def test_create_tool_merges_headers(monkeypatch):
         param_mapping={"x_test": {"type": "str", "for": "headers"}},
     )
 
-    result = tool.invoke({"x_test": "override"})
-    assert result.json()["ok"] is True
+    result_str = tool.invoke({"x_test": "override"})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"]["ok"] is True
 
 
 def test_create_tool_with_target_fields(monkeypatch):
@@ -116,8 +121,9 @@ def test_create_tool_with_target_fields(monkeypatch):
         param_mapping={},
     )
 
-    result = tool.invoke({})
-    assert result == ["John"]
+    result_str = tool.invoke({})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"] == ["John"]
 
 
 def test_create_tool_with_multiple_target_fields(monkeypatch):
@@ -138,8 +144,9 @@ def test_create_tool_with_multiple_target_fields(monkeypatch):
         param_mapping={},
     )
 
-    result = tool.invoke({})
-    assert result == [1, 2]
+    result_str = tool.invoke({})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"] == [1, 2]
 
 
 def test_create_tool_with_post_and_json_payload(monkeypatch):
@@ -161,8 +168,9 @@ def test_create_tool_with_post_and_json_payload(monkeypatch):
         param_mapping={"name": {"type": "str", "for": "json"}},
     )
 
-    result = tool.invoke({"name": "test"})
-    assert result.json()["msg"] == "created"
+    result_str = tool.invoke({"name": "test"})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"]["msg"] == "created"
 
 
 def test_create_tool_custom_signature(monkeypatch):
@@ -183,8 +191,9 @@ def test_create_tool_custom_signature(monkeypatch):
         param_mapping={"query": {"type": "str", "for": "params"}},
     )
 
-    result = tool.invoke({"query": "climate"})
-    assert result.json()["ok"]
+    result_str = tool.invoke({"query": "climate"})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"]["ok"]
 
 
 def test_create_tool_returns_full_response(monkeypatch):
@@ -207,9 +216,9 @@ def test_create_tool_returns_full_response(monkeypatch):
         param_mapping={},
     )
 
-    response = tool.invoke({})
-    assert response.status_code == 200
-    assert response.json()["status"] == "ok"
+    result_str = tool.invoke({})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"]["status"] == "ok"
 
 
 def test_create_tool_with_query_and_headers(monkeypatch):
@@ -237,8 +246,9 @@ def test_create_tool_with_json_and_data_conflict(monkeypatch):
         param_mapping={"username": {"type": "str", "for": "json"}},
     )
 
-    result = tool.invoke({"username": "alice"})
-    assert result.json()["ok"]
+    result_str = tool.invoke({"username": "alice"})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"]["ok"]
 
 
 def test_create_tool_with_nested_json_path(monkeypatch):
@@ -259,8 +269,9 @@ def test_create_tool_with_nested_json_path(monkeypatch):
         param_mapping={},
     )
 
-    result = tool.invoke({})
-    assert result == [42]
+    result_str = tool.invoke({})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"] == [42]
 
 
 def test_create_tool_invalid_type(monkeypatch):
@@ -321,7 +332,6 @@ def test_extract_fields_with_object_attribute():
 
 
 def test_create_tool_with_data_payload(monkeypatch):
-
     class MockResponse:
         def __init__(self):
             self.status_code = 200
@@ -349,6 +359,6 @@ def test_create_tool_with_data_payload(monkeypatch):
     )
 
     # Invoke the tool with foo="bar", which should go into the 'data' field
-    result = tool.invoke({"foo": "bar"})
-    assert result.status_code == 200
-    assert result.json()["received_data"] is True
+    result_str = tool.invoke({"foo": "bar"})
+    result_list = json.loads(result_str)
+    assert result_list[0]["content"]["received_data"] is True

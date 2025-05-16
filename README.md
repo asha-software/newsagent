@@ -95,7 +95,7 @@ See the API documentation at `http://localhost:8001/docs` when the application i
 
 The application uses environment variables for configuration. For local development with default settings, you don't need to create any additional files as the docker-compose.yml provides sensible defaults.
 
-**For production or custom configurations**, create a `.env` file in the project root with any of the following variables:
+**For production or custom configurations**, create a `.env` file in django/.env with any of the following variables:
 
 - Database configuration:
 
